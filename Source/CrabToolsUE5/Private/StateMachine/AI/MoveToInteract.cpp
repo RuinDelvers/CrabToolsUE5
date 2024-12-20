@@ -20,6 +20,18 @@ void UAIMoveToInteractNode::Initialize_Inner_Implementation()
 	check(IsValid(this->GetInteractionComponent()));
 }
 
+void UAIMoveToInteractNode::EnterWithData_Inner_Implementation(UObject* Data)
+{
+	if (auto Interaction = Cast<UAbstractInteraction>(Data))
+	{
+		Super::EnterWithData_Inner_Implementation(Interaction->Interactor);
+	}
+	else
+	{
+		Super::EnterWithData_Inner_Implementation(Data);
+	}
+}
+
 void UAIMoveToInteractNode::Exit_Inner_Implementation()
 {
 	Super::Exit_Inner_Implementation();

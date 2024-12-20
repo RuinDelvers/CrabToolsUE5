@@ -20,6 +20,7 @@ public:
 	virtual void Initialize_Inner_Implementation() override;
 	virtual void Exit_Inner_Implementation() override;
 	virtual void PostTransition_Inner_Implementation() override;
+	virtual void EnterWithData_Inner_Implementation(UObject* Data) override;
 
 private:
 	

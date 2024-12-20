@@ -1154,19 +1154,19 @@ void UStateNode::EmitEventSlotWithData(const FEventSlot& ESlot, UObject* Data)
 void UStateNode::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
 	Super::PostEditChangeProperty(PropertyChangedEvent);
+
+	if (auto Parent = Cast<UStateNode>(this->GetClass()->GetSuperClass()->GetDefaultObject()))
+	{
+		for (auto& Ev : Parent->EmittedEvents)
+		{
+			this->AddEmittedEvent(Ev);
+		}
+	}
 }
 
 void UStateNode::PreEditChange(FProperty* PropertyAboutToChange)
 {
 	Super::PreEditChange(PropertyAboutToChange);
-
-	if (PropertyAboutToChange->GetFName() == GET_MEMBER_NAME_CHECKED(UStateNode, EmittedEvents))
-	{
-		for (auto& EventName : this->EmittedEvents)
-		{
-			this->PreEditEmittedEvents.Add(EventName);
-		}
-	}
 }
 
 TArray<FString> UStateNode::GetMachineOptions() const
