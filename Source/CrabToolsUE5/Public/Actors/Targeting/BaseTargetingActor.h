@@ -13,11 +13,14 @@ class ABaseTargetingActor : public AActor, public ITargetingControllerInterface
 	UPROPERTY(BlueprintReadOnly, Transient, meta=(AllowPrivateAccess, ExposeOnSpawn=true))
 	TObjectPtr<AActor> UsingActor;
 
+
 public:
 
 	FConfirmTargetsMulti OnConfirmTargets;
 
 public:
+
+	ABaseTargetingActor();
 
 	virtual void BeginPlay() override;
 

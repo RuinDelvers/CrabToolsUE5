@@ -1,12 +1,24 @@
 #include "Components/RPGSystem/RPGHelpers.h"
 
-#pragma region Integer Attributes and Resources
-void URPGHelpers::ObserveIntAttribute(UPARAM(ref) FIntAttribute& input, const FIntAttributeCallback& Callback) {
-	input.IntChangedEvent.Add(Callback);
+template <class ValueType, class CallbackType> inline void ObserveValue(ValueType& input, const CallbackType& Callback, bool bRemove)
+{
+	if (bRemove)
+	{
+		input.ValueChangedEvent.Remove(Callback);
+	}
+	else
+	{
+		input.ValueChangedEvent.Add(Callback);
+	}
 }
 
-void URPGHelpers::ObserveIntResource(UPARAM(ref) FIntResource& input, const FIntAttributeCallback& Callback) {
-	input.IntChangedEvent.Add(Callback);
+#pragma region Integer Attributes and Resources
+void URPGHelpers::ObserveIntAttribute(FIntAttribute& input, const FIntAttributeCallback& Callback, bool bRemove) {
+	ObserveValue(input, Callback, bRemove);
+}
+
+void URPGHelpers::ObserveIntResource(FIntResource& input, const FIntAttributeCallback& Callback, bool bRemove) {
+	ObserveValue(input, Callback, bRemove);
 }
 
 void URPGHelpers::SetIntResource(UPARAM(ref) FIntResource& input, int Value) {
@@ -40,12 +52,12 @@ float URPGHelpers::IntRescPercent(const FIntResource& Input) {
 
 #pragma region Float Attributes and Resources
 
-void URPGHelpers::ObserveFloatAttribute(UPARAM(ref) FFloatAttribute& input, const FFloatAttributeCallback& Callback) {
-	input.FloatChangedEvent.Add(Callback);
+void URPGHelpers::ObserveFloatAttribute(FFloatAttribute& input, const FFloatAttributeCallback& Callback, bool bRemove) {
+	ObserveValue(input, Callback, bRemove);
 }
 
-void URPGHelpers::ObserveFloatResource(UPARAM(ref) FFloatResource& input, const FFloatAttributeCallback& Callback) {
-	input.FloatChangedEvent.Add(Callback);
+void URPGHelpers::ObserveFloatResource(FFloatResource& input, const FFloatAttributeCallback& Callback, bool bRemove) {
+	ObserveValue(input, Callback, bRemove);
 }
 
 void URPGHelpers::SetFloatResource(UPARAM(ref) FFloatResource& input, float Value) {

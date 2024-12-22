@@ -76,7 +76,7 @@ public:
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FIntAttributeObserver, int, Value);
 DECLARE_DYNAMIC_DELEGATE_OneParam(FIntAttributeCallback, int, Value);
 
-USTRUCT(BlueprintType)
+USTRUCT(BlueprintType, meta = (DisableSplitPin))
 struct CRABTOOLSUE5_API FIntAttribute 
 {
 	GENERATED_USTRUCT_BODY()
@@ -93,7 +93,7 @@ struct CRABTOOLSUE5_API FIntAttribute
 	TArray<FIntResource*> Dependencies;
 
 public:
-	FIntAttributeObserver IntChangedEvent;
+	FIntAttributeObserver ValueChangedEvent;
 
 	int GetValue() const;
 	void Operate(UIntOperator* Op);
@@ -104,7 +104,7 @@ public:
 	void AddDependency(FIntResource* Dep);
 };
 
-USTRUCT(BlueprintType)
+USTRUCT(BlueprintType, meta = (DisableSplitPin))
 struct CRABTOOLSUE5_API FIntResource
 {
 	GENERATED_USTRUCT_BODY()
@@ -124,7 +124,8 @@ struct CRABTOOLSUE5_API FIntResource
 
 
 public:
-	FIntAttributeObserver IntChangedEvent;
+
+	FIntAttributeObserver ValueChangedEvent;
 
 	int GetValue() const { return this->Value; }
 	void SetValue(int UValue);
@@ -174,7 +175,7 @@ public:
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FFloatAttributeObserver, float, Value);
 DECLARE_DYNAMIC_DELEGATE_OneParam(FFloatAttributeCallback, float, Value);
 
-USTRUCT(BlueprintType)
+USTRUCT(BlueprintType, meta = (DisableSplitPin))
 struct CRABTOOLSUE5_API FFloatAttribute
 {
 	GENERATED_USTRUCT_BODY()
@@ -191,7 +192,7 @@ struct CRABTOOLSUE5_API FFloatAttribute
 	TArray<FFloatResource*> Dependencies;
 
 public:
-	FFloatAttributeObserver FloatChangedEvent;
+	FFloatAttributeObserver ValueChangedEvent;
 
 	float GetValue() const;
 	void Operate(UFloatOperator* Op);
@@ -202,7 +203,7 @@ public:
 	void AddDependency(FFloatResource* Dep);
 };
 
-USTRUCT(BlueprintType)
+USTRUCT(BlueprintType, meta=(DisableSplitPin))
 struct CRABTOOLSUE5_API FFloatResource
 {
 	GENERATED_USTRUCT_BODY()
@@ -222,7 +223,7 @@ struct CRABTOOLSUE5_API FFloatResource
 
 
 public:
-	FFloatAttributeObserver FloatChangedEvent;
+	FFloatAttributeObserver ValueChangedEvent;
 
 	float GetValue() const { return this->Value; }
 	void SetValue(float UValue);

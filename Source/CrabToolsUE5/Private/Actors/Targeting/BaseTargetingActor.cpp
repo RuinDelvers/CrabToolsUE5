@@ -1,5 +1,10 @@
 #include "Actors/Targeting/BaseTargetingActor.h"
 
+ABaseTargetingActor::ABaseTargetingActor()
+{
+	
+}
+
 void ABaseTargetingActor::BeginPlay()
 {
 	Super::BeginPlay();
@@ -11,7 +16,6 @@ void ABaseTargetingActor::Initialize_Implementation()
 	FAttachmentTransformRules;
 	this->AttachToActor(this->UsingActor, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
 }
-
 
 void ABaseTargetingActor::AddListener_Implementation(const FConfirmTargetsSingle& Callback)
 {

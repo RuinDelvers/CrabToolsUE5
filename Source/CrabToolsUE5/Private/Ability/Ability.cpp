@@ -4,9 +4,19 @@ DEFINE_LOG_CATEGORY(LogAbility);
 
 void UAbility::Initialize(AActor* POwner)
 {
-	if (!this->Owner)
+	if (POwner)
 	{
-		this->Owner = POwner;
+		if (!this->Owner)
+		{
+			this->Owner = POwner;
+		}
+	}
+	else
+	{
+		if (this->Owner)
+		{
+			this->Owner = this->GetOwner();
+		}
 	}
 	this->Initialize_Inner();
 }
@@ -24,6 +34,33 @@ void UAbility::Start()
 UAbility* UAbility::GetParent() const
 {
 	return Cast<UAbility>(this->GetOuter());
+}
+
+AActor* UAbility::GetOwner() const
+{
+	if (this->Owner)
+	{
+		return this->Owner;
+	}
+	else if (auto Parent = this->GetParent())
+	{
+		return Parent->GetOwner();
+	}
+	else
+	{
+		return nullptr;
+	}
+}
+
+UAbility* UAbility::GetParentAs(TSubclassOf<UAbility> ParentClass) const
+{
+	auto Outer = this->GetOuter();
+
+	if (Outer->IsA(ParentClass))
+	{
+		return Cast<UAbility>(Outer);
+	}
+	return nullptr;
 }
 
 void UAbility::Perform()

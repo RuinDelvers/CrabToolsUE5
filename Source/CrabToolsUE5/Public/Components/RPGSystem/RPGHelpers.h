@@ -16,10 +16,10 @@ class URPGHelpers : public UBlueprintFunctionLibrary
 public:
 	#pragma region Integer Attributes & Resources
 	UFUNCTION(BlueprintCallable, Category="UtilityFunctions")
-	static void ObserveIntAttribute(UPARAM(ref) FIntAttribute& input, const FIntAttributeCallback& Callback);
+	static void ObserveIntAttribute(UPARAM(ref) FIntAttribute& input, const FIntAttributeCallback& Callback, bool bRemove=false);
 
 	UFUNCTION(BlueprintCallable, Category = "UtilityFunctions")
-	static void ObserveIntResource(UPARAM(ref) FIntResource& input, const FIntAttributeCallback& Callback);
+	static void ObserveIntResource(UPARAM(ref) FIntResource& input, const FIntAttributeCallback& Callback, bool bRemove = false);
 
 	UFUNCTION(BlueprintCallable, Category = "UtilityFunctions")
 	static void SetIntResource(UPARAM(ref) FIntResource& input, int Value);
@@ -45,10 +45,10 @@ public:
 
 	#pragma region Float Attributes & Resources
 	UFUNCTION(BlueprintCallable, Category = "UtilityFunctions")
-	static void ObserveFloatAttribute(UPARAM(ref) FFloatAttribute& input, const FFloatAttributeCallback& Callback);
+	static void ObserveFloatAttribute(UPARAM(ref) FFloatAttribute& input, const FFloatAttributeCallback& Callback, bool bRemove = false);
 
 	UFUNCTION(BlueprintCallable, Category = "UtilityFunctions")
-	static void ObserveFloatResource(UPARAM(ref) FFloatResource& input, const FFloatAttributeCallback& Callback);
+	static void ObserveFloatResource(UPARAM(ref) FFloatResource& input, const FFloatAttributeCallback& Callback, bool bRemove = false);
 
 	UFUNCTION(BlueprintCallable, Category = "UtilityFunctions")
 	static void SetFloatResource(UPARAM(ref) FFloatResource& input, float Value);

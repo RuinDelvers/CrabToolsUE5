@@ -2,7 +2,7 @@
 #include "Actors/Targeting/ITargeter.h"
 #include "Components/SplineComponent.h"
 
-AArcTraceTargetingActor::AArcTraceTargetingActor()
+AArcTraceTargetingActor::AArcTraceTargetingActor(): MaxHeight(std::numeric_limits<float>::infinity())
 {
 	this->PrimaryActorTick.bCanEverTick = true;
 
@@ -17,9 +17,9 @@ AArcTraceTargetingActor::AArcTraceTargetingActor()
 	this->SetRootComponent(this->PathSpline);
 }
 
-void AArcTraceTargetingActor::Tick(float DelaTime)
+void AArcTraceTargetingActor::Tick(float DeltaTime)
 {
-	Super::Tick(DelaTime);
+	Super::Tick(DeltaTime);
 
 	auto Base = this->GetActorLocation();
 	auto Target = ITargeterInterface::Execute_GetEndPoint(this->GetUsingActorNative());
@@ -72,8 +72,7 @@ void AArcTraceTargetingActor::Tick(float DelaTime)
 		{
 			auto CheckActor = Result.GetActor();
 
-			this->TracedActor = CheckActor;
-			this->TracedLocation = Result.ImpactPoint;
+			this->UpdateTraces(CheckActor, Result.ImpactPoint);
 
 			break;
 		}
@@ -85,33 +84,15 @@ void AArcTraceTargetingActor::Tick(float DelaTime)
 	}
 }
 
-void AArcTraceTargetingActor::InvalidateTargetData()
+bool AArcTraceTargetingActor::IsTooHigh() const
 {
-	this->TracedActor = nullptr;
-	this->TracedLocation = this->GetActorLocation();
+	return this->TracedLocation.Z - this->GetActorLocation().Z > this->MaxHeight;
 }
 
-void AArcTraceTargetingActor::PushTarget_Implementation()
+void AArcTraceTargetingActor::OnUpdateTraces_Implementation()
 {
-	if (this->TracedActor.IsValid())
+	if (this->IsTooHigh())
 	{
-		this->AddedActors.Add(this->TracedActor.Get());
-		this->AddedPoints.Add(this->TracedLocation);
+		this->OnTooHigh();
 	}
-}
-
-void AArcTraceTargetingActor::PopTarget_Implementation()
-{
-	this->AddedActors.Pop();
-	this->AddedPoints.Pop();
-}
-
-bool AArcTraceTargetingActor::IsValidTarget_Implementation(AActor* CheckedActor)
-{
-	return IsValid(CheckedActor);
-}
-
-void AArcTraceTargetingActor::IgnoreActors_Implementation(TArray<AActor*>& IgnoredActors)
-{
-	IgnoredActors.Add(this->GetOwner());
 }

@@ -6,9 +6,9 @@ ALineTraceTargetingActor::ALineTraceTargetingActor()
 	this->PrimaryActorTick.bCanEverTick = true;
 }
 
-void ALineTraceTargetingActor::Tick(float DelaTime)
+void ALineTraceTargetingActor::Tick(float DeltaTime)
 {
-	Super::Tick(DelaTime);
+	Super::Tick(DeltaTime);
 
 	FCollisionQueryParams TraceParams = FCollisionQueryParams(FName(TEXT("RV_Trace")), true, this);
 	
@@ -38,52 +38,14 @@ void ALineTraceTargetingActor::Tick(float DelaTime)
 
 	if (FoundTarget)
 	{
-		auto CheckActor = Result.GetActor();
-		if (this->IsValidTarget(CheckActor))
-		{
-			this->TracedActor = CheckActor;
-			this->TracedLocation = Result.ImpactPoint;
-		}
-		else
-		{
-			this->TracedActor = nullptr;
-			this->TracedLocation = Base;
-		}
+		auto CheckActor = Result.GetActor();		
+
+		this->UpdateTraces(CheckActor, Result.ImpactPoint);
 	}
 	else
 	{
 		this->TracedActor = nullptr;
 		this->TracedLocation = Base;
+		this->OnInvalidTarget();
 	}
-}
-
-void ALineTraceTargetingActor::InvalidateTargetData()
-{
-	this->TracedActor = nullptr;
-	this->TracedLocation = this->GetActorLocation();
-}
-
-void ALineTraceTargetingActor::PushTarget_Implementation()
-{
-	if (this->TracedActor.IsValid())
-	{
-		this->AddedActors.Add(this->TracedActor.Get());
-		this->AddedPoints.Add(this->TracedLocation);
-	}
-}
-
-void ALineTraceTargetingActor::PopTarget_Implementation()
-{
-	this->AddedActors.Pop();
-	this->AddedPoints.Pop();
-}
-
-bool ALineTraceTargetingActor::IsValidTarget_Implementation(AActor* CheckedActor)
-{
-	return IsValid(CheckedActor);
-}
-
-void ALineTraceTargetingActor::IgnoreActors_Implementation(TArray<AActor*>& IgnoredActors)
-{
-	IgnoredActors.Add(this->GetOwner());
 }

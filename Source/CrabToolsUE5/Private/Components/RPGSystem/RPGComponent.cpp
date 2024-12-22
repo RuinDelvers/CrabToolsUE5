@@ -222,7 +222,7 @@ void FIntAttribute::Refresh() {
 		}
 	}
 
-	this->IntChangedEvent.Broadcast(this->CompValue);
+	this->ValueChangedEvent.Broadcast(this->CompValue);
 }
 
 void FIntAttribute::AddDependency(FIntResource* Dep) {
@@ -268,7 +268,7 @@ void FIntResource::SetValue(int UValue) {
 
 void FIntResource::Refresh() {
 	this->Value = FMath::Clamp(this->Value, this->GetMin(), this->GetMax());
-	this->IntChangedEvent.Broadcast(this->Value);
+	this->ValueChangedEvent.Broadcast(this->Value);
 }
 
 int FIntResource::GetMax() const {
@@ -370,7 +370,7 @@ void FFloatAttribute::Refresh() {
 		}
 	}
 
-	this->FloatChangedEvent.Broadcast(this->CompValue);
+	this->ValueChangedEvent.Broadcast(this->CompValue);
 }
 
 void FFloatAttribute::AddDependency(FFloatResource* Dep) {
@@ -416,7 +416,7 @@ void FFloatResource::SetValue(float UValue) {
 
 void FFloatResource::Refresh() {
 	this->Value = FMath::Clamp(this->Value, this->GetMin(), this->GetMax());
-	this->FloatChangedEvent.Broadcast(this->Value);
+	this->ValueChangedEvent.Broadcast(this->Value);
 }
 
 float FFloatResource::GetMax() const {

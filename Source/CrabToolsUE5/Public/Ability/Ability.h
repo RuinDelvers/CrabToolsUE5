@@ -116,13 +116,18 @@ public:
 	virtual bool RequiresTick_Implementation() const { return false; }
 
 	UFUNCTION(BlueprintCallable, Category = "Ability")
-	AActor* GetOwner() const { return this->Owner; }
+	AActor* GetOwner() const;
 
 	virtual UWorld* GetWorld() const override;
 
 	/* Returns the outer of this ability as an ability. */
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category="Ability")
 	UAbility* GetParent() const;
+
+	/* Returns the outer of this ability as an ability. */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Ability",
+		meta=(DeterminesOutputType="ParentClass"))
+	UAbility* GetParentAs(TSubclassOf<UAbility> ParentClass) const;
 
 	virtual UAbility* GetAbility_Implementation() override { return this; }
 
