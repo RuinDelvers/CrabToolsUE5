@@ -46,13 +46,19 @@ void UStateMachine::Initialize(AActor* POwner)
 		this->Owner = POwner;	
 		this->InitFromArchetype();	
 		this->Initialize_Inner();
+
+		for (auto& Emitter : this->EventEmitters)
+		{
+			Emitter->Initialize(this);
+		}
+
 		this->InitSubMachines();
 	
 		// Shared nodes always exist, and should be initialize from the beginning.
 		for (auto& Node : this->SharedNodes)
 		{
 			Node.Value->Initialize(this);
-		}
+		}		
 
 		this->UpdateState(this->StartState);
 	}
@@ -379,7 +385,10 @@ UState* UStateMachine::GetStateData(FName Name)
 
 void UStateMachine::InitFromArchetype()
 {	
-	
+	if (auto BPGC = this->GetGeneratedClass())
+	{
+		BPGC->AppendEventEmitters(this);
+	}
 }
 
 TArray<FString> UStateMachine::StateOptions()

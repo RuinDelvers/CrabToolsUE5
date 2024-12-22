@@ -113,6 +113,10 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category="StateMachine")
 	TSubclassOf<UState> DefaultStateClass;
 
+	UPROPERTY(EditAnywhere, Instanced, Category="StateMachine",
+		meta = (AllowPrivateAccess))
+	TArray<TObjectPtr<UEventEmitter>> EventEmitters;
+
 public:
 
 	/* Events that are used by the Graph Editor to communicate. */

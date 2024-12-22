@@ -289,9 +289,7 @@ bool UEdStateGraph::HasEvent(FName EName) const
 
 bool UEdStateGraph::DoesEmitterHaveEvent(FName EName) const
 {
-	auto SourceMachine = this->GetSourceMachine();
-
-	for (auto& Emitter : SourceMachine->GetEmitters())
+	for (auto& Emitter : this->EventEmitters)
 	{
 		if (Emitter->GetEmittedEvents().Contains(EName))
 		{
@@ -502,7 +500,7 @@ FStateMachineArchetypeData UEdStateGraph::CompileStateMachine(FNodeVerificationC
 	{
 		Data.SetArchetype(NewObject<UStateMachine>(Context.GetOuter()));
 	}
-
+	
 	Data.bIsVariable = this->bIsVariable;
 	Data.Accessibility = this->Accessibility;
 
@@ -683,9 +681,7 @@ TArray<FString> UEdStateGraph::GetEventOptions() const
 
 void UEdStateGraph::AppendEmitterEvents(TArray<FString>& Names) const
 {
-	auto SourceMachine = this->GetSourceMachine();
-
-	for (auto& Emitter : SourceMachine->GetEmitters())
+	for (auto& Emitter : this->EventEmitters)
 	{		
 		for (auto& EName : Emitter->GetEmittedEvents())
 		{

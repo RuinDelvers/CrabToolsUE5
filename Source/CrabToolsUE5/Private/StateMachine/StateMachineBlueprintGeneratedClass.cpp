@@ -121,6 +121,19 @@ UState* UStateMachineBlueprintGeneratedClass::GetStateData(
 	return BuiltState;
 }
 
+void UStateMachineBlueprintGeneratedClass::AppendEventEmitters(UStateMachine* SM)
+{
+	for (const auto& Emit : this->Archetype.GetArchetype()->GetEmitters())
+	{
+		SM->AddEventEmitter(DuplicateObject(Emit, SM));
+	}
+
+	if (auto Parent = this->GetParent())
+	{
+		Parent->AppendEventEmitters(SM);
+	}
+}
+
 void UStateMachineBlueprintGeneratedClass::AppendPublicStateNames(TSet<FName>& Names) const
 {
 	for (auto& Data : this->Archetype.StateData)

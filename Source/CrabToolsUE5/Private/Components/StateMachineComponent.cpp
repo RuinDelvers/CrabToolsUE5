@@ -33,7 +33,7 @@ void UStateMachineComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	if (this->Machine != nullptr) {
+	if (this->Machine) {
 		this->Machine->Tick(DeltaTime);
 	}
 }

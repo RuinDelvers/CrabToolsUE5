@@ -114,17 +114,15 @@ bool FStateMachineBlueprintCompiler::CanCompile(const UBlueprint* Blueprint)
 
 void FStateMachineBlueprintCompiler::PreCompile(UBlueprint* Blueprint, const FKismetCompilerOptions& CompileOptions)
 {
-	if (//ReRegister == nullptr
-		CanCompile(Blueprint)
-		&& CompileOptions.CompileType == EKismetCompileType::Full)
+	if (CanCompile(Blueprint) && CompileOptions.CompileType == EKismetCompileType::Full)
 	{
-		//ReRegister = new TComponentReregisterContext<UStateMachineComponent>();
+
 	}
 
 	CompileCount++;
 }
 
-void FStateMachineBlueprintCompiler::Compile(UBlueprint * Blueprint, const FKismetCompilerOptions & CompileOptions, FCompilerResultsLog & Results)
+void FStateMachineBlueprintCompiler::Compile(UBlueprint* Blueprint, const FKismetCompilerOptions & CompileOptions, FCompilerResultsLog & Results)
 {
 	if (UStateMachineBlueprint* StateMachineBlueprint = CastChecked<UStateMachineBlueprint>(Blueprint))
 	{

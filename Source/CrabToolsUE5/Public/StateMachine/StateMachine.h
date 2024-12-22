@@ -464,9 +464,9 @@ private:
 		meta = (AllowPrivateAccess, IgnorePropertySearch))
 	FName CurrentStateName;
 
-	UPROPERTY(EditDefaultsOnly, Category = "StateMachine",
+	UPROPERTY(EditInstanceOnly, Instanced, Category = "StateMachine",
 		meta = (AllowPrivateAccess, IgnorePropertySearch))
-	TArray<UEventEmitter*> EventEmitters;
+	TArray<TObjectPtr<UEventEmitter>> EventEmitters;
 
 	/* How many previous states to remember. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "StateMachine",
@@ -647,6 +647,8 @@ public:
 	#endif
 
 	virtual UWorld* GetWorld() const override;
+
+	void AddEventEmitter(UEventEmitter* Emitter) { this->EventEmitters.Add(Emitter); }
 
 protected:
 

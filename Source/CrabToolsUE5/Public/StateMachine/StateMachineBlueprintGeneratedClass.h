@@ -106,6 +106,8 @@ public:
 
 public:
 
+
+	void AppendEventEmitters(UStateMachine* SM);
 	bool DoesImplementInterface(UStateMachineInterface* Interface) const;
 	UState* GetStateData(UStateMachine* Outer, FName Machine, FName StateName);
 	void AppendPublicStateNames(TSet<FName>& Names) const;
