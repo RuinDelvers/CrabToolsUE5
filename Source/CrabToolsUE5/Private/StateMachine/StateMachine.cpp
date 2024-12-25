@@ -1062,7 +1062,10 @@ bool UStateNode::Verify(FNodeVerificationContext& Context) const
 {
 	bool bErrorFree = true;
 
-	if (auto SMLike = UtilsFunctions::GetOuterAs<IStateMachineLike>(this))
+	auto SLike = UtilsFunctions::GetOuterAs<IStateLike>(this);
+	auto SMLike = UtilsFunctions::GetOuterAs<IStateMachineLike>(this);
+
+	if (SLike && SMLike)
 	{
 		for (TFieldIterator<FStructProperty> FIT(this->GetClass(), EFieldIteratorFlags::IncludeSuper); FIT; ++FIT)
 		{
@@ -1073,13 +1076,14 @@ bool UStateNode::Verify(FNodeVerificationContext& Context) const
 				FEventSlot Value;
 				f->GetValue_InContainer(this, &Value);
 
-				auto Options = SMLike->GetEventOptions();
+				auto Options = SLike->GetEventOptions();
 
 				if (!(Value.EventName.IsNone() || Options.Contains(Value.EventName)))
 				{
-					FString Msg = FString::Printf(TEXT("Could not find Event for slot %s: %s"),
+					FString Msg = FString::Printf(TEXT("Could not find Event for slot %s: %s. EName = %s"),
 						*f->GetName(),
-						*this->GetName());
+						*this->GetName(),
+						*Value.EventName.ToString());
 					Context.Error(Msg, this);
 
 					bErrorFree = false;

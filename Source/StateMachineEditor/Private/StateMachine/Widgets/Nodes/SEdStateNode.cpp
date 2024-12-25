@@ -8,6 +8,15 @@
 
 constexpr const char* INVALID_STATE_NAME = "?Unknown State Name?";
 
+SEdStateNode::~SEdStateNode()
+{
+	if (auto Node = Cast<UEdBaseStateNode>(this->GraphNode))
+	{
+		Node->Events.OnNameChanged.RemoveAll(this);
+		Node->Events.OnNodeError.RemoveAll(this);
+	}
+}
+
 void SEdStateNode::Construct(const FArguments& InArgs, UEdBaseStateNode* InNode) {
 	this->GraphNode = InNode;
 	this->UpdateGraphNode();

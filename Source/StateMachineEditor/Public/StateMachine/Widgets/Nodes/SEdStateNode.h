@@ -19,6 +19,8 @@ public:
 	SLATE_BEGIN_ARGS(SEdStateNode) {}
 	SLATE_END_ARGS()
 
+	virtual ~SEdStateNode();
+
 	void Construct(const FArguments& InArgs, UEdBaseStateNode* InNode);
 	
 	virtual void AddPin(const TSharedRef<SGraphPin>& PinToAdd) override;
