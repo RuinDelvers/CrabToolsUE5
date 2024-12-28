@@ -15,7 +15,12 @@ class ITargeterInterface
 
 public:
 
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Targeting|LineTrace")
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Targeting|Trace")
 	FVector GetEndPoint() const;
 	virtual FVector GetEndPoint_Implementation() const { return FVector::Zero(); }
+
+	/* Returns an actor that is currently being targeted by the targeter or traced. */
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Targeting|Trace")
+	AActor* GetTracedActor() const;
+	virtual AActor* GetTracedActor_Implementation() const { return nullptr; }
 };

@@ -78,8 +78,7 @@ void AArcTraceTargetingActor::Tick(float DeltaTime)
 		}
 		else
 		{
-			this->TracedActor = nullptr;
-			this->TracedLocation = Base;
+			this->UpdateTraces(nullptr, Base);
 		}
 	}
 }

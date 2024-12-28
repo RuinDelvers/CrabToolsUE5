@@ -11,7 +11,5 @@ class ALineTraceTargetingActor : public ABaseTraceTargetingActor
 
 public:
 
-	ALineTraceTargetingActor();
-
 	virtual void Tick(float DeltaTime) override;
 };

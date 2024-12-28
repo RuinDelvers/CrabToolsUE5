@@ -3,7 +3,7 @@
 
 ABaseTraceTargetingActor::ABaseTraceTargetingActor() : Range(std::numeric_limits<float>::infinity())
 {
-
+	this->PrimaryActorTick.bCanEverTick = true;
 }
 
 void ABaseTraceTargetingActor::InvalidateTargetData()

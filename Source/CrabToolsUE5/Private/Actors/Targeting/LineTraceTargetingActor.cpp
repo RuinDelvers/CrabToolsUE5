@@ -1,11 +1,6 @@
 #include "Actors/Targeting/LineTraceTargetingActor.h"
 #include "Actors/Targeting/ITargeter.h"
 
-ALineTraceTargetingActor::ALineTraceTargetingActor()
-{
-	this->PrimaryActorTick.bCanEverTick = true;
-}
-
 void ALineTraceTargetingActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -44,8 +39,6 @@ void ALineTraceTargetingActor::Tick(float DeltaTime)
 	}
 	else
 	{
-		this->TracedActor = nullptr;
-		this->TracedLocation = Base;
-		this->OnInvalidTarget();
+		this->UpdateTraces(nullptr, Base);
 	}
 }
