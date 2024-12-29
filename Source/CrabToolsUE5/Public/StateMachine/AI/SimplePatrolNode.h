@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "StateMachine/AI/BaseNode.h"
-#include "Actors/PatrolPath.h"
+#include "Actors/Paths/PatrolPath.h"
 #include "Navigation/PathFollowingComponent.h"
 #include "StateMachine/DataStructures.h"
 #include "SimplePatrolNode.generated.h"

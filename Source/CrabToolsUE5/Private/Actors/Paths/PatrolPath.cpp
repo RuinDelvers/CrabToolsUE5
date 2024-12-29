@@ -1,4 +1,4 @@
-#include "Actors/PatrolPath.h"
+#include "Actors/Paths/PatrolPath.h"
 #include "Components/BillboardComponent.h"
 #include "Components/ArrowComponent.h"
 #include "Components/SplineComponent.h"
@@ -51,12 +51,12 @@ FVector APatrolPath::FindClosestPoint(AActor* Patroller)
 	FVector Goal = this->GetActorLocation();
 	float Dist = this->LostDistance * this->LostDistance;
 
-	for (auto& p : this->PatrolPoints)
+	for (auto& p : this->Data)
 	{
-		float DSquared = FVector::DistSquared(p, Patroller->GetActorLocation());
+		float DSquared = FVector::DistSquared(p.Point, Patroller->GetActorLocation());
 		if (DSquared < Dist)
 		{
-			Goal = p;
+			Goal = p.Point;
 			Dist = DSquared;
 		}
 	}
@@ -68,7 +68,7 @@ int APatrolPath::FindClosestIndex(AActor* Patroller) {
 	{
 		return -1;
 	} 
-	else if (this->PatrolPoints.Num() == 0)
+	else if (this->Num() == 0)
 	{
 		return -1;
 	}
@@ -76,7 +76,7 @@ int APatrolPath::FindClosestIndex(AActor* Patroller) {
 	int Goal = 0;
 	float Dist = this->LostDistance * this->LostDistance;
 
-	for (int i = 0; i < this->PatrolPoints.Num(); ++i)
+	for (int i = 0; i < this->Data.Num(); ++i)
 	{
 		auto p = this->Get(i);
 		float DSquared = FVector::DistSquared(p, Patroller->GetActorLocation());
@@ -93,9 +93,9 @@ int APatrolPath::FindClosestIndex(AActor* Patroller) {
 FVector APatrolPath::Get(int i)
 {
 	// To enable negative indexing.
-	i = i % this->PatrolPoints.Num();
+	i = i % this->Data.Num();
 
-	return this->PatrolPoints[i] + this->GetActorLocation();
+	return this->Data[i].Point + this->GetActorLocation();
 }
 
 void APatrolPath::ToggleDisplay()
@@ -115,7 +115,8 @@ void APatrolPath::ToggleDisplay()
 void APatrolPath::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
 	Super::PostEditChangeProperty(PropertyChangedEvent);
-	if (PropertyChangedEvent.GetPropertyName() == GET_MEMBER_NAME_CHECKED(APatrolPath, PatrolPoints))
+
+	if (PropertyChangedEvent.GetPropertyName() == GET_MEMBER_NAME_CHECKED(FPatrolPathData, Point))
 	{
 		this->InitArrows();
 	}
@@ -127,9 +128,12 @@ void APatrolPath::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedE
 
 void APatrolPath::InitArrows()
 {
-	this->PathSpline->SetSplineLocalPoints(this->PatrolPoints);
+	TArray<FVector> Points;
+	for (const auto& D : this->Data) { Points.Add(D.Point); }
 
-	for (int i = 0; i < this->PatrolPoints.Num(); ++i)
+	this->PathSpline->SetSplineLocalPoints(Points);
+
+	for (int i = 0; i < this->Num(); ++i)
 	{
 		this->PathSpline->SetTangentAtSplinePoint(i, FVector::Zero(), ESplineCoordinateSpace::World);
 	}
@@ -156,7 +160,7 @@ void APatrolPath::PostSaveRoot(FObjectPostSaveRootContext SaveContext)
 
 #endif
 
-FVector FPatrolPathState::GetTarget(int Offset) const
+int UCyclicPathSequence::Target_Implementation() const
 {
 	if (Path)
 	{
@@ -164,27 +168,23 @@ FVector FPatrolPathState::GetTarget(int Offset) const
 		
 		if (PointCount > 0)
 		{
-			// Need to reverse the offset if the direction has been reversed.
-			Offset = this->bDirection ? Offset : -Offset;
-
-			auto Next = Path->Get(this->CurrentIndex + Offset);
-
-			return Next;
+			return this->CurrentIndex;
 		}
 		else
 		{
-			return Path->GetActorLocation();
+			return 0;
 		}
 	}
 	else
 	{
-		return FVector::Zero();
+		return 0;
 	}
 }
 
-void FPatrolPathState::Step()
+int UCyclicPathSequence::Step_Implementation()
 {
 	int Increment = this->bDirection ? 1 : -1;
+
 	if (Path->IsCycle())
 	{
 		if (this->bDirection)
@@ -210,9 +210,11 @@ void FPatrolPathState::Step()
 	{
 		this->CurrentIndex = (this->CurrentIndex + Increment) % Path->Num();
 	}
+
+	return this->CurrentIndex;
 }
 
-void FPatrolPathState::SetDirection(int Index)
+void UCyclicPathSequence::SetDirection(int Index)
 {
 	if (IsValid(this->Path))
 	{
@@ -233,18 +235,107 @@ void FPatrolPathState::SetDirection(int Index)
 	}
 }
 
+void UCyclicPathSequence::Reset()
+{
+	this->CurrentIndex = StartIndex;
+}
+
+FVector UPatrolPathLibrary::GetTarget(const FPatrolPathState& State)
+{
+	return State.Point();
+}
+
+int FPatrolPathState::Target() const
+{
+	if (this->Sequence)
+	{
+		return this->Sequence->Target();
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+FVector FPatrolPathState::Point() const
+{
+	if (this->Sequence)
+	{
+		return this->Sequence->CurrentPoint();
+	}
+	else
+	{
+		return FVector::Zero();
+	}
+}
+
+int FPatrolPathState::Points() const
+{
+	if (this->Sequence && this->Sequence->GetPath())
+	{
+		return this->Sequence->GetPath()->Num();
+	}
+	else
+	{
+		return 0;
+	}
+}
+
 void FPatrolPathState::Reset()
 {
-	this->CurrentIndex = PathIndex;
+	if (this->Sequence)
+	{
+		this->Sequence->Reset();
+	}
 }
 
-FVector UPatrolPathLibrary::GetTarget(FPatrolPathState& State, int Offset)
+int FPatrolPathState::Step()
 {
-	return State.GetTarget(Offset);
+	if (this->Sequence)
+	{
+		return this->Sequence->Step();
+	}
+	else
+	{
+		return 0;
+	}
 }
-
 
 FPatrolPathState::operator bool() const
 {
-	return this->Path && this->Path->Num() >= 2;
+	return this->Sequence && this->Sequence->GetPath() && this->Sequence->GetPath()->Num() >= 2;
+}
+
+int UPathSequence::Target_Implementation() const
+{
+	return 0;
+}
+
+int UPathSequence::Step_Implementation()
+{
+	return 0;
+}
+
+FVector UPathSequence::Point(int Index) const
+{
+	if (this->Path)
+	{
+		return this->Path->Get(Index);
+	}
+	else
+	{
+		return FVector::Zero();
+	}
+}
+
+FVector UPathSequence::CurrentPoint() const
+{
+	if (this->Path)
+	{
+		return this->Path->Get(this->Target());
+	}
+	else
+	{
+		return FVector::Zero();
+	}
 }

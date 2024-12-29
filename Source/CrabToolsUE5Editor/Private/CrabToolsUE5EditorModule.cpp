@@ -1,6 +1,6 @@
 #include "CrabToolsUE5EditorModule.h"
 #include "Selection.h"
-#include "Actors/PatrolPath.h"
+#include "Actors/Paths/PatrolPath.h"
 
 #define LOCTEXT_NAMESPACE "FCrabToolsUE5EditorModule"
 

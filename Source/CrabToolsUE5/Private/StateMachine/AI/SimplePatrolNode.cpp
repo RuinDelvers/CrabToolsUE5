@@ -81,14 +81,14 @@ void UAISimplePatrolNode::MoveToNext()
 {
 	auto State = this->GetState();
 
-	if (!IsValid(State->GetPath())) { return; }
+	if (!State) { return; }
 
 	auto Ctrl = this->GetAIController();
-	FVector Goal = State->GetTarget();
+	FVector Goal = State->Point();
 
 	this->RecurseGuard += 1;
 
-	if (this->RecurseGuard > State->GetPath()->Num())
+	if (this->RecurseGuard > State->Points())
 	{
 		// If we've recursed too many times, then remove the call back.
 		this->GetAIController()->ReceiveMoveCompleted.RemoveAll(this);

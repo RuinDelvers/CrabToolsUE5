@@ -3,7 +3,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Components/TimelineComponent.h"
-#include "Actors/PatrolPath.h"
+#include "Actors/Paths/PatrolPath.h"
 #include "ElevatorSystem.generated.h"
 
 namespace ElevatorSystem::Constants

@@ -12,7 +12,7 @@ class CRABTOOLSUE5_API UAIWaitNode : public UAIBaseNode
 
 	UPROPERTY(EditAnywhere, Category = "StateMachine|AI",
 		meta = (AllowPrivateAccess = true))
-	float WaitTime;
+	float WaitTime = 1;
 
 	FTimerHandle Callback;
 

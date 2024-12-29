@@ -9,6 +9,7 @@ AElevatorSystem::AElevatorSystem()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
 	this->MovementTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("ElevatorMotionTimeline"));
+	this->State.Sequence = CreateDefaultSubobject<UCyclicPathSequence>(TEXT("ElevatorSequence"));
 }
 
 // Called when the game starts or when spawned
@@ -51,12 +52,12 @@ void AElevatorSystem::FinishedMovement()
 {
 	if (this->State)
 	{
-		this->SetActorLocation(this->State.GetTarget());
+		this->SetActorLocation(this->State.Point());
 	}
 
 	if (this->TargetIndex >= 0)
 	{
-		if (this->State.GetIndex() == this->TargetIndex)
+		if (this->State.Target() == this->TargetIndex)
 		{
 			this->OnArrivedEvent.Broadcast(this->TargetIndex);
 			this->TargetIndex = ElevatorSystem::Constants::NULL_TARGET;			
@@ -72,7 +73,7 @@ FVector AElevatorSystem::GetMovementStart() const
 {
 	if (this->State)
 	{
-		return this->State.GetTarget(-1);
+		return this->State.Point();
 	}
 	else {
 		return this->GetActorLocation();
@@ -84,7 +85,7 @@ FVector AElevatorSystem::GetMovementDirection() const
 	if (this->State)
 	{
 		auto P1 = this->GetMovementStart();
-		auto P2 = this->State.GetTarget();
+		auto P2 = this->State.Point();
 		
 		return P2 - P1;
 	}
@@ -99,7 +100,10 @@ void AElevatorSystem::PostFinishCallback_Implementation() {}
 
 void AElevatorSystem::GoToIndex(int i)
 {
-	this->State.SetDirection(i);
+	if (auto Seq = Cast<UCyclicPathSequence>(this->State.Sequence))
+	{
+		Seq->SetDirection(i);
+	}
 	this->TargetIndex = i;
 	this->Step();
 }
