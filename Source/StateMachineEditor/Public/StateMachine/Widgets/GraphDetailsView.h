@@ -11,6 +11,7 @@
 #include "Widgets/Views/STreeView.h"
 #include "Widgets/Layout/SWidgetSwitcher.h"
 #include "Widgets/Text/SInlineEditableTextBlock.h"
+#include "StateMachine/EdGraph/EdEventObject.h"
 
 #include "StateMachine/Editor.h"
 

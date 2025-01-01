@@ -1,5 +1,6 @@
 #pragma once
 
+class UStateMachine;
 class UStateName;
 class UStateNode;
 

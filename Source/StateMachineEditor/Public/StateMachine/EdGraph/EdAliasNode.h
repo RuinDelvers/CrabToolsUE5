@@ -5,7 +5,7 @@
 #include "SGraphNode.h"
 #include "EdGraph/EdGraphNode.h"
 #include "SGraphPin.h"
-#include "StateMachine/EdGraph/EdBaseNode.h"
+#include "StateMachine/EdGraph/EdStateNode.h"
 #include "EdAliasNode.generated.h"
 
 

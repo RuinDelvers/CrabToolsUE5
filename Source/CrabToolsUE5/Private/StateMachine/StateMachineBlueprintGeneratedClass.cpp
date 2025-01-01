@@ -53,7 +53,6 @@ UState* UStateMachineBlueprintGeneratedClass::GetStateData(
 
 	if (MachineData)
 	{
-		//auto DefaultState = MachineData->Archetype->GetStateData(StateName);		
 		auto DefaultStateData = MachineData->StateData.Find(StateName);
 
 		if (DefaultStateData)
