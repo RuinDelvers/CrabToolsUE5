@@ -5,8 +5,10 @@
 #include "EdGraphSchema_K2.h"
 #include "StateMachineSchema.generated.h"
 
+class UEdAliasNode;
 class UEdStateNode;
 class UEdExtension;
+class UEdTransition;
 
 USTRUCT()
 struct STATEMACHINEEDITOR_API FSMSchemaAction_NewExtensionNode

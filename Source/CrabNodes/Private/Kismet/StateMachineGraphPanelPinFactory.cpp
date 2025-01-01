@@ -5,6 +5,7 @@
 #include "K2Node_CallFunction.h"
 #include "Widgets/SGraphPinSMEventName.h"
 #include "SGraphPinNameList.h"
+#include "StateMachine/StateMachineInterface.h"
 
 TSharedPtr<class SGraphPin> FStateMachineGraphPanelPinFactory::CreatePin(class UEdGraphPin* InPin) const
 {

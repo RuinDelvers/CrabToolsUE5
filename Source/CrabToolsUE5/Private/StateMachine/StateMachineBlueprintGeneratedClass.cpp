@@ -1,5 +1,6 @@
 #include "StateMachine/StateMachineBlueprintGeneratedClass.h"
 #include "StateMachine/Utils.h"
+#include "StateMachine/StateMachineInterface.h"
 
 UStateMachine* FStateMachineArchetypeData::CreateStateMachine(UStateMachine* Parent, FName NewParentKey) const
 {
@@ -179,6 +180,17 @@ FName UStateMachineBlueprintGeneratedClass::GetStartState(FName MachineName) con
 bool UStateMachineBlueprintGeneratedClass::DoesImplementInterface(UStateMachineInterface* Interface) const
 {
 	return this->Interfaces.Contains(Interface);
+	/*
+	for (const auto& IFace : this->Interfaces)
+	{
+		IFace.LoadSynchronous();
+		if (IFace.Get() == Interface)
+		{
+			return true;
+		}
+	}
+	return false;
+	*/
 }
 
 void UStateMachineBlueprintGeneratedClass::AddStateMachine(FStateMachineArchetypeData Data, FName MachineName)
