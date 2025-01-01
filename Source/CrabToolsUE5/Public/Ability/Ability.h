@@ -4,6 +4,7 @@
 #include "Delegates/DelegateSignatureImpl.inl"
 #include "Actors/Targeting/BaseTargetingActor.h"
 #include "Logging/LogMacros.h"
+#include "Utils/WorldAwareObject.h"
 #include "Ability.generated.h"
 
 CRABTOOLSUE5_API DECLARE_LOG_CATEGORY_EXTERN(LogAbility, Log, All);
@@ -31,14 +32,10 @@ public:
  * a discrete action that happens on request, and an finish.
  */
 UCLASS(Blueprintable, EditInlineNew, DefaultToInstanced)
-class CRABTOOLSUE5_API UAbility : public UObject, public IHasAbilityInterface
+class CRABTOOLSUE5_API UAbility : public UWorldAwareObject, public IHasAbilityInterface
 {
 	GENERATED_BODY()
 	
-	UPROPERTY(BlueprintReadOnly, Transient, DuplicateTransient,
-		meta=(ExposeOnSpawn=true, AllowPrivateAccess))
-	TObjectPtr<AActor> Owner;
-
 	bool bActive = false;
 	UPROPERTY(BlueprintReadOnly, Category="Ability", meta=(AllowPrivateAccess))
 	bool bUseable = true;
@@ -117,8 +114,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Ability")
 	AActor* GetOwner() const;
-
-	virtual UWorld* GetWorld() const override;
 
 	/* Returns the outer of this ability as an ability. */
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category="Ability")
