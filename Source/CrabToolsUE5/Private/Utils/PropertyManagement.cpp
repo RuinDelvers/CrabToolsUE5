@@ -1,6 +1,7 @@
 #include "Utils/PropertyManagement.h"
 #include "UObject/PropertyOptional.h"
 
+#if WITH_EDITOR
 bool UPropertyManagementLibrary::UpdateObjectInheritanceProperties(
 		const UObject* Parent,
 		UObject*& CopiedArchetype,
@@ -79,6 +80,7 @@ bool UPropertyManagementLibrary::UpdateObjectInheritanceProperties(
 
 	return bChangedProperty;
 }
+#endif // WITH_EDITOR
 
 void UPropertyManagementLibrary::CopyPropertiesSmart(
 	FProperty* Property,

@@ -108,7 +108,7 @@ public:
 
 
 	void AppendEventEmitters(UStateMachine* SM);
-	bool DoesImplementInterface(UStateMachineInterface* Interface) const;
+	
 	UState* GetStateData(UStateMachine* Outer, FName Machine, FName StateName);
 	void AppendPublicStateNames(TSet<FName>& Names) const;
 	TArray<FString> GetStateOptions(EStateMachineAccessibility Access = EStateMachineAccessibility::PUBLIC) const;
@@ -139,4 +139,8 @@ public:
 	void CleanAndSanitize();
 	void AddStateMachine(FStateMachineArchetypeData Data, FName MachineName = NAME_None);
 	void VerifyClass(FNodeVerificationContext& Context);
+
+	#if WITH_EDITOR
+		bool DoesImplementInterface(UStateMachineInterface* Interface) const;
+	#endif
 };

@@ -34,8 +34,10 @@ public:
 
 private:
 
-	UFUNCTION()
-	TArray<FString> GetPropertyOptions() const;
+	#if WITH_EDITOR
+		UFUNCTION()
+		TArray<FString> GetPropertyOptions() const;
+	#endif // WITH_EDITOR	
 
 	AActor* GetActor() const;
 };

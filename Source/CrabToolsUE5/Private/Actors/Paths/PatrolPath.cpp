@@ -98,20 +98,20 @@ FVector APatrolPath::Get(int i)
 	return this->Data[i].Point + this->GetActorLocation();
 }
 
+#if WITH_EDITOR
 void APatrolPath::ToggleDisplay()
 {
 	if (this->IsSelected())
 	{
 		this->InitArrows();
 		this->PathSpline->SetVisibility(true);
-	} 
+	}
 	else
 	{
 		this->PathSpline->SetVisibility(false);
 	}
 }
 
-#if WITH_EDITOR
 void APatrolPath::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
 	Super::PostEditChangeProperty(PropertyChangedEvent);

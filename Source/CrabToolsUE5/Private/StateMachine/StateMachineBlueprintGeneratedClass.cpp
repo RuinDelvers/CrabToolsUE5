@@ -177,21 +177,12 @@ FName UStateMachineBlueprintGeneratedClass::GetStartState(FName MachineName) con
 	}
 }
 
+#if WITH_EDITOR
 bool UStateMachineBlueprintGeneratedClass::DoesImplementInterface(UStateMachineInterface* Interface) const
-{
-	return this->Interfaces.Contains(Interface);
-	/*
-	for (const auto& IFace : this->Interfaces)
-	{
-		IFace.LoadSynchronous();
-		if (IFace.Get() == Interface)
-		{
-			return true;
-		}
-	}
-	return false;
-	*/
+{	
+	return this->Interfaces.Contains(Interface);	
 }
+#endif // WITH_EDITOR	
 
 void UStateMachineBlueprintGeneratedClass::AddStateMachine(FStateMachineArchetypeData Data, FName MachineName)
 {

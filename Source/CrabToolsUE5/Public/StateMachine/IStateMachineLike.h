@@ -78,7 +78,9 @@ public:
     virtual TArray<FString> GetSubMachineStateOptions(FName SMName) const { return {}; };
 
     // Property Getters
-    virtual TArray<FString> GetPropertiesOptions(FSMPropertySearch& SearchParam) const { return {}; }
+    #if WITH_EDITOR
+        virtual TArray<FString> GetPropertiesOptions(FSMPropertySearch& SearchParam) const { return {}; }
+    #endif //WITH_EDITOR
     virtual FSMPropertyReference GetStateMachineProperty(FString& Address) const { return FSMPropertyReference(); }
 };
 
@@ -123,7 +125,9 @@ public:
     static FSMPropertySearch Property(FFieldClass* FieldClass);
     static FSMPropertySearch InlineDelegate(UFunction* Signature);
 
-    bool Matches(FProperty* F) const;
+    #if WITH_EDITOR
+        bool Matches(FProperty* F) const;
+    #endif
 
     /* Used to get a property from a state machine at a given address, but with many checks. */
     template <class T> FSMPropertyReference GetProperty(IStateMachineLike* Machine, FString& Address)

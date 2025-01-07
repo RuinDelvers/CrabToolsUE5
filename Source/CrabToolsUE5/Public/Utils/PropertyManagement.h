@@ -39,11 +39,13 @@ public:
 	 * Note, this assumes that if Parent->GetClass() == CopiedArchetype->GetClass() that the are equal
 	 * in values. If any values have been changed, then behaviour for this isn't defined.
 	 */
+	#if WITH_EDITOR
 	UFUNCTION(BlueprintCallable, Category="Object")	
 	static bool UpdateObjectInheritanceProperties(
 		const UObject* Parent,
 		UObject*& CopiedArchetype,
 		UObject*& CurrentObject);
+	#endif //WITH_EIDTOR
 
 	/* Templated version. */
 	template <class T> static bool UpdateObjectInheritanceProperties(

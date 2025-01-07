@@ -1,5 +1,6 @@
 #include "StateMachine/IStateMachineLike.h"
 
+#if WITH_EDITOR
 bool FSMPropertySearch::Matches(FProperty* F) const
 {
 	if (F->HasMetaData("IgnorePropertySearch")) { return false; }
@@ -39,6 +40,7 @@ bool FSMPropertySearch::Matches(FProperty* F) const
 
 	return false;
 }
+#endif //WITH_EDITOR
 
 FSMPropertySearch FSMPropertySearch::ObjectProperty(UClass* Class)
 {

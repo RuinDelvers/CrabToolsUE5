@@ -36,6 +36,7 @@ AActor* UActorVisibilityNode::GetActor() const
 	return this->PropertyRef.GetValue<AActor>();
 }
 
+#if WITH_EDITOR
 TArray<FString> UActorVisibilityNode::GetPropertyOptions() const
 {
 	TArray<FString> Props;
@@ -51,3 +52,4 @@ TArray<FString> UActorVisibilityNode::GetPropertyOptions() const
 
 	return Props;
 }
+#endif // WITH_EDITOR

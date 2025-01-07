@@ -611,36 +611,7 @@ UState* UStateMachine::GetCurrentState()
 	return nullptr;
 }
 
-TArray<FString> UStateMachine::GetPropertiesOptions(FSMPropertySearch& SearchParam) const
-{
-	TArray<FString> Names;
 
-	for (TFieldIterator<FProperty> FIT(this->GetClass(), EFieldIteratorFlags::IncludeSuper); FIT; ++FIT)
-	{
-		FProperty* f = *FIT;
-
-		if (SearchParam.Matches(f))
-		{
-			Names.Add(f->GetName());
-		}
-	}
-
-	for (auto& SubMachine : this->SubMachines)
-	{
-		for (TFieldIterator<FProperty> FIT(SubMachine.Value->GetClass(), EFieldIteratorFlags::IncludeSuper); FIT; ++FIT)
-		{
-			FProperty* f = *FIT;
-
-			if (SearchParam.Matches(f))
-			{
-				FString Formatted = FString::Printf(TEXT("%s/%s"), *SubMachine.Key.ToString(), *f->GetName());
-				Names.Add(Formatted);
-			}
-		}
-	}
-
-	return Names;
-}
 
 IStateMachineLike* UStateMachine::GetSubMachine(FString& Address) const
 {
@@ -909,6 +880,40 @@ UWorld* UStateMachine::GetWorld() const
 	//Else return null - the latent action will fail to initialize
 	return nullptr;
 }
+
+#if WITH_EDITOR
+TArray<FString> UStateMachine::GetPropertiesOptions(FSMPropertySearch& SearchParam) const
+{
+	TArray<FString> Names;
+
+	
+		for (TFieldIterator<FProperty> FIT(this->GetClass(), EFieldIteratorFlags::IncludeSuper); FIT; ++FIT)
+		{
+			FProperty* f = *FIT;
+
+			if (SearchParam.Matches(f))
+			{
+				Names.Add(f->GetName());
+			}
+		}
+
+		for (auto& SubMachine : this->SubMachines)
+		{
+			for (TFieldIterator<FProperty> FIT(SubMachine.Value->GetClass(), EFieldIteratorFlags::IncludeSuper); FIT; ++FIT)
+			{
+				FProperty* f = *FIT;
+
+				if (SearchParam.Matches(f))
+				{
+					FString Formatted = FString::Printf(TEXT("%s/%s"), *SubMachine.Key.ToString(), *f->GetName());
+					Names.Add(Formatted);
+				}
+			}
+		}
+
+	return Names;
+}
+#endif //WITH_EDITOR
 
 #pragma endregion
 

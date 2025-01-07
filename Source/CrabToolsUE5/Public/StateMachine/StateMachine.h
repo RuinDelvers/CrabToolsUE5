@@ -190,10 +190,10 @@ public:
 	virtual bool Check() const { return false; }
 
 	UFUNCTION(BlueprintCallable, Category = "StateMachine|Transition")
-	FORCEINLINE AActor* GetOwner() const;
+	AActor* GetOwner() const;
 
 	UFUNCTION(BlueprintCallable, Category="StateMachine|Transition")
-	FORCEINLINE UStateMachine* GetMachine() const { return this->OwnerMachine; }
+	UStateMachine* GetMachine() const { return this->OwnerMachine; }
 
 protected:
 
@@ -216,7 +216,7 @@ public:
 	virtual bool Check(UObject* Data) const { return false; }
 
 	UFUNCTION(BlueprintCallable, Category = "StateMachine|Transition")
-	FORCEINLINE AActor* GetOwner() const;
+	AActor* GetOwner() const;
 
 	UFUNCTION(BlueprintCallable, Category = "StateMachine|Transition")
 	FORCEINLINE UStateMachine* GetMachine() const { return this->OwnerMachine; }
@@ -620,7 +620,9 @@ public:
 
 	// IStateMachineLike interface
 	virtual TArray<FString> GetStateOptions(const UObject* Asker) const override;
-	virtual TArray<FString> GetPropertiesOptions(FSMPropertySearch& SearchParam) const override;
+	#if WITH_EDITOR
+		virtual TArray<FString> GetPropertiesOptions(FSMPropertySearch& SearchParam) const override;
+	#endif //WITH_EDITOR
 	virtual FSMPropertyReference GetStateMachineProperty(FString& Address) const override;
 	virtual IStateMachineLike* GetSubMachine(FString& Address) const override;
 
