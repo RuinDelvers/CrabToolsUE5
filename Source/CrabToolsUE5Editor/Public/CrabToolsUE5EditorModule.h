@@ -5,7 +5,8 @@ class FCrabToolsUE5EditorModule: public ICrabToolsUE5EditorModule, public FGCObj
 {
 private:
 
-	TSet<TObjectPtr<class APatrolPath>> SelectedPatrolPaths;
+	TSet<TObjectPtr<class APatrolPath>> OldSelectedPatrolPaths;
+	TSet<TObjectPtr<class ADynamicActorSpawner>> OldSelectedSpawners;
 
 	FDelegateHandle SelectionChangedHandle;
 	TSharedPtr<FExtensibilityManager> MenuExtensibilityManager;

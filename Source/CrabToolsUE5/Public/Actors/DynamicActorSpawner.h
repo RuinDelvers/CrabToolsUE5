@@ -1,19 +1,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Components/SkeletalMeshComponent.h"
-#include "Components/StaticMeshComponent.h"
+#include "GameFramework/Actor.h"
+#include "Components/ChildActorComponent.h"
 #include "DynamicActorSpawner.generated.h"
 
-UENUM(BlueprintType, Category = "Elements")
-enum ESpawnerPreviewType : uint8
-{
-	STATIC_MESH         UMETA(DisplayName = "StaticMesh"),
-	SKELETAL_MESH       UMETA(DisplayName = "SkeletalMesh"),
-};
-
 UCLASS(Abstract, Blueprintable)
-class ADynamicActorSpawner : public AActor
+class CRABTOOLSUE5_API ADynamicActorSpawner : public AActor
 {
 	GENERATED_BODY()
 
@@ -21,25 +14,29 @@ private:
 	
 	#if WITH_EDITORONLY_DATA
 		UPROPERTY()
-		TObjectPtr<UStaticMeshComponent> StaticMeshPreview;
+		TObjectPtr<AActor> PreviewActor;
 
 		UPROPERTY()
-		TObjectPtr<USkeletalMeshComponent> SkeletalMeshPreview;
+		TObjectPtr<class UBillboardComponent> EditorSprite;
 	#endif // WITH_EDITORONLY_DATA
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="ActorSpawning", meta=(AllowPrivateAccess))
-	TSoftClassPtr<AActor> ActorClass;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ActorSpawning", meta = (AllowPrivateAccess))
-	TEnumAsByte<ESpawnerPreviewType> PreviewType;
+	TSoftClassPtr<AActor> ActorClass;	
 
 public:	
 
 	ADynamicActorSpawner();
 
-	void SpawnActor() const;
+	UFUNCTION(BlueprintCallable, Category="ActorSpawning")
+	void SpawnActor();
+
+	#if WITH_EDITOR
+		void ToggleDisplay();
+	#endif
 
 protected:
+
+	virtual void BeginPlay() override;
 
 	#if WITH_EDITOR
 		virtual void PostEditChangeProperty(struct FPropertyChangedEvent& Event) override;

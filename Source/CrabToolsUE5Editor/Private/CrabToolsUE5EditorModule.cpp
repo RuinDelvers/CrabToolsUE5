@@ -1,13 +1,14 @@
 #include "CrabToolsUE5EditorModule.h"
 #include "Selection.h"
 #include "Actors/Paths/PatrolPath.h"
+#include "Actors/DynamicActorSpawner.h"
 
 #define LOCTEXT_NAMESPACE "FCrabToolsUE5EditorModule"
 
 const FName CrabToolsUE5EditorAppIdentifier = FName(TEXT("CrabToolsUE5EditorApp"));
 
-
-FCrabToolsUE5EditorModule::FCrabToolsUE5EditorModule() {
+FCrabToolsUE5EditorModule::FCrabToolsUE5EditorModule()
+{
 
 }
 
@@ -34,6 +35,10 @@ void FCrabToolsUE5EditorModule::OnSelectionChanged(UObject* Obj)
 	{
 		PatrolPath->ToggleDisplay();
 	}
+	else if (auto ActorSpawner = Cast<ADynamicActorSpawner>(Obj))
+	{
+		ActorSpawner->ToggleDisplay();
+	}
 
 	if (auto Selection = Cast<USelection>(Obj))
 	{
@@ -41,6 +46,8 @@ void FCrabToolsUE5EditorModule::OnSelectionChanged(UObject* Obj)
 		Selection->GetSelectedObjects(Selected);
 
 		TSet<APatrolPath*> SelectedPaths;
+		TSet<ADynamicActorSpawner*> SelectedSpawners;
+
 		for (auto& SelectedObj : Selected)
 		{
 			if (auto PatrolPath = Cast<APatrolPath>(SelectedObj))
@@ -48,9 +55,14 @@ void FCrabToolsUE5EditorModule::OnSelectionChanged(UObject* Obj)
 				SelectedPaths.Add(PatrolPath);
 				PatrolPath->ToggleDisplay();
 			}
+			else if (auto ActorSpawner = Cast<ADynamicActorSpawner>(SelectedObj))
+			{
+				SelectedSpawners.Add(ActorSpawner);
+				ActorSpawner->ToggleDisplay();
+			}
 		}	
 
-		for (auto& OldPath : this->SelectedPatrolPaths)
+		for (auto& OldPath : this->OldSelectedPatrolPaths)
 		{
 			if (IsValid(OldPath.Get()))
 			{
@@ -58,7 +70,16 @@ void FCrabToolsUE5EditorModule::OnSelectionChanged(UObject* Obj)
 			}
 		}
 
-		this->SelectedPatrolPaths = SelectedPaths;
+		for (auto& OldSpawner : this->OldSelectedSpawners)
+		{
+			if (IsValid(OldSpawner))
+			{
+				OldSpawner->ToggleDisplay();
+			}
+		}
+
+		this->OldSelectedPatrolPaths = SelectedPaths;
+		this->OldSelectedSpawners = SelectedSpawners;
 	}
 }
 

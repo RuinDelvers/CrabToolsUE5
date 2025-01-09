@@ -1,57 +1,93 @@
 #include "Actors/DynamicActorSpawner.h"
+#include "UObject/ObjectSaveContext.h"
+#include "Components/BillboardComponent.h"
 
 // Sets default values
 ADynamicActorSpawner::ADynamicActorSpawner()
 {
+	this->SetRootComponent(CreateDefaultSubobject<USceneComponent>(TEXT("SceneRoot")));
+
 	#if WITH_EDITORONLY_DATA
-		this->StaticMeshPreview = CreateEditorOnlyDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMeshPreview"));
-		this->SkeletalMeshPreview = CreateEditorOnlyDefaultSubobject<USkeletalMeshComponent>(TEXT("SkeletalMeshPreview"));
+		this->EditorSprite = CreateEditorOnlyDefaultSubobject<UBillboardComponent>(TEXT("EditorSprite"));
+
+		ConstructorHelpers::FObjectFinderOptional<UTexture2D> Icon(
+			TEXT("/CrabToolsUE5/Icons/ActorSpawnerIcon.ActorSpawnerIcon"));
+
+		this->EditorSprite->Sprite = Icon.Get();
+		this->EditorSprite->bHiddenInGame = true;
+		this->EditorSprite->SetupAttachment(this->RootComponent);
+		this->EditorSprite->SetRelativeScale3D_Direct(FVector(0.4f, 0.4f, 0.4f));
+		this->EditorSprite->SetRelativeLocation_Direct(50 * FVector::UpVector);
+		this->EditorSprite->SetSimulatePhysics(false);
+
 	#endif // WITH_EDITORONLY_DATA
 }
 
-void ADynamicActorSpawner::SpawnActor() const
+void ADynamicActorSpawner::BeginPlay()
+{
+	#if WITH_EDITORONLY_DATA
+		
+	#endif
+}
+
+void ADynamicActorSpawner::SpawnActor()
 {
 	this->ActorClass.LoadSynchronous();
 
-	FVector Position = this->GetActorLocation();
-	this->GetWorld()->SpawnActor(this->ActorClass.Get(), &Position);
+	FTransform Transform = this->GetActorTransform();
+
+	this->GetWorld()->SpawnActor(this->ActorClass.Get(), &Transform);
 }
 
 #if WITH_EDITOR
 
 void ADynamicActorSpawner::ClearPreviews()
 {
-	this->SkeletalMeshPreview->SetSkeletalMesh(nullptr);
-	this->StaticMeshPreview->SetStaticMesh(nullptr);
+	if (this->PreviewActor)
+	{
+		this->PreviewActor->Destroy();
+	}
+}
+
+void ADynamicActorSpawner::ToggleDisplay()
+{
+	if (this->PreviewActor)
+	{
+		this->PreviewActor->Destroy();
+		this->PreviewActor = nullptr;
+
+		this->EditorSprite->SetVisibility(true);
+	}
+	else
+	{
+		this->ActorClass.LoadSynchronous();
+		if (this->ActorClass)
+		{
+			FTransform Transform = this->GetActorTransform();
+			FActorSpawnParameters Params;
+
+			Params.ObjectFlags = RF_Transient;
+
+			this->PreviewActor = this->GetWorld()->SpawnActor(this->ActorClass.Get(), &Transform, Params);
+
+			this->PreviewActor->bIsEditorOnlyActor = true;
+
+			this->EditorSprite->SetVisibility(false);
+		}
+	}
 }
 
 void ADynamicActorSpawner::PostEditChangeProperty(struct FPropertyChangedEvent& Event)
 {
-	Super::PostEditChangeProperty(Event);
+	Super::PostEditChangeProperty(Event);	
 
-	bool bUpdateCheck1 = Event.GetPropertyName() == GET_MEMBER_NAME_CHECKED(ADynamicActorSpawner, ActorClass);
-	bool bUpdateCheck2 = Event.GetPropertyName() == GET_MEMBER_NAME_CHECKED(ADynamicActorSpawner, PreviewType);
-
-	if (bUpdateCheck1 || bUpdateCheck2)
+	if (this->ActorClass)
 	{
-		this->ClearPreviews();
 		this->ActorClass.LoadSynchronous();
-
-		switch (this->PreviewType)
-		{
-			case ESpawnerPreviewType::STATIC_MESH: 
-				if (auto Comp = this->GetActorObject()->GetComponentByClass<UStaticMeshComponent>())
-				{
-					this->StaticMeshPreview->SetStaticMesh(Comp->GetStaticMesh());
-				}
-				break;
-			case ESpawnerPreviewType::SKELETAL_MESH:
-				if (auto Comp = this->GetActorObject()->GetComponentByClass<USkeletalMeshComponent>())
-				{
-					this->SkeletalMeshPreview->SetSkeletalMesh(Comp->GetSkeletalMeshAsset());
-				}
-				break;
-		}
+	}
+	else
+	{
+		
 	}
 }
 #endif // WITH_EDITOR
