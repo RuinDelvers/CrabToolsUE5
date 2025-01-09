@@ -68,6 +68,10 @@ public:
 	virtual bool IsValidTarget_Implementation(AActor* CheckedActor);
 
 	UFUNCTION(BlueprintNativeEvent, Category = "Targeting|Trace")
+	bool IsValidPoint(FVector Point);
+	virtual bool IsValidPoint_Implementation(FVector Point);
+
+	UFUNCTION(BlueprintNativeEvent, Category = "Targeting|Trace")
 	void OnTooFar();
 	virtual void OnTooFar_Implementation() {}
 

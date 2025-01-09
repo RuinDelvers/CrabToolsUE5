@@ -23,16 +23,22 @@ void ABaseTraceTargetingActor::PushTarget_Implementation()
 
 void ABaseTraceTargetingActor::UpdateTraces(AActor* CheckedActor, FVector Location)
 {
-	this->TracedActor = CheckedActor;
-	this->TracedLocation = Location;
+	if (!this->IsValidTarget(CheckedActor) || !this->IsValidPoint(Location))
+	{
+		this->TracedActor = nullptr;
+		this->TracedLocation = FVector::Zero();
 
-	if (!this->IsValidTarget(CheckedActor))
-	{
 		this->OnInvalidTarget();
+
+		if (this->IsTooFar())
+		{
+			this->OnTooFar();
+		}
 	}
-	if (this->IsTooFar())
+	else
 	{
-		this->OnTooFar();
+		this->TracedActor = CheckedActor;
+		this->TracedLocation = Location;		
 	}
 
 	this->OnUpdateTraces();
@@ -51,7 +57,12 @@ bool ABaseTraceTargetingActor::IsTooFar() const
 
 bool ABaseTraceTargetingActor::IsValidTarget_Implementation(AActor* CheckedActor)
 {
-	return IsValid(CheckedActor) && !this->IsTooFar();
+	return IsValid(CheckedActor);
+}
+
+bool ABaseTraceTargetingActor::IsValidPoint_Implementation(FVector Point)
+{
+	return !this->IsTooFar();
 }
 
 void ABaseTraceTargetingActor::IgnoreActors_Implementation(TArray<AActor*>& IgnoredActors)

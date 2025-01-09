@@ -37,6 +37,7 @@ void AArcTraceTargetingActor::Tick(float DeltaTime)
 		ESplineCoordinateSpace::World, true);
 
 	float Delta = this->PathSpline->Duration/this->SampleSize;
+	bool bFoundTarget = false;
 
 	for (int i = 0; i < this->SampleSize; ++i)
 	{
@@ -74,12 +75,15 @@ void AArcTraceTargetingActor::Tick(float DeltaTime)
 
 			this->UpdateTraces(CheckActor, Result.ImpactPoint);
 
+			bFoundTarget = true;
+
 			break;
 		}
-		else
-		{
-			this->UpdateTraces(nullptr, Base);
-		}
+	}
+
+	if (!bFoundTarget)
+	{
+		this->UpdateTraces(nullptr, Base);
 	}
 }
 

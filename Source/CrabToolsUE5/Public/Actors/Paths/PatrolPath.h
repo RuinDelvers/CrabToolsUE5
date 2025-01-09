@@ -71,6 +71,8 @@ struct FPatrolPathState
 {
 	GENERATED_USTRUCT_BODY()
 
+public:
+
 	UPROPERTY(EditAnywhere, Instanced, Category = "PatrolPath")
 	TObjectPtr<UPathSequence> Sequence;
 
