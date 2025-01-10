@@ -697,7 +697,6 @@ FSMPropertyReference UStateMachine::GetStateMachineProperty(FString& Address) co
 			this->GetClass()->FindPropertyByName(FName(Address)),
 			(UObject*) this
 		};
-		//return this->GetClass()->FindPropertyByName(FName(Address));
 	}
 }
 
@@ -882,7 +881,7 @@ UWorld* UStateMachine::GetWorld() const
 }
 
 #if WITH_EDITOR
-TArray<FString> UStateMachine::GetPropertiesOptions(FSMPropertySearch& SearchParam) const
+TArray<FString> UStateMachine::GetPropertiesOptions(const FSMPropertySearch& SearchParam) const
 {
 	TArray<FString> Names;
 
@@ -942,6 +941,11 @@ void UStateNode::Initialize_Inner_Implementation() {}
 UStateMachine* UStateNode::GetMachine() const
 {
 	return this->Owner;
+}
+
+UState* UStateNode::GetState() const
+{
+	return UtilsFunctions::GetOuterAs<UState>(this);
 }
 
 AActor* UStateNode::GetOwner() const {
@@ -1169,6 +1173,25 @@ void UStateNode::EmitEventSlotWithData(const FEventSlot& ESlot, UObject* Data)
 }
 
 #if WITH_EDITOR
+TArray<FString> UStateNode::GetPropertyOptions(const FSMPropertySearch& Params) const
+{
+	TArray<FString> Props;
+
+	if (auto Outer = UtilsFunctions::GetOuterAs<IStateMachineLike>(this))
+	{
+		Props.Append(Outer->GetPropertiesOptions(Params));
+	}
+
+	if (auto Outer = UtilsFunctions::GetOuterAs<IStateLike>(this))
+	{
+		Props.Append(Outer->GetPropertiesOptions(Params));
+	}
+
+	Props.Sort([&](const FString& A, const FString& B) { return A < B; });
+
+	return Props;
+}
+
 void UStateNode::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
 	Super::PostEditChangeProperty(PropertyChangedEvent);
@@ -1379,9 +1402,59 @@ AActor* UState::GetOwner() const
 	return this->OwnerMachine->GetOwner();
 }
 
+FSMPropertyReference UState::GetStateMachineProperty(FString& Address) const
+{
+	return FSMPropertyReference
+	{
+		this->GetClass()->FindPropertyByName(FName(Address)),
+		(UObject*)this
+	};
+}
+
+#if WITH_EDITOR
+TArray<FString> UState::GetPropertiesOptions(const FSMPropertySearch& SearchParam) const
+{
+	TArray<FString> Names;
+
+
+	for (TFieldIterator<FProperty> FIT(this->GetClass(), EFieldIteratorFlags::IncludeSuper); FIT; ++FIT)
+	{
+		FProperty* f = *FIT;
+
+		if (SearchParam.Matches(f))
+		{
+			Names.Add(FString::Printf(TEXT("::State::%s"), *f->GetName()));
+		}
+	}
+
+	return Names;
+}
+#endif
+
 #if STATEMACHINE_DEBUG_DATA
 bool FStateMachineDebugDataFrame::DidTransition()
 {
 	return !this->EndState.IsNone() && this->EndState != this->StartState;
 }
 #endif
+
+UStateNode* UStateMachineProperty::GetNode() const
+{
+	return UtilsFunctions::GetOuterAs<UStateNode>(this);
+}
+
+TArray<FString> UStateMachineProperty::DoPropertySearch() const
+{
+	return this->GetNode()->GetPropertyOptions(this->Params);
+}
+
+const FSMPropertyReference& UStateMachineProperty::GetProperty()
+{
+	if (!this->bDidInit)
+	{
+		FString Address = this->Name.ToString();
+		this->Ref = this->Params.GetProperty<UStateNode>(this->GetNode(), Address);
+	}
+
+	return this->Ref;
+}

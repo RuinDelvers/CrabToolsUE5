@@ -287,7 +287,7 @@ void UStateMachineBlueprint::AppendInterfaceEvents(TArray<FString>& Names) const
 	}
 }
 
-TArray<FString> UStateMachineBlueprint::GetPropertiesOptions(FSMPropertySearch& SearchParam) const
+TArray<FString> UStateMachineBlueprint::GetPropertiesOptions(const FSMPropertySearch& SearchParam) const
 {
 	TArray<FString> Names;
 

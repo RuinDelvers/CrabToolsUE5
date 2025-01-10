@@ -15,11 +15,8 @@ class CRABTOOLSUE5_API UAIRotateToNode : public UAIBaseNode
 
 private:
 
-	/* The name of the property to get FMovetoData from. */
-	UPROPERTY(EditAnywhere, Category = "StateMachine|AI",
-		meta = (AllowPrivateAccess = true, GetOptions = "GetPropertyOptions"))
-	FName PropertyName;
-	FSMPropertyReference PropertyRef;
+	UPROPERTY(VisibleAnywhere, Category = "AI", meta = (ShowInnerProperties))
+	TObjectPtr<UStateMachineProperty> Property;
 	TWeakObjectPtr<AActor> TargetActor;
 
 
@@ -41,9 +38,6 @@ public:
 	
 	#if WITH_EDITOR
 		virtual void PostLinkerChange() override;
-		
-		UFUNCTION()
-		TArray<FString> GetPropertyOptions() const;
 	#endif
 
 private:

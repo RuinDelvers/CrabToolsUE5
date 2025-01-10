@@ -111,7 +111,7 @@ public:
 };
 
 UCLASS(Blueprintable, CollapseCategories, Category = "StateMachine")
-class CRABTOOLSUE5_API UState : public UObject
+class CRABTOOLSUE5_API UState : public UObject, public IStateLike
 {
 	GENERATED_BODY()
 
@@ -174,6 +174,11 @@ public:
 	UFUNCTION(BlueprintNativeEvent, Category = "StateMachine")
 	void ExitWithData_Inner(UObject* Data);
 	virtual void ExitWithData_Inner_Implementation(UObject* Data) { this->Exit_Inner(); }
+
+	#if WITH_EDITOR
+		TArray<FString> GetPropertiesOptions(const FSMPropertySearch& SearchParam) const override;
+	#endif
+	virtual FSMPropertyReference GetStateMachineProperty(FString& Address) const override;
 };
 
 UCLASS(BlueprintType, Abstract, Category = "StateMachine")
@@ -233,7 +238,7 @@ protected:
  * for what nodes can do.
  */
 UCLASS(Abstract, Blueprintable, EditInlineNew, CollapseCategories, Category = "StateMachine")
-class CRABTOOLSUE5_API UStateNode : public UObject
+class CRABTOOLSUE5_API UStateNode : public UObject, public IStateNodeLike
 {
 	GENERATED_BODY()
 
@@ -284,6 +289,9 @@ public:
 		meta = (HideSelfPin=true))
 	void EmitEvent(FName EName);
 
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "StateMachine")
+	UState* GetState() const;
+
 	UFUNCTION(BlueprintCallable, Category = "StateMachine",
 		meta = (HideSelfPin=true))
 	void EmitEventWithData(FName EName, UObject* Data);
@@ -304,6 +312,7 @@ public:
 		virtual void GetEmittedEvents(TSet<FName>& Events) const;
 		virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 		virtual void PreEditChange(FProperty* PropertyAboutToChange) override;
+		TArray<FString> GetPropertyOptions(const FSMPropertySearch& Params) const;
 	#endif
 
 	void Event(FName EName);
@@ -410,7 +419,8 @@ protected:
  * appropriate state machine behaviour.
  */
 UCLASS(Blueprintable, EditInlineNew, Category = "StateMachine")
-class CRABTOOLSUE5_API UStateMachine : public UObject, public IEventListenerInterface, public IStateMachineLike
+class CRABTOOLSUE5_API UStateMachine 
+: public UObject, public IEventListenerInterface, public IStateMachineLike
 {
 	GENERATED_BODY()
 
@@ -621,7 +631,7 @@ public:
 	// IStateMachineLike interface
 	virtual TArray<FString> GetStateOptions(const UObject* Asker) const override;
 	#if WITH_EDITOR
-		virtual TArray<FString> GetPropertiesOptions(FSMPropertySearch& SearchParam) const override;
+		virtual TArray<FString> GetPropertiesOptions(const FSMPropertySearch& SearchParam) const override;
 	#endif //WITH_EDITOR
 	virtual FSMPropertyReference GetStateMachineProperty(FString& Address) const override;
 	virtual IStateMachineLike* GetSubMachine(FString& Address) const override;
@@ -665,4 +675,31 @@ private:
 	void UpdateState(FName Name);
 	void UpdateStateWithData(FName Name, UObject* Data, bool UsePiped=true);
 	void InitSubMachines();
+};
+
+
+UCLASS(Blueprintable, EditInlineNew, DefaultToInstanced, CollapseCategories, Category = "StateMachine",
+	Within=StateNode)
+class CRABTOOLSUE5_API UStateMachineProperty : public UObject
+{
+	GENERATED_BODY()
+
+private:
+
+	bool bDidInit = false;
+	FSMPropertyReference Ref;
+
+public:
+
+	/* The name of the property to get FMovetoData from. */
+	UPROPERTY(EditAnywhere, Category = "StateMachine", meta = (GetOptions = "DoPropertySearch"))
+	FName Name;	
+	FSMPropertySearch Params;
+
+	UStateNode* GetNode() const;
+
+	const FSMPropertyReference& GetProperty();
+
+	UFUNCTION()
+	TArray<FString> DoPropertySearch() const;
 };

@@ -9,6 +9,9 @@ UAIRotateToNode::UAIRotateToNode()
 {
 	this->AddEmittedEvent(Events::AI::ARRIVE);
 	this->AddEmittedEvent(Events::AI::LOST);
+
+	this->Property = CreateDefaultSubobject<UStateMachineProperty>(TEXT("RotationTarget"));
+	this->Property->Params = FSMPropertySearch::ObjectProperty(AActor::StaticClass());
 }
 
 void UAIRotateToNode::Tick_Inner_Implementation(float DeltaTime)
@@ -29,10 +32,6 @@ void UAIRotateToNode::Tick_Inner_Implementation(float DeltaTime)
 void UAIRotateToNode::Initialize_Inner_Implementation()
 {
 	Super::Initialize_Inner_Implementation();
-
-	FString Address = this->PropertyName.ToString();
-	FSMPropertySearch Params = FSMPropertySearch::ObjectProperty(AActor::StaticClass());
-	this->PropertyRef = Params.GetProperty<FObjectProperty>(this->GetMachine(), Address);
 }
 
 void UAIRotateToNode::Exit_Inner_Implementation()
@@ -62,7 +61,7 @@ void UAIRotateToNode::EnterWithData_Inner_Implementation(UObject* Data)
 
 void UAIRotateToNode::Enter_Inner_Implementation()
 {
-	if (auto Value = this->PropertyRef.GetValue<AActor>())
+	if (auto Value = this->Property->GetProperty().GetValue<AActor>())
 	{	
 		this->TargetActor = Value;
 
@@ -119,22 +118,6 @@ bool UAIRotateToNode::FacingCheck() const
 }
 
 #if WITH_EDITOR
-TArray<FString> UAIRotateToNode::GetPropertyOptions() const
-{
-	TArray<FString> Props;
-
-	if (auto Outer = UtilsFunctions::GetOuterAs<IStateMachineLike>(this))
-	{
-		FSMPropertySearch Params = FSMPropertySearch::ObjectProperty(AActor::StaticClass());
-
-		Props.Append(Outer->GetPropertiesOptions(Params));
-	}
-
-	Props.Sort([&](const FString& A, const FString& B) { return A < B; });
-
-	return Props;
-}
-
 void UAIRotateToNode::PostLinkerChange()
 {
 	Super::PostLinkerChange();

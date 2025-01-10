@@ -10,6 +10,7 @@ struct FSMPropertyReference
 {
     FProperty* PropertyRef = nullptr;
     TObjectPtr<UObject> StateMachine;
+    TObjectPtr<UObject> State;
 
     template <class T> T* GetValue() const
     {
@@ -36,7 +37,7 @@ struct FSMPropertyReference
         return nullptr;
     }
 
-    template <class T> void SetValue(T Value)
+    template <class T> void SetValue(T Value) const
     {
         if (auto BField = CastField<FBoolProperty>(this->PropertyRef))
         {
@@ -48,7 +49,9 @@ struct FSMPropertyReference
         }
     }
 
-    operator bool() { return this->PropertyRef != nullptr; }
+    bool IsValid() const { return this->PropertyRef != nullptr; }
+
+    operator bool() { return this->IsValid(); }
 };
 
 /* Interface for objects which look like State Machines data-wise, but not necessarily function-wise.*/
@@ -79,7 +82,7 @@ public:
 
     // Property Getters
     #if WITH_EDITOR
-        virtual TArray<FString> GetPropertiesOptions(FSMPropertySearch& SearchParam) const { return {}; }
+        virtual TArray<FString> GetPropertiesOptions(const FSMPropertySearch& SearchParam) const { return {}; }
     #endif //WITH_EDITOR
     virtual FSMPropertyReference GetStateMachineProperty(FString& Address) const { return FSMPropertyReference(); }
 };
@@ -106,6 +109,26 @@ public:
 
     /* Returns the list of states that this state can enter. */
     virtual TArray<FString> GetExitStates() const { return {}; }
+
+    #if WITH_EDITOR
+        virtual TArray<FString> GetPropertiesOptions(const FSMPropertySearch& SearchParam) const { return {}; }
+    #endif //WITH_EDITOR
+    virtual FSMPropertyReference GetStateMachineProperty(FString& Address) const { return FSMPropertyReference(); }
+};
+
+UINTERFACE(MinimalAPI)
+class UStateNodeLike : public UInterface
+{
+    GENERATED_BODY()
+};
+
+class IStateNodeLike
+{
+    GENERATED_BODY()
+
+
+public:
+
 };
 
 
@@ -130,9 +153,21 @@ public:
     #endif
 
     /* Used to get a property from a state machine at a given address, but with many checks. */
-    template <class T> FSMPropertyReference GetProperty(IStateMachineLike* Machine, FString& Address)
+    template <class S> FSMPropertyReference GetProperty(S* Node, FString& Address)
     {
-        FSMPropertyReference Ref = Machine->GetStateMachineProperty(Address);
+        FSMPropertyReference Ref;
+
+        if (Address.StartsWith("::State::"))
+        {
+            FString Cut = Address.RightChop(9);
+
+            Ref = Node->GetState()->GetStateMachineProperty(Cut);
+        }
+        else
+        {
+            Ref = Node->GetMachine()->GetStateMachineProperty(Address);
+        }
+
         FProperty* Prop = Ref.PropertyRef;
 
         if (Prop)
@@ -145,42 +180,31 @@ public:
                 return FSMPropertyReference();
             }
 
-            if (Prop->GetClass()->IsChildOf(T::StaticClass()))
+            if (this->Class)
             {
-                if (this->Class)
+                FObjectProperty* ObjProp = (FObjectProperty*)Prop;
+
+                if (ObjProp->PropertyClass != this->Class)
                 {
-                    FObjectProperty* ObjProp = (FObjectProperty*)Prop;
+                    UE_LOG(LogStateMachine, Error, TEXT("Attempted get object property of type %s, but found %s"),
+                        *this->Class->GetName(),
+                        *ObjProp->PropertyClass->GetName());
 
-                    if (ObjProp->PropertyClass != this->Class)
-                    {
-                        UE_LOG(LogStateMachine, Error, TEXT("Attempted get object property of type %s, but found %s"),
-                            *this->Class->GetName(),
-                            *ObjProp->PropertyClass->GetName());
-
-                        return FSMPropertyReference();
-                    }
-                }
-                else if (this->Struct)
-                {
-                    FStructProperty* StructProp = (FStructProperty*)Prop;
-
-                    if (StructProp->Struct != this->Struct)
-                    {
-                        UE_LOG(LogStateMachine, Error, TEXT("Attempted get struct property of type %s, but found %s"),
-                            *this->Struct->GetName(),
-                            *StructProp->Struct->GetName());
-
-                        return FSMPropertyReference();
-                    }
+                    return FSMPropertyReference();
                 }
             }
-            else
+            else if (this->Struct)
             {
-                UE_LOG(LogStateMachine, Error, TEXT("Attempted to perform invalid conversion: %s -> %s"),
-                    *Prop->GetName(),
-                    *T::StaticClass()->GetName());
+                FStructProperty* StructProp = (FStructProperty*)Prop;
 
-                return FSMPropertyReference();
+                if (StructProp->Struct != this->Struct)
+                {
+                    UE_LOG(LogStateMachine, Error, TEXT("Attempted get struct property of type %s, but found %s"),
+                        *this->Struct->GetName(),
+                        *StructProp->Struct->GetName());
+
+                    return FSMPropertyReference();
+                }
             }
         }
         else

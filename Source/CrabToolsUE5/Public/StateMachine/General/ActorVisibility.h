@@ -12,11 +12,8 @@ class CRABTOOLSUE5_API UActorVisibilityNode : public UStateNode
 {
 	GENERATED_BODY()
 
-	/* The name of the property to retrieve the actor from. */
-	UPROPERTY(EditAnywhere, Category = "StateMachine", 
-		meta = (AllowPrivateAccess, GetOptions="GetPropertyOptions"))
-	FName PropertyName;
-	FSMPropertyReference PropertyRef;
+	UPROPERTY(VisibleAnywhere, Category = "AI", meta = (ShowInnerProperties))
+	TObjectPtr<UStateMachineProperty> Property;
 
 	/* Whether to show or hide the actor on entering this node. */
 	UPROPERTY(EditAnywhere, Category = "StateMachine", meta = (AllowPrivateAccess))
@@ -28,16 +25,13 @@ class CRABTOOLSUE5_API UActorVisibilityNode : public UStateNode
 
 public:
 
+	UActorVisibilityNode();
+
 	virtual void Initialize_Inner_Implementation() override;
 	virtual void Enter_Inner_Implementation() override;
 	virtual void Exit_Inner_Implementation() override;	
 
 private:
-
-	#if WITH_EDITOR
-		UFUNCTION()
-		TArray<FString> GetPropertyOptions() const;
-	#endif // WITH_EDITOR	
 
 	AActor* GetActor() const;
 };

@@ -866,7 +866,7 @@ TArray<FString> UEdStateGraph::GetMachineOptions() const
 	return Names;
 }
 
-TArray<FString> UEdStateGraph::GetPropertiesOptions(FSMPropertySearch& SearchParam) const
+TArray<FString> UEdStateGraph::GetPropertiesOptions(const FSMPropertySearch& SearchParam) const
 {
 	TArray<FString> Names = this->GetBlueprintOwner()->GetPropertiesOptions(SearchParam);
 

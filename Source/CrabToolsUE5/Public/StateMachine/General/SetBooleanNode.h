@@ -15,11 +15,8 @@ class CRABTOOLSUE5_API USetBooleanNode : public UStateNode
 
 private:
 
-	/* The name of the property to get FMovetoData from. */
-	UPROPERTY(EditAnywhere, Category = "StateMachine|Properties",
-		meta = (AllowPrivateAccess = true, GetOptions = "GetPropertyOptions"))
-	FName PropertyName;
-	FSMPropertyReference PropertyRef;
+	UPROPERTY(VisibleAnywhere, Category = "AI", meta = (ShowInnerProperties))
+	TObjectPtr<UStateMachineProperty> Property;
 
 	UPROPERTY(EditAnywhere, Category = "StateMachine|Properties", meta = (AllowPrivateAccess))
 	bool bOnEnter = true;
@@ -29,12 +26,9 @@ private:
 
 public:
 
+	USetBooleanNode();
+
 	virtual void Initialize_Inner_Implementation() override;
 	virtual void Enter_Inner_Implementation() override;
 	virtual void Exit_Inner_Implementation() override;
-	
-	#if WITH_EDITOR
-		UFUNCTION()
-		TArray<FString> GetPropertyOptions() const;
-	#endif
 };

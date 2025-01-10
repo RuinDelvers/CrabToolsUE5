@@ -17,11 +17,8 @@ class CRABTOOLSUE5_API UAISimpleMoveToNode : public UAIBaseNode
 
 private:
 
-	/* The name of the property to get FMovetoData from. */
-	UPROPERTY(EditAnywhere, Category = "AI",
-		meta = (AllowPrivateAccess = true, GetOptions = "GetPropertyOptions"))
-	FName PropertyName;
-	FSMPropertyReference PropertyRef;
+	UPROPERTY(VisibleAnywhere, Category = "AI", meta = (ShowInnerProperties))
+	TObjectPtr<UStateMachineProperty> Property;
 
 	EPathFollowingResult::Type MovementResult;
 
@@ -45,9 +42,6 @@ public:
 
 	#if WITH_EDITOR
 		virtual void PostLinkerChange() override;
-		
-		UFUNCTION()
-		TArray<FString> GetPropertyOptions() const;
 	#endif
 
 protected:

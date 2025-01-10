@@ -120,6 +120,7 @@ public:
 	#if WITH_EDITOR
 		virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 		virtual void PostLinkerChange() override;
+		virtual TArray<FString> GetPropertiesOptions(const FSMPropertySearch& SearchParam) const override;
 	#endif
 
 	virtual bool IsActive() const;

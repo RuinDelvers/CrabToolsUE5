@@ -15,28 +15,19 @@ class CRABTOOLSUE5_API UCallDelegateNode : public UStateNode
 
 private:
 
-	/* The name of the property to get OnEnterDelegate from. */
-	UPROPERTY(EditAnywhere, Category = "StateMachine|Properties",
-		meta = (AllowPrivateAccess = true, GetOptions = "GetPropertyOptions"))
-	FName OnEnterDelegate;
-	FSMPropertyReference OnEnterRef;
+	UPROPERTY(VisibleAnywhere, Category = "AI", meta = (ShowInnerProperties))
+	TObjectPtr<UStateMachineProperty> EnterProperty;
 
-	/* The name of the property to get OnExitDelegate from. */
-	UPROPERTY(EditAnywhere, Category = "StateMachine|Properties",
-		meta = (AllowPrivateAccess = true, GetOptions = "GetPropertyOptions"))
-	FName OnExitDelegate;
-	FSMPropertyReference OnExitRef;
+	UPROPERTY(VisibleAnywhere, Category = "AI", meta = (ShowInnerProperties))
+	TObjectPtr<UStateMachineProperty> ExitProperty;
 
 public:
+
+	UCallDelegateNode();
 
 	virtual void Initialize_Inner_Implementation() override;
 	virtual void Enter_Inner_Implementation() override;
 	virtual void Exit_Inner_Implementation() override;
-	
-	#if WITH_EDITOR
-		UFUNCTION()
-		TArray<FString> GetPropertyOptions() const;
-	#endif
 
 private:
 	UFUNCTION()

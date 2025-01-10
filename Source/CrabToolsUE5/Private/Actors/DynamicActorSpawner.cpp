@@ -67,10 +67,9 @@ void ADynamicActorSpawner::ToggleDisplay()
 			FActorSpawnParameters Params;
 
 			Params.ObjectFlags = RF_Transient;
+			Params.bTemporaryEditorActor = true;
 
 			this->PreviewActor = this->GetWorld()->SpawnActor(this->ActorClass.Get(), &Transform, Params);
-
-			this->PreviewActor->bIsEditorOnlyActor = true;
 
 			this->EditorSprite->SetVisibility(false);
 		}

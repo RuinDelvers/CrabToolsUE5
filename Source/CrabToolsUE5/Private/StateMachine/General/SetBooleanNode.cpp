@@ -1,40 +1,42 @@
 #include "StateMachine/General/SetBooleanNode.h"
 #include "Utils/UtilsLibrary.h"
 
+USetBooleanNode::USetBooleanNode()
+{
+	this->Property = CreateDefaultSubobject<UStateMachineProperty>(TEXT("FlagVariable"));
+	this->Property->Params = FSMPropertySearch::Property(FBoolProperty::StaticClass());
+}
+
 void USetBooleanNode::Initialize_Inner_Implementation()
 {
 	Super::Initialize_Inner_Implementation();
-
-	FString Address = this->PropertyName.ToString();
-	FSMPropertySearch Params = FSMPropertySearch::Property(FBoolProperty::StaticClass());
-	this->PropertyRef = Params.GetProperty<FBoolProperty>(this->GetMachine(), Address);
 }
 
 void USetBooleanNode::Exit_Inner_Implementation()
 {
-	this->PropertyRef.SetValue<bool>(this->bOnExit);
+	auto& Prop = this->Property->GetProperty();
+
+	if (Prop.IsValid())
+	{
+		Prop.SetValue<bool>(this->bOnExit);
+	}
+	else
+	{
+		UE_LOG(LogStateMachine, Error, TEXT("Invalid property found for SetBooleanNode"));
+	}	
 }
 
 
 void USetBooleanNode::Enter_Inner_Implementation()
 {
-	this->PropertyRef.SetValue<bool>(this->bOnEnter);
-}
+	auto& Prop = this->Property->GetProperty();
 
-#if WITH_EDITOR
-TArray<FString> USetBooleanNode::GetPropertyOptions() const
-{
-	TArray<FString> Props;
-
-	if (auto Outer = UtilsFunctions::GetOuterAs<IStateMachineLike>(this))
+	if (Prop.IsValid())
 	{
-		FSMPropertySearch Params = FSMPropertySearch::Property(FBoolProperty::StaticClass());
-
-		Props.Append(Outer->GetPropertiesOptions(Params));
+		Prop.SetValue<bool>(this->bOnEnter);
 	}
-
-	Props.Sort([&](const FString& A, const FString& B) { return A < B; });
-
-	return Props;
+	else
+	{
+		UE_LOG(LogStateMachine, Error, TEXT("Invalid property found for SetBooleanNode"));
+	}
 }
-#endif

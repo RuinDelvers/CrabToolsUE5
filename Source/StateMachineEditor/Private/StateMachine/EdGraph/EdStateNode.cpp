@@ -294,6 +294,22 @@ void UEdStateNode::SetDebugObject(UState* State)
 
 #if WITH_EDITOR
 
+TArray<FString> UEdStateNode::GetPropertiesOptions(const FSMPropertySearch& SearchParam) const
+{
+	switch (this->NodeType)
+	{
+		case EStateNodeType::INLINE_NODE:
+			return this->StateClass->GetPropertiesOptions(SearchParam);
+		case EStateNodeType::EXTENDED_NODE:
+			return this->StateClass->GetPropertiesOptions(SearchParam);
+		case EStateNodeType::OVERRIDE_NODE:
+			return this->StateClassOverride.Value->GetPropertiesOptions(SearchParam);
+		case EStateNodeType::OVERRIDE_EXTENDED_NODE:
+			return this->StateClassOverride.Value->GetPropertiesOptions(SearchParam);
+		default: return {};
+	}
+}
+
 void UEdStateNode::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
 	Super::PostEditChangeProperty(PropertyChangedEvent);

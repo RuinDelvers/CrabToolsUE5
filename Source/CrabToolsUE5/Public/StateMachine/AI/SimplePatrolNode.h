@@ -14,9 +14,6 @@ UCLASS(Blueprintable, Category = "StateMachine|AI")
 class CRABTOOLSUE5_API UAISimplePatrolNode : public UAIBaseNode
 {
 	GENERATED_BODY()
-	
-	//UPROPERTY(EditDefaultsOnly, Category = "StateMachine|AI")
-	//FPatrolPathState PatrolState;
 
 	/* 
 	 * This value is used to guard against too many close patrol points. This is needed
@@ -25,11 +22,8 @@ class CRABTOOLSUE5_API UAISimplePatrolNode : public UAIBaseNode
 	*/
 	int RecurseGuard = 0;
 
-	/* Name of the property to get a reference to a Patrolpath. */
-	UPROPERTY(EditDefaultsOnly, Category="StateMachine|AI",
-		meta=(GetOptions="GetPatrolOptions"))
-	FName PropertyName;
-	FSMPropertyReference PropertyRef;
+	UPROPERTY(VisibleAnywhere, Category="AI", meta=(ShowInnerProperties))
+	TObjectPtr<UStateMachineProperty> Property;
 
 	/* Previous states which would not reset the patrolling state. */
 	UPROPERTY(EditDefaultsOnly, Category = "StateMachine|AI", meta=(ShowOnlyInnerProperties))
@@ -47,9 +41,6 @@ public:
 
 	#if WITH_EDITOR
 		virtual void PostLinkerChange() override;
-
-		UFUNCTION()
-		TArray<FString> GetPatrolOptions() const;
 
 		UFUNCTION()
 		TArray<FString> GetResetStateOptions() const;
