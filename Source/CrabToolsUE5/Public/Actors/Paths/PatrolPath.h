@@ -124,10 +124,6 @@ class CRABTOOLSUE5_API APatrolPath : public AActor
 	bool bIsCycle = true;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = AI,
-		meta = (AllowPrivateAccess))
-	float LostDistance = 100000;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = AI,
 		meta = (MakeEditWidget, AllowPrivateAccess, ShowOnlyInnerProperties))
 	TArray<FPatrolPathData> Data;
 	

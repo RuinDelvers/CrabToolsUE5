@@ -49,7 +49,7 @@ FVector APatrolPath::FindClosestPoint(AActor* Patroller)
 	}
 
 	FVector Goal = this->GetActorLocation();
-	float Dist = this->LostDistance * this->LostDistance;
+	float Dist = std::numeric_limits<float>::infinity();
 
 	for (auto& p : this->Data)
 	{
@@ -74,7 +74,7 @@ int APatrolPath::FindClosestIndex(AActor* Patroller) {
 	}
 
 	int Goal = 0;
-	float Dist = this->LostDistance * this->LostDistance;
+	float Dist = std::numeric_limits<float>::infinity();
 
 	for (int i = 0; i < this->Data.Num(); ++i)
 	{
@@ -101,24 +101,21 @@ FVector APatrolPath::Get(int i)
 #if WITH_EDITOR
 void APatrolPath::ToggleDisplay()
 {
-	if (this->IsSelected())
-	{
-		this->InitArrows();
-		this->PathSpline->SetVisibility(true);
-	}
-	else
-	{
-		this->PathSpline->SetVisibility(false);
-	}
+	this->InitArrows();
+	this->PathSpline->SetVisibility(this->IsSelected());
 }
 
 void APatrolPath::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
 	Super::PostEditChangeProperty(PropertyChangedEvent);
 
-	if (PropertyChangedEvent.GetPropertyName() == GET_MEMBER_NAME_CHECKED(FPatrolPathData, Point))
+	bool bUpdateSpline1 = PropertyChangedEvent.GetPropertyName() == GET_MEMBER_NAME_CHECKED(FPatrolPathData, Point);
+	bool bUpdateSpline2 = PropertyChangedEvent.GetPropertyName() == GET_MEMBER_NAME_CHECKED(APatrolPath, Data);
+
+	if (bUpdateSpline1 || bUpdateSpline2)
 	{
 		this->InitArrows();
+		this->PathSpline->SetVisibility(this->IsSelected());
 	}
 	else if (PropertyChangedEvent.GetPropertyName() == GET_MEMBER_NAME_CHECKED(APatrolPath, bIsCycle))
 	{
@@ -129,9 +126,9 @@ void APatrolPath::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedE
 void APatrolPath::InitArrows()
 {
 	TArray<FVector> Points;
-	for (const auto& D : this->Data) { Points.Add(D.Point); }
+	for (int i = 0; i < this->Data.Num(); ++ i) { Points.Add(this->Get(i)); }
 
-	this->PathSpline->SetSplineLocalPoints(Points);
+	this->PathSpline->SetSplineWorldPoints(Points);
 
 	for (int i = 0; i < this->Num(); ++i)
 	{
