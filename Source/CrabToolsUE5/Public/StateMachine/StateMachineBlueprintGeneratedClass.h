@@ -93,13 +93,10 @@ public:
 	UPROPERTY()
 	TMap<FName, FStateMachineArchetypeData> SubArchetypes;
 
-	UPROPERTY()
-	TSet<FName> EventSet;
-
-	//UPROPERTY();
-	//TSet<FName> EmittedEvents;
-
 	#if WITH_EDITORONLY_DATA
+		UPROPERTY()
+		TSet<FName> EventSet;
+
 		UPROPERTY()
 		TSet<TSoftObjectPtr<UStateMachineInterface>> Interfaces;
 	#endif //WITH_EDITORONLY_DATA

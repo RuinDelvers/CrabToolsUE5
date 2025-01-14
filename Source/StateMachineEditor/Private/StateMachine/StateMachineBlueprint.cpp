@@ -270,6 +270,14 @@ TSet<FName> UStateMachineBlueprint::GetEventSet() const
 		EventNames.Add(Ev->GetEventName());
 	}
 
+	for (auto& SubGraph : this->SubGraphs)
+	{
+		for (auto& Ev : SubGraph->GetEventList())
+		{
+			EventNames.Add(Ev->GetEventName());
+		}
+	}
+
 	return EventNames;
 }
 
@@ -327,6 +335,7 @@ void UStateMachineBlueprint::DeleteGraph(UEdStateGraph* Graph)
 	{
 		const FScopedTransaction Transaction(LOCTEXT("DeleteStateMachine", "Delete State Machine"));
 		this->Modify();
+		FBlueprintEditorUtils::MarkBlueprintAsModified(this);
 		this->SubGraphs.Remove(Graph);
 		Graph->Events.OnGraphDeleted.Broadcast();
 	}

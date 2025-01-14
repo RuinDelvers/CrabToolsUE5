@@ -4,14 +4,23 @@
 #include "Engine/DataTable.h"
 #include "HAL/PlatformCrt.h"
 #include "StateMachine/StateMachineInterface.h"
+#include "StateMachine/StateMachineBlueprintGeneratedClass.h"
+#include "StateMachine/StateMachine.h"
 #include "Templates/SharedPointer.h"
 #include "UObject/NameTypes.h"
 
 class UEdGraphPin;
 
-void SGraphPinSMEventName::Construct(const FArguments& InArgs, UEdGraphPin* InGraphPinObj, UStateMachineInterface* InInterface)
+void SGraphPinSMEventName::Construct(const FArguments& InArgs, UEdGraphPin* InGraphPinObj, UStateMachineInterface* InInterface, TSubclassOf<UStateMachine> SMClass)
 {
-	RefreshNameList(InInterface);
+	if (IsValid(InInterface))
+	{
+		RefreshNameList(InInterface);
+	}
+	else if (SMClass)
+	{
+
+	}
 
 	SGraphPinNameList::Construct(SGraphPinNameList::FArguments(), InGraphPinObj, NameList);
 }
@@ -35,6 +44,20 @@ void SGraphPinSMEventName::RefreshNameList(UStateMachineInterface* Interface)
 		for (auto& Name : Names)
 		{
 			TSharedPtr<FName> RowNameItem = MakeShareable(new FName(Name));
+			NameList.Add(RowNameItem);
+		}
+	}
+}
+
+void SGraphPinSMEventName::RefreshNameList(TSubclassOf<UStateMachine> NewInterface)
+{
+	NameList.Empty();
+
+	if (auto SMGC = Cast<UStateMachineBlueprintGeneratedClass>(NewInterface))
+	{
+		for (auto& EName : SMGC->EventSet)
+		{
+			TSharedPtr<FName> RowNameItem = MakeShareable(new FName(EName));
 			NameList.Add(RowNameItem);
 		}
 	}
