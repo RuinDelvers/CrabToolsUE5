@@ -263,17 +263,7 @@ void UK2Node_EmitEventFromMachine::ExpandNode(class FKismetCompilerContext& Comp
 {
     Super::ExpandNode(CompilerContext, SourceGraph);
     
-	UEdGraphPin* OriginalInterfaceInPin = GetInterfacePin();
 	UEdGraphPin* OriginalStateMachineInPin = GetStateMachinePin();
-
-    //UStateMachineInterface* Table = (OriginalInterfaceInPin != NULL) ? Cast<UStateMachineInterface>(OriginalInterfaceInPin->DefaultObject) : NULL;
-    if((nullptr == OriginalInterfaceInPin) || (0 == OriginalInterfaceInPin->LinkedTo.Num() && nullptr == this->GetSMClass()))
-    {
-        CompilerContext.MessageLog.Error(*LOCTEXT("EmitEventFromInterfaceNoInterface_Error", "EmitEventFromInterface must have a Interface specified.").ToString(), this);
-        // we break exec links so this is the only error we get
-        BreakAllNodeLinks();
-        return;
-    }
 
 	// FUNCTION NODE
 	const FName FunctionName = GET_FUNCTION_NAME_CHECKED(UStateMachineHelperLibrary, EmitEvent);

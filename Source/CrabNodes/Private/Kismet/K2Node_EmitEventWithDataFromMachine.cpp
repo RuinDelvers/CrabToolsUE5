@@ -1,6 +1,6 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
-#include "Kismet/K2Node_EmitEventWithDataFromInterface.h"
+#include "Kismet/K2Node_EmitEventWithDataFromMachine.h"
 
 
 #include "BlueprintActionDatabaseRegistrar.h"
@@ -38,69 +38,56 @@
 
 class UBlueprint;
 
-#define LOCTEXT_NAMESPACE "K2Node_EmitEventWithDataFromInterface"
+#define LOCTEXT_NAMESPACE "K2Node_EmitEventWithDataFromMachine"
 
-namespace EmitEventWithDataFromInterfaceHelper
+namespace EmitEventWithDataFromMachineHelper
 {
-	const FName StateMachinePinName = "StateMachine";
-	const FName InterfacePinName = "Interface";
-	const FName EventPinName = "Event";
 	const FName DataPinName = "Data";
 }
 
-UK2Node_EmitEventWithDataFromInterface::UK2Node_EmitEventWithDataFromInterface(const FObjectInitializer& ObjectInitializer)
+UK2Node_EmitEventWithDataFromMachine::UK2Node_EmitEventWithDataFromMachine(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
 	NodeTooltip = LOCTEXT("NodeTooltip", "Emits an event to a State Machine from a Data Table.");
 }
 
-void UK2Node_EmitEventWithDataFromInterface::AllocateDefaultPins()
+void UK2Node_EmitEventWithDataFromMachine::AllocateDefaultPins()
 {
 	Super::AllocateDefaultPins();
 
 	const UEdGraphSchema_K2* K2Schema = GetDefault<UEdGraphSchema_K2>();
 
 	// Add Data Pin
-	UEdGraphPin* DataPin = CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_Object, UObject::StaticClass(), EmitEventWithDataFromInterfaceHelper::DataPinName);
+	UEdGraphPin* DataPin = CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_Object, UObject::StaticClass(), EmitEventWithDataFromMachineHelper::DataPinName);
 	SetPinToolTip(*DataPin, LOCTEXT("DataPinDescription", "The data to be passed with the event."));
 
 }
 
-UEdGraphPin* UK2Node_EmitEventWithDataFromInterface::GetDataPin() const
+UEdGraphPin* UK2Node_EmitEventWithDataFromMachine::GetDataPin() const
 {
 	UEdGraphPin* Pin = FindPinChecked(EmitEventWithDataFromInterfaceHelper::DataPinName);
 	check(Pin->Direction == EGPD_Input);
 	return Pin;
 }
 
-FText UK2Node_EmitEventWithDataFromInterface::GetNodeTitle(ENodeTitleType::Type TitleType) const
+FText UK2Node_EmitEventWithDataFromMachine::GetNodeTitle(ENodeTitleType::Type TitleType) const
 {
 	if (TitleType == ENodeTitleType::MenuTitle)
 	{
-		return LOCTEXT("ListViewTitle", "Emit Event With Data From Interface");
+		return LOCTEXT("ListViewTitle", "Emit Event With Data From Machine");
 	}
 	else
 	{
-		return NSLOCTEXT("K2Node", "Interface_Title", "Emit Event With Data From Interface");
+		return NSLOCTEXT("K2Node", "Interface_Title", "Emit Event With Data From Machine");
 	}
 }
 
-void UK2Node_EmitEventWithDataFromInterface::ExpandNode(class FKismetCompilerContext& CompilerContext, UEdGraph* SourceGraph)
+void UK2Node_EmitEventWithDataFromMachine::ExpandNode(class FKismetCompilerContext& CompilerContext, UEdGraph* SourceGraph)
 {
 	// Skip the standard node expansion, since it uses the wrong function.
     UK2Node::ExpandNode(CompilerContext, SourceGraph);
     
-	UEdGraphPin* OriginalInterfaceInPin = GetInterfacePin();
 	UEdGraphPin* OriginalStateMachineInPin = GetStateMachinePin();
-
-    UStateMachineInterface* Table = (OriginalInterfaceInPin != NULL) ? Cast<UStateMachineInterface>(OriginalInterfaceInPin->DefaultObject) : NULL;
-    if((nullptr == OriginalInterfaceInPin) || (0 == OriginalInterfaceInPin->LinkedTo.Num() && nullptr == Table))
-    {
-        CompilerContext.MessageLog.Error(*LOCTEXT("EmitEventFromInterfaceNoInterface_Error", "EmitEventFromInterface must have a Interface specified.").ToString(), this);
-        // we break exec links so this is the only error we get
-        BreakAllNodeLinks();
-        return;
-    }
 
 	// FUNCTION NODE
 	const FName FunctionName = GET_FUNCTION_NAME_CHECKED(UStateMachineHelperLibrary, EmitEventWithData);
@@ -140,7 +127,7 @@ void UK2Node_EmitEventWithDataFromInterface::ExpandNode(class FKismetCompilerCon
 	BreakAllNodeLinks();
 }
 
-void UK2Node_EmitEventWithDataFromInterface::PostReconstructNode()
+void UK2Node_EmitEventWithDataFromMachine::PostReconstructNode()
 {
 	Super::PostReconstructNode();
 }

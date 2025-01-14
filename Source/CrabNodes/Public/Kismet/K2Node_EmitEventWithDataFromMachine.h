@@ -12,7 +12,7 @@
 #include "UObject/UObjectGlobals.h"
 #include "Kismet/K2Node_EmitEventFromInterface.h"
 
-#include "K2Node_EmitEventWithDataFromInterface.generated.h"
+#include "K2Node_EmitEventWithDataFromMachine.generated.h"
 
 class FBlueprintActionDatabaseRegistrar;
 class FString;
@@ -24,7 +24,7 @@ class UScriptStruct;
 struct FLinearColor;
 
 UCLASS()
-class CRABNODES_API UK2Node_EmitEventWithDataFromInterface : public UK2Node_EmitEventFromInterface
+class CRABNODES_API UK2Node_EmitEventWithDataFromMachine : public UK2Node_EmitEventFromMachine
 {
 	GENERATED_UCLASS_BODY()
 

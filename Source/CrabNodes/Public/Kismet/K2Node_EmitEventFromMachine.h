@@ -32,6 +32,11 @@ public:
 	DECLARE_MULTICAST_DELEGATE_OneParam(FInterfaceChanged, TSubclassOf<UStateMachine>)
 	FInterfaceChanged OnInterfaceChanged;
 
+protected:
+
+	/** Tooltip text for this node. */
+	FText NodeTooltip;
+
 public:
 
 	//~ Begin UEdGraphNode Interface.
@@ -67,7 +72,7 @@ public:
 
 	TSubclassOf<UStateMachine> GetSMClass() const;
 
-private:
+protected:
 	/**
 	 * Takes the specified "MutatablePin" and sets its 'PinToolTip' field (according
 	 * to the specified description)
@@ -79,7 +84,4 @@ private:
 
 	/** Triggers a refresh which will update the node's widget; aimed at updating the dropdown menu for the Event input */
 	void RefreshEventOptions();
-
-	/** Tooltip text for this node. */
-	FText NodeTooltip;
 };
