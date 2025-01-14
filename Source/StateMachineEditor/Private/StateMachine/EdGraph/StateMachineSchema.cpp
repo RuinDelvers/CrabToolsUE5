@@ -169,9 +169,7 @@ UEdGraphNode* FSMSchemaAction_NewNode::PerformAction(
 			ResultNode,
 			this->NodeClass,
 			FName(FString("StateNode")),
-			RF_NoFlags,
-			this->NodeClass->GetDefaultObject(),
-			true
+			RF_NoFlags
 		));
 	}
 

@@ -85,6 +85,25 @@ namespace UtilsFunctions
 		return nullptr;
 	}
 
+	template<class T> T* GetOuterImplementing(const UObject* Obj)
+	{
+		UObject* Outer = Obj->GetOuter();
+
+		while (Outer)
+		{
+			if (Obj->Implements<T>())
+			{
+				return Obj;
+			}
+			else
+			{
+				Outer = Outer->GetOuter();
+			}
+		}
+
+		return nullptr;
+	}
+
 	template<class T> bool SetEquals(TSet<T>& A, TSet<T>& B)
 	{
 		

@@ -357,8 +357,6 @@ void UEdStateNode::PostEditChangeProperty(FPropertyChangedEvent& PropertyChanged
 		}
 	}
 
-
-
 	if (!IsValid(this->StateClass))
 	{
 		this->StateClass = NewObject<UState>(this);
