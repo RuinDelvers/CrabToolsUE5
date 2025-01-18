@@ -1,6 +1,7 @@
 #include "StateMachine/Animation/AnimNotifyWait.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "StateMachine/Events.h"
+#include "Utils/UtilsLibrary.h"
 #include "GameFramework/Character.h"
 
 UAnimNotifyWaitNode::UAnimNotifyWaitNode()
@@ -69,12 +70,9 @@ TArray<FString> UAnimNotifyWaitNode::GetComponentOptions() const
 
 	if (this->ActorClass)
 	{
-		for (auto& Components : Cast<AActor>(this->ActorClass->GetDefaultObject())->GetComponents())
+		for (auto& SkComp : UtilsFunctions::GetComponentsByClass<USkeletalMeshComponent>(this->ActorClass))
 		{
-			if (auto SkComp = Cast<USkeletalMeshComponent>(Components))
-			{
-				Names.Add(SkComp->GetName());
-			}
+			Names.Add(SkComp->GetName());
 		}
 
 		Names.Sort([&](const FString& A, const FString& B) { return A < B; });

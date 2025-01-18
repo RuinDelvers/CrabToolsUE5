@@ -6,6 +6,9 @@
 #include "Utils/SetGatedBool.h"
 #include "Utils/NAryGate.h"
 #include "StateMachine/StateMachine.h"
+#include "Engine/BlueprintGeneratedClass.h"
+#include "Engine/SimpleConstructionScript.h"
+#include "Engine/SCS_Node.h"
 #include "UtilsLibrary.generated.h"
 
 /**
@@ -66,6 +69,31 @@ public:
 
 namespace UtilsFunctions
 {
+	/*
+	 * This will search a class's default object for available components. Will include components defined
+	 * by blueprint actors also.
+	 */
+	template<class T> TArray<T*> GetComponentsByClass(TSubclassOf<AActor> ObjClass)
+	{
+		TArray<T*> Components;
+		CastChecked<AActor>(ObjClass->GetDefaultObject())->GetComponents<T>(Components, false);
+
+		if (auto BPGC = Cast<UBlueprintGeneratedClass>(ObjClass.Get()))
+		{
+			auto& Nodes = BPGC->SimpleConstructionScript->GetAllNodes();
+
+			for (const auto& Node : BPGC->SimpleConstructionScript->GetAllNodes())
+			{
+				if (auto Comp = Cast<T>(Node->GetActualComponentTemplate(BPGC)))
+				{
+					Components.Add(Comp);
+				}
+			}
+		}
+
+		return Components;
+	}
+
 	template<class T> T* GetOuterAs(const UObject* Obj)
 	{
 		UObject* Outer = Obj->GetOuter();

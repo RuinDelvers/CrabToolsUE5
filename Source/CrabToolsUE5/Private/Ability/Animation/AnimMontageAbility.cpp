@@ -12,9 +12,6 @@ void UAnimMontageAbility::Start_Inner_Implementation()
 			{
 				Super::Start_Inner_Implementation();
 				AnimInst->Montage_Play(Montage);
-
-				// Unnecessary since finish is handled in AnimAbility.
-				//AnimInst->OnAllMontageInstancesEnded.AddDynamic(this, &UAnimAbility::Finish);
 			}
 			else
 			{
