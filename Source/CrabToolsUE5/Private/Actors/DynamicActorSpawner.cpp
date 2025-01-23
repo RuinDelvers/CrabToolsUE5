@@ -6,6 +6,8 @@
 ADynamicActorSpawner::ADynamicActorSpawner()
 {
 	this->SetRootComponent(CreateDefaultSubobject<USceneComponent>(TEXT("SceneRoot")));
+	this->PrimaryActorTick.bCanEverTick = false;
+	this->PrimaryActorTick.bStartWithTickEnabled = false;
 
 	#if WITH_EDITORONLY_DATA
 		this->EditorSprite = CreateEditorOnlyDefaultSubobject<UBillboardComponent>(TEXT("EditorSprite"));
@@ -70,6 +72,7 @@ void ADynamicActorSpawner::ToggleDisplay()
 			Params.bTemporaryEditorActor = true;
 
 			this->PreviewActor = this->GetWorld()->SpawnActor(this->ActorClass.Get(), &Transform, Params);
+			this->PreviewActor->SetActorEnableCollision(false);
 
 			this->EditorSprite->SetVisibility(false);
 		}

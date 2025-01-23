@@ -165,12 +165,15 @@ UEdGraphNode* FSMSchemaAction_NewNode::PerformAction(
 
 		ResultNode = NodeTemplate;
 
-		ResultNode->SetNodeTemplate(NewObject<UStateNode>(
-			ResultNode,
-			this->NodeClass,
-			FName(FString("StateNode")),
-			RF_NoFlags
-		));
+		if (this->NodeClass)
+		{
+			ResultNode->SetNodeTemplate(NewObject<UStateNode>(
+				ResultNode,
+				this->NodeClass,
+				FName(FString("StateNode")),
+				RF_NoFlags
+			));
+		}
 	}
 
 	return ResultNode;
@@ -297,8 +300,27 @@ void UStateMachineSchema::GetGraphContextActions(FGraphContextMenuBuilder& Conte
 		}
 	}
 
+	this->AddEmptyAction(ContextMenuBuilder);
 	this->AddExtensionAction(ContextMenuBuilder);
 	this->AddAliasAction(ContextMenuBuilder);
+}
+
+void UStateMachineSchema::AddEmptyAction(FGraphContextMenuBuilder& ContextMenuBuilder) const
+{
+	const FText Desc = LOCTEXT("NewStateGraphExtensionNodeMenuText", "Create Empty State");
+	const FText MenuText = FText::FromString("");
+	const FText ToolTip = LOCTEXT("NewStateGraphNodeTooltip", "Add empty state here");
+
+	TSharedPtr<FSMSchemaAction_NewNode> Action(
+		new FSMSchemaAction_NewNode(MenuText, Desc, ToolTip, -100));
+	Action->SetNodeClass(nullptr);
+
+	Action->SetNodeTemplate(NewObject<UEdStateNode>(ContextMenuBuilder.OwnerOfTemporaries));
+
+	auto StateNode = NewObject<UEdStateNode>(ContextMenuBuilder.OwnerOfTemporaries);
+	Action->SetNodeTemplate(StateNode);
+
+	ContextMenuBuilder.AddAction(Action);
 }
 
 void UStateMachineSchema::AddExtensionAction(FGraphContextMenuBuilder& ContextMenuBuilder) const

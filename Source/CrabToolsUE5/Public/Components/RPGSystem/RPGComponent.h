@@ -12,8 +12,26 @@ class UStatus: public UObject
 	GENERATED_BODY()
 
 	TWeakObjectPtr<URPGComponent> Owner;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="RPG|Status", meta=(AllowPrivateAccess, ExposeOnSpawn=true))
+	float Duration = std::numeric_limits<float>::infinity();
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "RPG|Status", meta = (AllowPrivateAccess))
+	bool bRefreshOnStack = true;
+
+	int Stacks = 0;
+	FTimerHandle Timer;
 
 public:
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "RPG|Status")
+	bool IsPermanent() const { return this->Duration == std::numeric_limits<float>::infinity(); }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "RPG|Status")
+	bool IsOwned() const { return this->Owner.IsValid(); }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category="RPG|Status")
+	int GetStacks() const { return this->Stacks; }
 
 	/* Used for real time handling.*/
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category="RPG|Status")
@@ -25,19 +43,50 @@ public:
 	void Turn();
 	virtual void Turn_Implementation() {}
 
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category="RPG|Status")
-	void Apply();
-	/* Call this method instead of Apply to attach this to a component.*/
-	void Apply_Internal(URPGComponent* Comp);
-	virtual void Apply_Implementation() {}
+	UFUNCTION(BlueprintCallable, Category="RPG|Status")
+	void Apply(URPGComponent* Comp);
 
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category="RPG|Status")
-	void Remove();
-	void Remove_Internal();
-	virtual void Remove_Implementation() {}
+	UFUNCTION(BlueprintCallable, Category = "RPG|Status")
+	void Stack(int Quantity = 1);
 
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category="RPG|Status", meta = (HideSelfPin, DefaultToSelf))
+	UFUNCTION(BlueprintCallable, Category = "RPG|Status")
+	void Detach();
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "RPG|Status")
 	URPGComponent* GetOwner() const;
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "RPG|Status")
+	bool RequiresTick() const;
+	virtual bool RequiresTick_Implementation() const { return false; }
+
+	virtual UWorld* GetWorld() const override;
+
+protected:
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category="RPG|Status")
+	void Apply_Inner();
+	virtual void Apply_Inner_Implementation() {}
+	
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "RPG|Status")
+	void Remove_Inner();
+	virtual void Remove_Inner_Implementation() {}
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "RPG|Status")
+	void Stack_Inner(int Quantity = 1);
+	virtual void Stack_Inner_Implementation(int Quantity = 1) {}
+
+	UFUNCTION(BlueprintCallable, Category="RPG|Status")
+	void SetTimer();
+
+private:
+
+	UFUNCTION()
+	void OnDurationExpired();
+
+	friend class URPGComponent;
+
+	void Remove();
 };
 
 
@@ -246,7 +295,8 @@ class CRABTOOLSUE5_API URPGComponent : public UActorComponent
 	GENERATED_BODY()
 
 	UPROPERTY(EditDefaultsOnly, Instanced, Category="RPG|Status")
-	TArray<UStatus*> Statuses;
+	TSet<TObjectPtr<UStatus>> Statuses;
+	TSet<TObjectPtr<UStatus>> TickedStatuses;
 
 	UPROPERTY(BlueprintReadOnly, Category = "RPG", meta=(AllowPrivateAccess=true))
 	FIntAttribute ZeroInt;
@@ -263,6 +313,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category="RPG|Status")
 	void ApplyStatus(UStatus* Status);
+
+	UFUNCTION(BlueprintCallable, Category = "RPG|Status")
+	void StackStatus(TSubclassOf<UStatus> StatusType, int Quantity=1);
 
 	UFUNCTION(BlueprintCallable, Category = "RPG|Status")
 	void RemoveStatus(UStatus* Status);

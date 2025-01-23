@@ -180,4 +180,5 @@ private:
 
 	void AddExtensionAction(FGraphContextMenuBuilder& ContextMenuBuilder) const;
 	void AddAliasAction(FGraphContextMenuBuilder& ContextMenuBuilder) const;
+	void AddEmptyAction(FGraphContextMenuBuilder& ContextMenuBuilder) const;
 };
