@@ -9,10 +9,14 @@
 UCLASS(Blueprintable, EditInlineNew, DefaultToInstanced, DisplayName = "True")
 class CRABTOOLSUE5_API UTrueTransitionCondition : public UTransitionCondition
 {
+
+	static TObjectPtr<UTrueTransitionCondition> Singleton;
+
 	GENERATED_BODY()
 
 public:
 
+	static UTransitionCondition* GetStaticTransition();
 	virtual bool Check() const override { return true; }
 };
 
@@ -36,10 +40,13 @@ public:
 UCLASS(Blueprintable, EditInlineNew, DefaultToInstanced, DisplayName = "True")
 class CRABTOOLSUE5_API UTrueTransitionDataCondition : public UTransitionDataCondition
 {
+	static TObjectPtr<UTrueTransitionDataCondition> Singleton;
+
 	GENERATED_BODY()
 
 public:
 
+	static UTransitionDataCondition* GetStaticTransition();
 	virtual bool Check(UObject* Obj) const override { return true; }
 };
 

@@ -267,6 +267,7 @@ void UStateMachine::SendEvent(FName EName)
 			if (TData.Condition->Check())
 			{
 				this->UpdateState(TData.Destination);
+				TData.Condition->OnTransitionTaken();
 
 				#if STATEMACHINE_DEBUG_DATA
 					Frame.EndState = this->CurrentStateName;
@@ -307,6 +308,7 @@ void UStateMachine::SendEventWithData(FName EName, UObject* Data)
 			if (TData.DataCondition->Check(Data))
 			{
 				this->UpdateStateWithData(TData.Destination, Data);
+				TData.DataCondition->OnTransitionTaken(Data);
 
 				#if STATEMACHINE_DEBUG_DATA
 					Frame.EndState = this->CurrentStateName;
@@ -581,12 +583,12 @@ UState* UStateMachine::GetCurrentState()
 			{
 				if (!IsValid(tpairs.Value.Condition))
 				{
-					tpairs.Value.Condition = NewObject<UTrueTransitionCondition>(this);
+					tpairs.Value.Condition = UTrueTransitionCondition::GetStaticTransition();;
 				}
 
 				if (!IsValid(tpairs.Value.DataCondition))
 				{
-					tpairs.Value.DataCondition = NewObject<UTrueTransitionDataCondition>(this);
+					tpairs.Value.DataCondition = UTrueTransitionDataCondition::GetStaticTransition();
 				}
 
 				tpairs.Value.Condition->Initialize(this);

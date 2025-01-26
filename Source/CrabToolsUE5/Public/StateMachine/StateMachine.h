@@ -197,6 +197,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "StateMachine|Transition")
 	AActor* GetOwner() const;
 
+	UFUNCTION(BlueprintNativeEvent, Category="StateMachine|Transition")
+	void OnTransitionTaken();
+	void OnTransitionTaken_Implementation() {}
+
 	UFUNCTION(BlueprintCallable, Category="StateMachine|Transition")
 	UStateMachine* GetMachine() const { return this->OwnerMachine; }
 
@@ -222,6 +226,10 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "StateMachine|Transition")
 	AActor* GetOwner() const;
+
+	UFUNCTION(BlueprintNativeEvent, Category = "StateMachine|Transition")
+	void OnTransitionTaken(UObject* Data);
+	void OnTransitionTaken_Implementation(UObject* Data) {}
 
 	UFUNCTION(BlueprintCallable, Category = "StateMachine|Transition")
 	FORCEINLINE UStateMachine* GetMachine() const { return this->OwnerMachine; }
