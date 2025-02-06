@@ -69,13 +69,24 @@ void URPGComponent::TickComponent(float DeltaTime, enum ELevelTick TickType, FAc
 	}
 }
 
-void URPGComponent::Turn()
+void URPGComponent::TurnStart()
 {
 	for (auto& Status : this->Statuses)
 	{
 		if (IsValid(Status))
 		{
-			Status->Turn();
+			Status->TurnStart();
+		}
+	}
+}
+
+void URPGComponent::TurnEnd()
+{
+	for (auto& Status : this->Statuses)
+	{
+		if (IsValid(Status))
+		{
+			Status->TurnEnd();
 		}
 	}
 }

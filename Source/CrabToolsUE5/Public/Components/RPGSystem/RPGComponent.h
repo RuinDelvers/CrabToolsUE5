@@ -40,8 +40,13 @@ public:
 
 	/* Used for turn based calls. */
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "RPG|Status")
-	void Turn();
-	virtual void Turn_Implementation() {}
+	void TurnStart();
+	virtual void TurnStart_Implementation() {}
+
+	/* Used for turn based calls. */
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "RPG|Status")
+	void TurnEnd();
+	virtual void TurnEnd_Implementation() {}
 
 	UFUNCTION(BlueprintCallable, Category="RPG|Status")
 	void Apply(URPGComponent* Comp);
@@ -309,7 +314,10 @@ public:
 	URPGComponent(const FObjectInitializer& ObjectInitializer);
 
 	UFUNCTION(BlueprintCallable, Category = "RPG")
-	void Turn();
+	void TurnStart();
+
+	UFUNCTION(BlueprintCallable, Category = "RPG")
+	void TurnEnd();
 
 	UFUNCTION(BlueprintCallable, Category="RPG|Status")
 	void ApplyStatus(UStatus* Status);
