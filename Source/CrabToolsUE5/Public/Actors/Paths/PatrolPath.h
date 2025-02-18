@@ -107,7 +107,7 @@ struct FPatrolPathData
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = AI,
 		meta = (MakeEditWidget))
-	FVector Point;
+	FVector Point = FVector::ZeroVector;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = AI,
 		meta = (AllowPrivateAccess))
