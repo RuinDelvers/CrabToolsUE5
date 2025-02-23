@@ -59,7 +59,42 @@ void UUtilsLibrary::GateObj(FSetGatedBool& Input, UObject* Obj) {
 	Input.AddObj(Obj);
 }
 
-UObject* UUtilsLibrary::GetOwnerAs(UActorComponent* Component, TSubclassOf<AActor> SClass, ESearchResult& Result) {
+UObject* UUtilsLibrary::GetOuterAs(UObject* Object, TSubclassOf<UObject> SClass, ESearchResult& Result)
+{
+	if (!IsValid(Object))
+	{
+		Result = ESearchResult::NotFound;
+		return nullptr;
+	}
+
+	auto Outer = Object->GetOuter();
+
+	while (Outer)
+	{
+		if (Outer->GetClass()->IsChildOf(SClass))
+		{
+			break;
+		}
+		else
+		{
+			Outer = Outer->GetOuter();
+		}
+	}
+
+	if (Outer)
+	{
+		Result = ESearchResult::Found;
+	}
+	else
+	{
+		Result = ESearchResult::NotFound;
+	}
+
+	return Outer;
+}
+
+UObject* UUtilsLibrary::GetOwnerAs(UActorComponent* Component, TSubclassOf<AActor> SClass, ESearchResult& Result)
+{
 	auto Class = SClass.Get();
 	auto Owner = Component->GetOwner();
 	if (Class && Owner) {

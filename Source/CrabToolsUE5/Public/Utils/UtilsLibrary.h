@@ -56,7 +56,10 @@ public:
 	static float RotateAngleToDelta(float Base, float Goal, float Delta, bool& Complete);
 
 	UFUNCTION(BlueprintCallable, Category = "RPG", meta = (ExpandEnumAsExecs = "Result", DeterminesOutputType = "SClass"))
-	UObject* GetOwnerAs(UActorComponent* Component, TSubclassOf<AActor> SClass, ESearchResult& Result);
+	static UObject* GetOwnerAs(UActorComponent* Component, TSubclassOf<AActor> SClass, ESearchResult& Result);
+
+	UFUNCTION(BlueprintCallable, Category = "RPG", meta = (ExpandEnumAsExecs = "Result", DeterminesOutputType = "SClass"))
+	static UObject* GetOuterAs(UObject* Obj, TSubclassOf<UObject> SClass, ESearchResult& Result);
 
 	UFUNCTION(BlueprintCallable, Category = "UtilityStructures", 
 		meta = (ExpandEnumAsExecs = "Result"))
