@@ -155,7 +155,10 @@ void UStateMachineBlueprintGeneratedClass::CleanAndSanitize()
 	this->Interfaces.Empty();
 	this->SubArchetypes.Empty();
 	this->Archetype.CleanAndSanitize();
-	this->EventSet.Empty();
+
+	#if WITH_EDITORONLY_DATA
+		this->EventSet.Empty();
+	#endif
 }
 
 FName UStateMachineBlueprintGeneratedClass::GetStartState(FName MachineName) const

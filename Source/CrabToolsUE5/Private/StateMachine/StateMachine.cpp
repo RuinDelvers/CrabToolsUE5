@@ -1447,7 +1447,11 @@ UStateNode* UStateMachineProperty::GetNode() const
 
 TArray<FString> UStateMachineProperty::DoPropertySearch() const
 {
-	return this->GetNode()->GetPropertyOptions(this->Params);
+	#if WITH_EDITOR
+		return this->GetNode()->GetPropertyOptions(this->Params);
+	#else
+		return {};
+	#endif
 }
 
 const FSMPropertyReference& UStateMachineProperty::GetProperty()
