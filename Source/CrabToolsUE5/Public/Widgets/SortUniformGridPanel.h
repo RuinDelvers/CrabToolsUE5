@@ -1,11 +1,10 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
 #include "Components/UniformGridPanel.h"
 #include "SortUniformGridPanel.generated.h"
 
+/* Sortable uniform grid panel. Has a fixed width or height depending upon orientation. */
 UCLASS()
 class USortUniformGridPanel : public UUniformGridPanel
 {
@@ -18,6 +17,8 @@ class USortUniformGridPanel : public UUniformGridPanel
 	int Height;
 
 public:
+
 	UFUNCTION(BlueprintCallable, Category="Widget")
 	void SortChildren();
+
 };
