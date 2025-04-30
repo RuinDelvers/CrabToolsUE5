@@ -47,6 +47,16 @@ float URPGHelpers::IntRescPercent(const FIntResource& Input) {
 	return Input.GetPercent();
 }
 
+void URPGHelpers::AddIntResource(FIntResource& input, int Amount)
+{
+	input.SetValue(input.Value + Amount);
+}
+
+void URPGHelpers::SubtractIntResource(FIntResource& input, int Amount)
+{
+	input.SetValue(input.Value - Amount);
+}
+
 #pragma endregion
 
 
@@ -82,6 +92,16 @@ float URPGHelpers::MinFloatRescValue(const FFloatResource& Input) {
 
 float URPGHelpers::FloatRescPercent(const FFloatResource& Input) {
 	return Input.GetPercent();
+}
+
+void URPGHelpers::AddFloatResource(FFloatResource& input, float Amount)
+{
+	input.SetValue(input.Value + Amount);
+}
+
+void URPGHelpers::SubtractFloatResource(FFloatResource& input, float Amount)
+{
+	input.SetValue(input.Value - Amount);
 }
 
 #pragma endregion

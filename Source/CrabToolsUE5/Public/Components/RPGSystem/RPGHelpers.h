@@ -40,7 +40,12 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "UtilityFunctions")
 	static float IntRescPercent(const FIntResource& Input);
+	
+	UFUNCTION(BlueprintCallable, Category = "UtilityFunctions")
+	static void AddIntResource(UPARAM(ref) FIntResource& input, int Amount);
 
+	UFUNCTION(BlueprintCallable, Category = "UtilityFunctions")
+	static void SubtractIntResource(UPARAM(ref) FIntResource& input, int Amount);
 	#pragma endregion
 
 	#pragma region Float Attributes & Resources
@@ -69,6 +74,12 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "UtilityFunctions")
 	static float FloatRescPercent(const FFloatResource& Input);
+
+	UFUNCTION(BlueprintCallable, Category = "UtilityFunctions")
+	static void AddFloatResource(UPARAM(ref) FFloatResource& input, float Amount);
+
+	UFUNCTION(BlueprintCallable, Category = "UtilityFunctions")
+	static void SubtractFloatResource(UPARAM(ref) FFloatResource& input, float Amount);
 
 	#pragma endregion
 };

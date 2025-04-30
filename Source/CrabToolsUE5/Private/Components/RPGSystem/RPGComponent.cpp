@@ -93,7 +93,8 @@ void URPGComponent::TurnEnd()
 
 TArray<FString> URPGComponent::GetIntAttributeNames() const
 {
-	TArray<FString> Names;
+	TArray<FString> Names = { FName(NAME_None).ToString() };
+
 	for (TFieldIterator<FStructProperty> FIT(this->GetClass(), EFieldIteratorFlags::IncludeSuper); FIT; ++FIT) {
 		FStructProperty* f = *FIT;
 
@@ -109,7 +110,8 @@ TArray<FString> URPGComponent::GetIntAttributeNames() const
 
 TArray<FString> URPGComponent::GetFloatAttributeNames() const
 {
-	TArray<FString> Names;
+	TArray<FString> Names = { FName(NAME_None).ToString() };
+
 	for (TFieldIterator<FStructProperty> FIT(this->GetClass(), EFieldIteratorFlags::IncludeSuper); FIT; ++FIT) {
 		FStructProperty* f = *FIT;
 
