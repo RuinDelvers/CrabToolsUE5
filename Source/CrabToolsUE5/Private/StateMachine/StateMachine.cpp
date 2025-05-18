@@ -1147,6 +1147,12 @@ UWorld* UStateNode::GetWorld() const
 	return nullptr;
 }
 
+void UStateNode::UpdateTickRequirements() const
+{
+	this->GetMachine()->UpdateTickRequirements(this->RequiresTick());
+
+}
+
 bool UStateNode::RequiresTick_Implementation() const
 {
 	return false;

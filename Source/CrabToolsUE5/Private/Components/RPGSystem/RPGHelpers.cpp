@@ -25,6 +25,11 @@ void URPGHelpers::SetIntResource(UPARAM(ref) FIntResource& input, int Value) {
 	input.SetValue(Value);
 }
 
+void URPGHelpers::SetIntAttribute(UPARAM(ref) FIntAttribute& input, int Value)
+{
+	input.SetValue(Value);
+}
+
 int URPGHelpers::UnwrapIntAttribute(const FIntAttribute& input) {
 	return input.GetValue();
 }
@@ -71,6 +76,11 @@ void URPGHelpers::ObserveFloatResource(FFloatResource& input, const FFloatAttrib
 }
 
 void URPGHelpers::SetFloatResource(UPARAM(ref) FFloatResource& input, float Value) {
+	input.SetValue(Value);
+}
+
+void URPGHelpers::SetFloatAttribute(UPARAM(ref) FFloatAttribute& input, float Value)
+{
 	input.SetValue(Value);
 }
 

@@ -44,7 +44,7 @@ class UEdStateNode : public UEdBaseStateNode
 	GENERATED_BODY()
 
 	/* The the current state of the select state machine debug object in the editor. */
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere, Instanced, Category="Debug", meta=(ShowInnerProperties))
 	TObjectPtr<UState> DebugStateObject;
 
 	UPROPERTY(EditDefaultsOnly, Category="StateMachine")

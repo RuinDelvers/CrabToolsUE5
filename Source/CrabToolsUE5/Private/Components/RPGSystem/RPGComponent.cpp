@@ -225,6 +225,12 @@ int FIntAttribute::GetValue() const {
 }
 
 
+void FIntAttribute::SetValue(int UValue)
+{
+	this->BaseValue = UValue;
+	this->Refresh();
+}
+
 void FIntAttribute::Operate(UIntOperator* Op) {
 	Op->SetOwner(this->Owner);
 	this->Operators.Add(Op);
@@ -265,6 +271,11 @@ void FIntAttribute::Refresh() {
 		if (Op) {
 			this->CompValue = Op->Operate(this->CompValue);
 		}
+	}
+
+	for (auto Dep : this->Dependencies)
+	{
+		Dep->Refresh();
 	}
 
 	this->ValueChangedEvent.Broadcast(this->CompValue);
@@ -371,6 +382,12 @@ float FFloatAttribute::GetValue() const {
 	return this->CompValue;
 }
 
+void FFloatAttribute::SetValue(float UValue)
+{
+	this->BaseValue = UValue;
+	this->Refresh();
+}
+
 
 void FFloatAttribute::Operate(UFloatOperator* Op) {
 	Op->SetOwner(this->Owner);
@@ -409,10 +426,16 @@ void FFloatAttribute::Refresh() {
 		});
 
 	this->CompValue = this->BaseValue;
+
 	for (auto& Op : this->Operators) {
 		if (Op) {
 			this->CompValue = Op->Operate(this->CompValue);
 		}
+	}
+
+	for (auto Dep : this->Dependencies)
+	{
+		Dep->Refresh();
 	}
 
 	this->ValueChangedEvent.Broadcast(this->CompValue);

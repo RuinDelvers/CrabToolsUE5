@@ -24,6 +24,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "UtilityFunctions")
 	static void SetIntResource(UPARAM(ref) FIntResource& input, int Value);
 
+	UFUNCTION(BlueprintCallable, Category = "UtilityFunctions")
+	static void SetIntAttribute(UPARAM(ref) FIntAttribute& input, int Value);
+
 	UFUNCTION(Blueprintpure, Category="UtilityFunctions",
 		meta=(DisplayName="UnwrapInt", CompactNodeTitle="->", BlueprintAutocast))
 	static int UnwrapIntAttribute(const FIntAttribute& input);
@@ -57,6 +60,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "UtilityFunctions")
 	static void SetFloatResource(UPARAM(ref) FFloatResource& input, float Value);
+
+	UFUNCTION(BlueprintCallable, Category = "UtilityFunctions")
+	static void SetFloatAttribute(UPARAM(ref) FFloatAttribute& input, float Value);
 
 	UFUNCTION(Blueprintpure, Category = "UtilityFunctions",
 		meta = (DisplayName = "UnwrapFloat", CompactNodeTitle = "->", BlueprintAutocast))

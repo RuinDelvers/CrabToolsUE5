@@ -150,6 +150,7 @@ public:
 	FIntAttributeObserver ValueChangedEvent;
 
 	int GetValue() const;
+	void SetValue(int UValue);
 	void Operate(UIntOperator* Op);
 	void UnOperate(UIntOperator* Op);
 	void SetOwner(URPGComponent* UOwner);
@@ -249,6 +250,7 @@ public:
 	FFloatAttributeObserver ValueChangedEvent;
 
 	float GetValue() const;
+	void SetValue(float UValue);
 	void Operate(UFloatOperator* Op);
 	void UnOperate(UFloatOperator* Op);
 	void SetOwner(URPGComponent* UOwner);

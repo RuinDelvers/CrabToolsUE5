@@ -32,25 +32,23 @@ void UEdStateGraph::Initialize(UStateMachineBlueprint* BP)
 
 void UEdStateGraph::SetDebugMachine(UStateMachine* Machine)
 {
+	if (this->DebugStateMachine)
+	{
+		this->DebugStateMachine->OnStateChanged.RemoveAll(this);
+
+		for (const auto StateNode : this->GetStates())
+		{
+			StateNode->SetDebugObject(nullptr);
+		}
+	}
+
 	if (IsValid(Machine))
 	{
-		if (this->DebugStateMachine)
-		{
-			this->DebugStateMachine->OnStateChanged.RemoveAll(this);
-		}
-
 		Machine->OnStateChanged.AddDynamic(this, &UEdStateGraph::OnDebugStateChanged);
 
 		if (auto StateNode = this->GetStateNodeByName(Machine->GetCurrentStateName()))
 		{
 			StateNode->SetDebugObject(Machine->GetCurrentStateData());
-		}
-	}
-	else
-	{
-		for (const auto StateNode : this->GetStates())
-		{
-			StateNode->SetDebugObject(nullptr);
 		}
 	}
 }

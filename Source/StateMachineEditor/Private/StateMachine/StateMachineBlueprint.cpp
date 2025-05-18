@@ -94,7 +94,7 @@ void UStateMachineBlueprint::SetObjectBeingDebugged(UObject* Obj)
 	{
 		this->MainGraph->SetDebugMachine(nullptr);
 
-		for (const auto SubGraph : this->SubGraphs)
+		for (const auto& SubGraph : this->SubGraphs)
 		{
 			SubGraph->SetDebugMachine(nullptr);
 		}

@@ -117,14 +117,15 @@ class CRABTOOLSUE5_API UState : public UObject, public IStateLike
 
 	friend class UStateMachine;
 
-	UPROPERTY(Transient, DuplicateTransient)
+	UPROPERTY(VisibleAnywhere, Transient, DuplicateTransient, Category="StateMachine",
+		meta=(AllowPrivateAccess))
 	TObjectPtr<UStateMachine> OwnerMachine;
 
-	UPROPERTY(DuplicateTransient)
+	UPROPERTY(VisibleAnywhere, DuplicateTransient, Category = "StateMachine", meta = (AllowPrivateAccess))
 	TObjectPtr<UStateNode> Node;
 
 	// Map from Event Name to StateName
-	UPROPERTY(DuplicateTransient)
+	UPROPERTY(VisibleAnywhere, DuplicateTransient, Category = "StateMachine", meta = (AllowPrivateAccess))
 	TMap<FName, FTransitionData> Transitions;
 
 public:
@@ -347,6 +348,9 @@ public:
 	virtual UWorld* GetWorld() const override;
 
 protected:
+
+	UFUNCTION(BlueprintCallable, Category = "StateMachine")
+	void UpdateTickRequirements() const;
 
 	/* Override this with your verification code. */
 	virtual bool Verify_Inner(FNodeVerificationContext& Context) const { return true; }
