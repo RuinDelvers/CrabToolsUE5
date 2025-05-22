@@ -13,9 +13,8 @@ void ALineTraceTargetingActor::Tick(float DeltaTime)
 
 	FHitResult Result(ForceInit);
 
-	FVector Base = this->GetTraceBase();
-	FVector Target = ITargeterInterface::Execute_GetEndPoint(this->GetUsingActorNative());
-	FVector FixedTarget = (1 + this->CorrectionFactor/100) * (Target - Base) + Base;
+	FVector Base = this->GetTraceBase();	
+	FVector FixedTarget = (1 + this->CorrectionFactor/100) * (this->GetTargetEndPoint() - Base) + Base;
 
 	#if WITH_EDITORONLY_DATA
 		if (this->bDrawDebug)

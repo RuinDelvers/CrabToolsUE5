@@ -8,7 +8,10 @@ template <class ValueType, class CallbackType> inline void ObserveValue(ValueTyp
 	}
 	else
 	{
-		input.ValueChangedEvent.Add(Callback);
+		if (!input.ValueChangedEvent.Contains(Callback))
+		{
+			input.ValueChangedEvent.Add(Callback);
+		}
 	}
 }
 

@@ -6,6 +6,13 @@ ABaseTraceTargetingActor::ABaseTraceTargetingActor() : Range(std::numeric_limits
 	this->PrimaryActorTick.bCanEverTick = true;
 }
 
+void ABaseTraceTargetingActor::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	this->TargetLocation = ITargeterInterface::Execute_GetEndPoint(this->GetUsingActorNative());
+}
+
 void ABaseTraceTargetingActor::InvalidateTargetData()
 {
 	this->TracedActor = nullptr;

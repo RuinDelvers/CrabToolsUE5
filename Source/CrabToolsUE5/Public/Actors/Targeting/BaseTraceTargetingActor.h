@@ -35,10 +35,16 @@ protected:
 	TArray<FVector> AddedPoints;
 
 	/* The actor traced for targeting. */
-	TWeakObjectPtr<AActor> TracedActor;
+	UPROPERTY(BlueprintreadOnly, Category = "Targeting|Trace")
+	TObjectPtr<AActor> TracedActor;
+
 	/* The impact point that was traced by this targeting actor. */
 	UPROPERTY(BlueprintreadOnly, Category = "Targeting|Trace")
 	FVector TracedLocation;
+
+	/* The point received via the GetEndPoint interface call. */
+	UPROPERTY(BlueprintreadOnly, Category = "Targeting|Trace")
+	FVector TargetLocation;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess, ExposeOnSpawn = true));
 	float Range;
@@ -46,6 +52,8 @@ protected:
 public:
 
 	ABaseTraceTargetingActor();
+
+	virtual void Tick(float DeltaTime) override;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category="Targeting|Trace", meta=(HideSelfPin))
 	FVector GetEndPoint() const { return this->TracedLocation; }
@@ -95,6 +103,10 @@ public:
 	FVector GetTraceBase() const;
 	FVector GetTraceBase_Implementation() const { return this->GetActorLocation(); }
 
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	FVector GetTargetEndPoint() const { return this->TargetLocation; }
+
 private:
+
 	FORCEINLINE void InvalidateTargetData();
 };

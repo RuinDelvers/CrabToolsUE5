@@ -22,7 +22,7 @@ void AArcTraceTargetingActor::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	auto Base = this->GetActorLocation();
-	auto Target = ITargeterInterface::Execute_GetEndPoint(this->GetUsingActorNative());
+	auto Target = this->GetTargetEndPoint();
 	// Choose a halfway point between.
 	auto Midpoint = (Target - Base)/2 + Base;
 	// Adjust the arc to be above both points.
