@@ -147,6 +147,7 @@ struct CRABTOOLSUE5_API FIntAttribute
 	TArray<FIntResource*> Dependencies;
 
 public:
+
 	FIntAttributeObserver ValueChangedEvent;
 
 	int GetValue() const;

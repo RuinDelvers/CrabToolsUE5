@@ -29,5 +29,5 @@ protected:
 private:
 
 	UFUNCTION()
-	void OnConfirmed();
+	void OnConfirmed(TScriptInterface<ITargetingControllerInterface> Targeter);
 };

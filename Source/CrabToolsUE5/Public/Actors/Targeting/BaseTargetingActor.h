@@ -16,6 +16,9 @@ class ABaseTargetingActor : public AActor, public ITargetingControllerInterface
 
 public:
 
+	UPROPERTY(BlueprintAssignable, Category="Targeting")
+	FValidateTargeting OnValidateTargeting;
+
 	FConfirmTargetsMulti OnConfirmTargets;
 
 public:
@@ -29,6 +32,8 @@ public:
 	virtual void Initialize_Implementation() override;
 	virtual void Confirm_Implementation() override;
 	virtual void AddListener_Implementation(const FConfirmTargetsSingle& Callback) override;
+	virtual void AddValidationListener_Implementation(const FValidateTargetingSingle& Callback) override;
+	virtual void AddDestroyedListener_Implementation(const FTargetingDestroyed& Callback) override;
 	/* END ITargetControllerInterface functions */
 
 protected:

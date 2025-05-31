@@ -21,7 +21,7 @@ void ABaseTraceTargetingActor::InvalidateTargetData()
 
 void ABaseTraceTargetingActor::PushTarget_Implementation()
 {
-	if (this->IsValidTarget(this->TracedActor.Get()))
+	if (IsValid(this->TracedActor.Get()))
 	{
 		this->AddedActors.Add(this->TracedActor.Get());
 		this->AddedPoints.Add(this->TracedLocation);
@@ -30,25 +30,20 @@ void ABaseTraceTargetingActor::PushTarget_Implementation()
 
 void ABaseTraceTargetingActor::UpdateTraces(AActor* CheckedActor, FVector Location)
 {
-	if (!this->IsValidTarget(CheckedActor) || !this->IsValidPoint(Location))
+	this->TracedActor = CheckedActor;
+	this->TracedLocation = Location;
+
+	FText Reason;
+	bool IsValid = ITargetingControllerInterface::Execute_Validate(this, Reason);
+
+	if (!IsValid)
 	{
 		this->TracedActor = nullptr;
 		this->TracedLocation = FVector::Zero();
-
-		this->OnInvalidTarget();
-
-		if (this->IsTooFar())
-		{
-			this->OnTooFar();
-		}
-	}
-	else
-	{
-		this->TracedActor = CheckedActor;
-		this->TracedLocation = Location;		
 	}
 
 	this->OnUpdateTraces();
+	this->OnValidateTargeting.Broadcast(IsValid, Reason);
 }
 
 void ABaseTraceTargetingActor::PopTarget_Implementation()
@@ -62,12 +57,12 @@ bool ABaseTraceTargetingActor::IsTooFar() const
 	return (this->TracedLocation - this->GetActorLocation()).Length() > this->Range;
 }
 
-bool ABaseTraceTargetingActor::IsValidTarget_Implementation(AActor* CheckedActor)
+bool ABaseTraceTargetingActor::IsValidTarget_Implementation() const
 {
-	return IsValid(CheckedActor);
+	return IsValid(this->TracedActor);
 }
 
-bool ABaseTraceTargetingActor::IsValidPoint_Implementation(FVector Point)
+bool ABaseTraceTargetingActor::IsValidPoint_Implementation() const
 {
 	return !this->IsTooFar();
 }
@@ -78,4 +73,47 @@ void ABaseTraceTargetingActor::IgnoreActors_Implementation(TArray<AActor*>& Igno
 	{
 		IgnoredActors.Add(this->GetOwner());
 	}
+}
+
+bool ABaseTraceTargetingActor::Validate_Implementation(FText& Reason) const
+{
+	bool ValidTarget = this->IsValidTarget();
+	bool ValidPoint = this->IsValidPoint();
+
+	FText Summary = NSLOCTEXT("", "", "{ValidTarget}{ValidPoint}");
+	FFormatNamedArguments Args;
+
+	if (!ValidTarget)
+	{
+		Args.Add(TEXT("ValidTarget"), FText::FromString("Invalid Target"));
+	}
+	else
+	{
+		Args.Add(TEXT("ValidTarget"), FText::FromString(""));
+	}
+
+	if (!ValidPoint)
+	{
+		if (ValidTarget)
+		{
+			if (this->IsTooFar())
+			{
+				Args.Add(TEXT("ValidPoint"), FText::FromString("Out of range."));
+			}			
+		}
+		else
+		{
+			if (this->IsTooFar())
+			{
+				Args.Add(TEXT("ValidPoint"), FText::FromString("\nOut of range."));
+			}
+		}
+	}
+	else
+	{
+		Args.Add(TEXT("ValidPoint"), FText::FromString(""));
+	}
+	
+	Reason = FText::Format(Summary, Args);
+	return ValidTarget && ValidPoint;
 }

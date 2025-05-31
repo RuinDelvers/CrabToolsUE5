@@ -22,7 +22,18 @@ void ABaseTargetingActor::AddListener_Implementation(const FConfirmTargetsSingle
 	this->OnConfirmTargets.Add(Callback);
 }
 
+void ABaseTargetingActor::AddDestroyedListener_Implementation(const FTargetingDestroyed& Callback)
+{
+	this->OnDestroyed.Add(Callback);
+}
+
+void ABaseTargetingActor::AddValidationListener_Implementation(const FValidateTargetingSingle& Callback)
+{
+	this->OnValidateTargeting.Add(Callback);
+}
+
 void ABaseTargetingActor::Confirm_Implementation()
 {
-	this->OnConfirmTargets.Broadcast();
+	TScriptInterface<ITargetingControllerInterface> Targeter(this);
+	this->OnConfirmTargets.Broadcast(Targeter);
 }

@@ -27,7 +27,7 @@ void UTargetingNode::EnterWithData_Inner_Implementation(UObject* Data)
 	}
 }
 
-void UTargetingNode::OnConfirmed()
+void UTargetingNode::OnConfirmed(TScriptInterface<ITargetingControllerInterface> Targeter)
 {
 	this->EmitEvent(Events::AI::TARGETS_CONFIRMED);
 }

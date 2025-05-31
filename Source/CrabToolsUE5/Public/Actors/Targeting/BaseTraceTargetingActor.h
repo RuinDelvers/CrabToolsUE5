@@ -71,24 +71,12 @@ public:
 	void OnUpdateTraces();
 	virtual void OnUpdateTraces_Implementation() {}
 
-	UFUNCTION(BlueprintNativeEvent, Category="Targeting|Trace")
-	bool IsValidTarget(AActor* CheckedActor);
-	virtual bool IsValidTarget_Implementation(AActor* CheckedActor);
-
-	UFUNCTION(BlueprintNativeEvent, Category = "Targeting|Trace")
-	bool IsValidPoint(FVector Point);
-	virtual bool IsValidPoint_Implementation(FVector Point);
-
-	UFUNCTION(BlueprintNativeEvent, Category = "Targeting|Trace")
-	void OnTooFar();
-	virtual void OnTooFar_Implementation() {}
-
 	UFUNCTION(BlueprintCallable, Category="Targeting|Trace")
 	bool IsTooFar() const;
 
-	UFUNCTION(BlueprintNativeEvent, Category = "Targeting|Trace")
-	void OnInvalidTarget();
-	virtual void OnInvalidTarget_Implementation() {}
+	//UFUNCTION(BlueprintNativeEvent, Category = "Targeting|Trace")
+	//void OnInvalidTarget();
+	//virtual void OnInvalidTarget_Implementation() {}
 
 	UFUNCTION(BlueprintNativeEvent, Category = "Targeting|Trace")
 	void IgnoreActors(TArray<AActor*>& IgnoredActors);
@@ -98,6 +86,7 @@ public:
 	virtual void PopTarget_Implementation() override;
 	virtual void GetTargets_Implementation(TArray<AActor*>& Actors) const { Actors.Append(this->AddedActors); };
 	virtual void GetTargetPoints_Implementation(TArray<FVector>& Points) const override { Points.Append(this->AddedPoints); }
+	virtual bool Validate_Implementation(FText& Reason) const override;
 
 	UFUNCTION(BlueprintNativeEvent, Category="Target|Trace")
 	FVector GetTraceBase() const;
@@ -105,6 +94,22 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	FVector GetTargetEndPoint() const { return this->TargetLocation; }
+
+	UFUNCTION(BlueprintNativeEvent, Category = "Targeting|Trace")
+	bool IsValidTarget() const;
+	virtual bool IsValidTarget_Implementation() const;
+
+	UFUNCTION(BlueprintNativeEvent, Category = "Targeting|Trace")
+	bool IsValidPoint() const;
+	virtual bool IsValidPoint_Implementation() const;
+
+protected:
+
+	
+
+	//UFUNCTION(BlueprintNativeEvent, Category = "Targeting|Trace")
+	//void OnTooFar() const;
+	//virtual void OnTooFar_Implementation() const {}
 
 private:
 
