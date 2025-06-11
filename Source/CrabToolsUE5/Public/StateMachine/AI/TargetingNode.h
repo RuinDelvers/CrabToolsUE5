@@ -18,11 +18,17 @@ class CRABTOOLSUE5_API UTargetingNode : public UStateNode
 
 public:
 
+	UPROPERTY(EditAnywhere, Category="Targeting")
+	bool bDisableOnExit = true;
+
+public:
+
 	UTargetingNode();
 
 protected:
 
 	virtual void EnterWithData_Inner_Implementation(UObject* Data) override;
+	virtual void Exit_Inner_Implementation() override;
 	virtual bool HasPipedData_Implementation() const override;
 	virtual UObject* GetPipedData_Implementation() override;
 

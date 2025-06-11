@@ -471,6 +471,11 @@ bool UStateMachine::ValidDataCondition(UObject* Data)
 TSet<FName> UStateMachine::GetEvents() const {
 	TSet<FName> List;
 
+	if (auto BPGC = this->GetGeneratedClass())
+	{
+		List.Append(BPGC->EventSet);
+	}
+
 	for (const auto& States : this->Graph) {
 		for (const auto& Event : States.Value->Transitions) {
 			List.Add(Event.Key);

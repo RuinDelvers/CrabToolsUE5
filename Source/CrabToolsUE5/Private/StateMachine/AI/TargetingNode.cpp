@@ -32,6 +32,14 @@ void UTargetingNode::OnConfirmed(TScriptInterface<ITargetingControllerInterface>
 	this->EmitEvent(Events::AI::TARGETS_CONFIRMED);
 }
 
+void UTargetingNode::Exit_Inner_Implementation()
+{
+	if (IsValid(this->TargetingInterface))
+	{
+		ITargetingControllerInterface::Execute_SetEnabled(this->TargetingInterface, false);
+	}
+}
+
 bool UTargetingNode::HasPipedData_Implementation() const
 {
 	return IsValid(this->TargetingInterface);

@@ -17,6 +17,7 @@ class AElevatorSystem : public AActor
 {
 	GENERATED_BODY()
 
+	UPROPERTY()
 	TObjectPtr<UTimelineComponent> MovementTimeline;
 	FOnTimelineFloat MovementTrack;
 	FOnTimelineEvent EndMovementTrack;
@@ -65,7 +66,7 @@ private:
 	void StartMovement();
 
 	UFUNCTION()
-	virtual void UpdatePosition(float alpha);
+	void UpdatePosition(float alpha);
 
 	UFUNCTION()
 	void FinishedMovement();

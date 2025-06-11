@@ -578,6 +578,10 @@ public:
 	FName GetCurrentStateName() const;
 
 	UFUNCTION(BlueprintCallable, Category = "StateMachine")
+	UStateMachine* GetParentMachine() const { return this->ParentMachine; }
+	void SetParentMachine(UStateMachine* Machine) { this->ParentMachine = Machine; }
+
+	UFUNCTION(BlueprintCallable, Category = "StateMachine")
 	TArray<FString> StateOptions();
 
 	UFUNCTION(BlueprintNativeEvent, Category="StateMachine")

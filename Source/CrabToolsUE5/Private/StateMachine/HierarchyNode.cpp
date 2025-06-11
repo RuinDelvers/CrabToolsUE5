@@ -7,14 +7,21 @@ void UHierarchyNode::Initialize_Inner_Implementation()
 	UStateNode::Initialize_Inner_Implementation();
 
 	FString Address = this->Slot.MachineName.ToString();
+
 	if (this->SubMachine)
 	{
+		switch (this->StateMachineSource)
+		{
+			case EHierarchyInputType::INLINED:
+				this->SubMachine->SetParentMachine(this->GetMachine());
+				break;
+			case EHierarchyInputType::DEFINED: break;
+		}
 		this->SubMachine->Initialize(this->GetMachine()->GetOwner());
 	}
 	else if (auto Machine = Cast<UStateMachine>(this->GetMachine()->GetSubMachine(Address)))
 	{
 		this->SubMachine = Machine;
-		//this->SubMachine->Initialize(this->GetMachine()->GetOwner());
 
 		Machine->OnTransitionFinished.AddDynamic(this, &UHierarchyNode::StateChangedCallback);
 	}
@@ -174,6 +181,14 @@ TArray<FString> UHierarchyNode::GetSubMachineStateOptions() const
 TArray<FString> UHierarchyNode::GetSubMachineTransitionEvents() const
 {
 	TArray<FString> Names;
+
+	if (IsValid(this->SubMachine))
+	{
+		for (const auto& Name : this->SubMachine->GetEvents())
+		{
+			Names.Add(Name.ToString());
+		}
+	}
 
 	Names.Sort([&](const FString& A, const FString& B) { return A < B; });
 

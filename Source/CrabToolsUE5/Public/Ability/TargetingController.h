@@ -18,7 +18,8 @@ DECLARE_DYNAMIC_DELEGATE_OneParam(FConfirmTargetsSingle, TScriptInterface<ITarge
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FValidateTargeting, bool, IsValid, const FText&, Reason);
 DECLARE_DYNAMIC_DELEGATE_TwoParams(FValidateTargetingSingle, bool, IsValid, const FText&, Reason);
 
-DECLARE_DYNAMIC_DELEGATE_OneParam(FTargetingDestroyed, AActor*, Targeting);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FTargetingUpdatedMulti, AActor*, Targeting);
+DECLARE_DYNAMIC_DELEGATE_OneParam(FTargetingUpdated, AActor*, Targeting);
 
 class ITargetingControllerInterface
 {
@@ -39,10 +40,13 @@ public:
 	void AddTarget(AActor* Target);
 	virtual void AddTarget_Implementation(AActor* Target) {}
 
-	/* Wehther or not the targeting controller supports direct adding of targets. */
-	//UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Targeting")
-	//bool SupportsDirectAdd() const;
-	//virtual bool SupportsDirectAdd_Implementation() const { return false; }
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Targeting")
+	void SetEnabled(bool bNewEnabled);
+	virtual void SetEnabled_Implementation(bool bNewEnabled) {}
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Targeting")
+	bool GetEnabled() const;
+	virtual bool GetEnabled_Implementation() const { return true; }
 
 	/* Save the currently selected targets */
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Targeting")
@@ -70,8 +74,12 @@ public:
 	virtual void AddValidationListener_Implementation(const FValidateTargetingSingle& Callback) {}
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Targeting")
-	void AddDestroyedListener(const FTargetingDestroyed& Callback);
-	virtual void AddDestroyedListener_Implementation(const FTargetingDestroyed& Callback) {}
+	void AddDestroyedListener(const FTargetingUpdated& Callback);
+	virtual void AddDestroyedListener_Implementation(const FTargetingUpdated& Callback) {}
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Targeting")
+	void AddDisabledListener(const FTargetingUpdated& Callback);
+	virtual void AddDisabledListener_Implementation(const FTargetingUpdated& Callback) {}
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Targeting")
 	void GetTargets(TArray<AActor*>& Actors) const;

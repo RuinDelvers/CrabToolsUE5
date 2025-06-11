@@ -211,7 +211,8 @@ void UStateMachineBlueprint::RenameGraph(UEdStateGraph* Graph, FName Name)
 bool UStateMachineBlueprint::Modify(bool bAlwaysMarkDirty)
 {
 	//FBlueprintEditorUtils::MarkBlueprintAsModified(this);
-	return Super::Modify(bAlwaysMarkDirty);	
+	bool Modified = Super::Modify(bAlwaysMarkDirty);
+	return Modified;
 }
 
 void UStateMachineBlueprint::SelectGraph(UEdStateGraph* Graph)
