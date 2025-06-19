@@ -2,7 +2,7 @@
 #include "AIController.h"
 
 void UAIBaseNode::Initialize_Inner_Implementation() {
-	auto PawnQ = Cast<APawn>(this->GetMachine()->GetOwner());
+	auto PawnQ = Cast<APawn>(this->GetMachine()->GetActorOwner());
 
 	if (PawnQ) {
 		this->PawnRef = PawnQ;

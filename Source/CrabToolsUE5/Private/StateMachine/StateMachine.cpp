@@ -39,7 +39,7 @@ void UStateMachine::InitSubMachines()
 	}
 }
 
-void UStateMachine::Initialize(AActor* POwner)
+void UStateMachine::Initialize(UObject* POwner)
 {
 	if (IsValid(POwner))
 	{
@@ -87,7 +87,12 @@ UStateMachine* UStateNode::GetMachineAs(TSubclassOf<UStateMachine> SClass, ESear
 	return nullptr;
 }
 
-AActor* UStateMachine::GetOwner() const {
+AActor* UStateMachine::GetActorOwner() const {
+	return CastChecked<AActor>(this->Owner);
+}
+
+UObject* UStateMachine::GetOwner() const
+{
 	return this->Owner;
 }
 
@@ -879,7 +884,7 @@ UWorld* UStateMachine::GetWorld() const
 		//Try to get the world from the owning actor if we have one
 		if (this->Owner)
 		{
-			return this->Owner->GetOwner()->GetWorld();
+			return this->GetActorOwner()->GetWorld();
 		}
 	}
 
@@ -955,8 +960,13 @@ UState* UStateNode::GetState() const
 	return UtilsFunctions::GetOuterAs<UState>(this);
 }
 
-AActor* UStateNode::GetOwner() const {
+UObject* UStateNode::GetOwner() const {
 	return this->Owner->GetOwner();
+}
+
+AActor* UStateNode::GetActorOwner() const
+{
+	return this->Owner->GetActorOwner();
 }
 
 void UStateNode::Event(FName EName) {
@@ -1049,9 +1059,9 @@ void UStateNode::DeleteEvent_Implementation(FName Event)
 		if (f->Struct == FEventSlot::StaticStruct())
 		{
 			auto Value = f->ContainerPtrToValuePtr<FEventSlot>(this);
-			if (Value->EventName == Event)
+			if (Value->GetEvent() == Event)
 			{
-				Value->EventName = NAME_None;
+				Value->SetEvent(NAME_None);
 			}
 		}
 	}
@@ -1066,9 +1076,10 @@ void UStateNode::RenameEvent_Implementation(FName From, FName To)
 		if (f->Struct == FEventSlot::StaticStruct())
 		{
 			auto Value = f->ContainerPtrToValuePtr<FEventSlot>(this);
-			if (Value->EventName == From)
+
+			if (Value->GetEvent() == From)
 			{
-				Value->EventName = To;
+				Value->SetEvent(To);
 			}
 		}
 	}
@@ -1094,12 +1105,12 @@ bool UStateNode::Verify(FNodeVerificationContext& Context) const
 
 				auto Options = SLike->GetEventOptions();
 
-				if (!(Value.EventName.IsNone() || Options.Contains(Value.EventName)))
+				if (!(Value.IsNone() || Options.Contains(Value.GetEvent())))
 				{
 					FString Msg = FString::Printf(TEXT("Could not find Event for slot %s: %s. EName = %s"),
 						*f->GetName(),
 						*this->GetName(),
-						*Value.EventName.ToString());
+						*FName(Value).ToString());
 					Context.Error(Msg, this);
 
 					bErrorFree = false;
@@ -1144,7 +1155,7 @@ UWorld* UStateNode::GetWorld() const
 		//Try to get the world from the owning actor if we have one
 		if (this->Owner)
 		{
-			return this->Owner->GetOwner()->GetWorld();
+			return this->Owner->GetActorOwner()->GetWorld();
 		}
 	}
 
@@ -1173,7 +1184,7 @@ void UStateNode::EmitEvent(FName EName)
 
 void UStateNode::EmitEventSlot(const FEventSlot& ESlot)
 { 
-	this->GetMachine()->SendEvent(ESlot.EventName);
+	this->GetMachine()->SendEvent(ESlot);
 }
 
 void UStateNode::EmitEventWithData(FName EName, UObject* Data) {
@@ -1182,7 +1193,7 @@ void UStateNode::EmitEventWithData(FName EName, UObject* Data) {
 
 void UStateNode::EmitEventSlotWithData(const FEventSlot& ESlot, UObject* Data)
 {
-	this->GetMachine()->SendEventWithData(ESlot.EventName, Data);
+	this->GetMachine()->SendEventWithData(ESlot, Data);
 }
 
 #if WITH_EDITOR
@@ -1281,7 +1292,19 @@ TArray<FString> UStateNode::GetOutgoingStateOptions() const
 
 void UStateNode::GetEmittedEvents(TSet<FName>& Events) const 
 {
-	Events.Append(this->EmittedEvents); 
+	Events.Append(this->EmittedEvents);
+
+	for (TFieldIterator<FStructProperty> FIT(this->GetClass(), EFieldIteratorFlags::IncludeSuper); FIT; ++FIT)
+	{
+		FStructProperty* f = *FIT;
+
+		if (f->Struct == FEventSlot::StaticStruct())
+		{
+			auto Value = f->ContainerPtrToValuePtr<FEventSlot>(this);
+			Events.Add(*Value);
+		}
+	}
+	
 }
 
 #endif // WITH_EDITORONLY_DATA
@@ -1343,8 +1366,10 @@ void UState::AppendNodeCopy(UStateNode* ANode)
 	}
 }
 
-AActor* UTransitionCondition::GetOwner() const { return this->OwnerMachine->GetOwner(); }
-AActor* UTransitionDataCondition::GetOwner() const { return this->OwnerMachine->GetOwner(); }
+UObject* UTransitionCondition::GetOwner() const { return this->OwnerMachine->GetOwner(); }
+AActor*  UTransitionCondition::GetActorOwner() const { return this->OwnerMachine->GetActorOwner(); }
+UObject* UTransitionDataCondition::GetOwner() const { return this->OwnerMachine->GetOwner(); }
+AActor* UTransitionDataCondition::GetActorOwner() const { return this->OwnerMachine->GetActorOwner(); }
 
 void UTransitionCondition::Initialize(UStateMachine* NewOwner)
 {
@@ -1410,9 +1435,14 @@ bool UState::IsActive() const
 	return this->GetMachine()->IsActiveState(this);
 }
 
-AActor* UState::GetOwner() const
+UObject* UState::GetOwner() const
 {
 	return this->OwnerMachine->GetOwner();
+}
+
+AActor* UState::GetActorOwner() const
+{
+	return this->OwnerMachine->GetActorOwner();
 }
 
 FSMPropertyReference UState::GetStateMachineProperty(FString& Address) const

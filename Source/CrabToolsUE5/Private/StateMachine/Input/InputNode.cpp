@@ -4,7 +4,7 @@
 void UInputNode::Initialize_Inner_Implementation() {
 	Super::Initialize_Inner_Implementation();
 
-	this->PawnOwner = Cast<APawn>(this->GetMachine()->GetOwner());
+	this->PawnOwner = Cast<APawn>(this->GetMachine()->GetActorOwner());
 
 	if (!this->Action) { return; }
 

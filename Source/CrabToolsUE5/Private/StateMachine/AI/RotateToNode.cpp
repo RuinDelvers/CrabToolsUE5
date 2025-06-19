@@ -93,8 +93,8 @@ bool UAIRotateToNode::FacingCheck() const
 	{
 		if (this->TargetActor.IsValid())
 		{
-			FVector Facing = this->TargetActor.Get()->GetActorLocation() - this->GetOwner()->GetActorLocation();
-			FVector ToTarget = Ctrl->GetFocalPoint() - this->GetOwner()->GetActorLocation();
+			FVector Facing = this->TargetActor.Get()->GetActorLocation() - this->GetActorOwner()->GetActorLocation();
+			FVector ToTarget = Ctrl->GetFocalPoint() - this->GetActorOwner()->GetActorLocation();
 
 			if (this->bIgnorePitch)
 			{

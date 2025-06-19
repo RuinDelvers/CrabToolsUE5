@@ -20,5 +20,5 @@ UStateMachine* UEventEmitter::GetMachine() const {
 }
 
 AActor* UEventEmitter::GetOwner() const {
-	return this->Machine->GetOwner();
+	return this->Machine->GetActorOwner();
 }

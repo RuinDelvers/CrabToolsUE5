@@ -8,13 +8,13 @@ void UMovementStateNode::Initialize_Inner_Implementation() {
 	Super::Initialize_Inner_Implementation();
 	auto MachineOwner = this->GetMachine();
 	// If the owning actor has a perspective manager, store it for simple use.
-	auto Persp = MachineOwner->GetOwner()->FindComponentByClass<UPerspectiveManager>();
+	auto Persp = MachineOwner->GetActorOwner()->FindComponentByClass<UPerspectiveManager>();
 
 	if (Persp != nullptr) {
 		this->Perspective = Persp;
 	}
 
-	auto Pawn = Cast<APawn>(MachineOwner->GetOwner());
+	auto Pawn = Cast<APawn>(MachineOwner->GetActorOwner());
 
 	if (Pawn != nullptr) {
 		this->PawnOwner = Pawn;

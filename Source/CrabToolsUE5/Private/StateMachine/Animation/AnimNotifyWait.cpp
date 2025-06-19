@@ -17,7 +17,7 @@ void UAnimNotifyWaitNode::Initialize_Inner_Implementation()
 
 	bool bFoundComp = false;
 
-	for (auto& Components : this->GetOwner()->GetComponents())
+	for (auto& Components : this->GetActorOwner()->GetComponents())
 	{
 		if (auto SkComp = Cast<USkeletalMeshComponent>(Components))
 		{

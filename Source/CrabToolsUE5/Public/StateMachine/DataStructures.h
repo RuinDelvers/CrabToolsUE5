@@ -22,15 +22,84 @@ struct FEventSlot
 {
 	GENERATED_USTRUCT_BODY()
 
-public:
+private:
 
 	UPROPERTY(EditAnywhere, Category = "StateMachine|Events",
-		meta = (GetOptions = "GetEventOptions"))
-	FName EventName;
+		meta = (GetOptions = "GetEventOptions", EditCondition="!bIsDefined", EditConditionHides, AllowPrivateAccess))
+	FName InlinedEventName;
+
+	UPROPERTY(EditAnywhere, Category = "StateMachine|Events",
+		meta = (GetOptions = "GetEventOptions", EditCondition = "bIsDefined", EditConditionHides, AllowPrivateAccess))
+	FName DefinedEventName;
+
+	UPROPERTY(EditDefaultsOnly, Category = "StateMacine|Events", meta=(AllowPrivateAccess))
+	bool bIsDefined = false;
+
+	#if WITH_EDITORONLY_DATA
+		UPROPERTY(EditDefaultsOnly, Category="StateMacine|Events", meta=(AllowPrivateAccess))
+		bool bIsEmitted = false;
+	#endif
+
+public:
+
+	operator const FName&() const
+	{
+		if (this->bIsDefined)
+		{
+			return this->DefinedEventName;
+		}
+		else
+		{
+			return this->InlinedEventName;
+		}
+	}
+
+	bool IsNone() const
+	{
+		if (this->bIsDefined)
+		{
+			return this->DefinedEventName.IsNone();
+		}
+		else
+		{
+			return this->InlinedEventName.IsNone();
+		}
+	}
+
+	const FName& GetEvent() const
+	{
+		if (this->bIsDefined)
+		{
+			return this->DefinedEventName;
+		}
+		else
+		{
+			return this->InlinedEventName;
+		}
+	}
+
+	void SetEvent(const FName& NewEvent)
+	{
+		if (this->bIsDefined)
+		{
+			this->DefinedEventName = NewEvent;
+		}
+		else
+		{
+			this->InlinedEventName = NewEvent;
+		}
+	}
 
 	friend uint32 GetTypeHash(const FEventSlot& Value)
 	{
-		return GetTypeHash(Value.EventName);
+		if (Value.bIsDefined)
+		{
+			return GetTypeHash(Value.DefinedEventName);
+		}
+		else
+		{
+			return GetTypeHash(Value.InlinedEventName);
+		}		
 	}
 };
 

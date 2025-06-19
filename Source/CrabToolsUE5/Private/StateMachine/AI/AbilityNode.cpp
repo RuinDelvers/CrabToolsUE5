@@ -12,7 +12,7 @@ void UAbilityNode::Initialize_Inner_Implementation()
 {
 	if (IsValid(this->DefaultAbility))
 	{
-		this->DefaultAbility->Initialize(this->GetOwner());
+		this->DefaultAbility->Initialize(this->GetActorOwner());
 	}
 }
 

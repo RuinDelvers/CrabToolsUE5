@@ -17,13 +17,16 @@ void UHierarchyNode::Initialize_Inner_Implementation()
 				break;
 			case EHierarchyInputType::DEFINED: break;
 		}
-		this->SubMachine->Initialize(this->GetMachine()->GetOwner());
+		this->SubMachine->Initialize(this->GetMachine()->GetActorOwner());
 	}
 	else if (auto Machine = Cast<UStateMachine>(this->GetMachine()->GetSubMachine(Address)))
 	{
 		this->SubMachine = Machine;
+	}
 
-		Machine->OnTransitionFinished.AddDynamic(this, &UHierarchyNode::StateChangedCallback);
+	if (this->SubMachine)
+	{
+		this->SubMachine->OnTransitionFinished.AddDynamic(this, &UHierarchyNode::StateChangedCallback);
 	}
 }
 
@@ -111,14 +114,15 @@ FName FHierarchyEventValue::GetEvent() const
 
 void UHierarchyNode::StateChangedCallback(UStateMachine* Data)
 {
-	FName StateName = Data->GetCurrentStateName();	
-
-	if (this->ExitStates.Contains(StateName))
+	if (this->Active())
 	{
-		this->EmitEvent(this->ExitStates[StateName].GetEvent());
-	}
+		FName StateName = Data->GetCurrentStateName();
 
-	//this->GetMachine()->UpdateTickRequirements(State->GetNode()->RequiresTick());
+		if (this->ExitStates.Contains(StateName))
+		{
+			this->EmitEvent(this->ExitStates[StateName].GetEvent());
+		}
+	}
 }
 
 bool UHierarchyNode::RequiresTick_Implementation() const
@@ -149,6 +153,11 @@ void UHierarchyNode::GetEmittedEvents(TSet<FName>& Events) const
 	if (auto Outer = UtilsFunctions::GetOuterAs<IStateMachineLike>(this))
 	{
 		Events.Append(Outer->GetEmittedEvents());
+	}
+
+	for (const auto& Values : this->ExitStates)
+	{
+		Events.Add(Values.Value.GetEvent());
 	}
 }
 
@@ -198,7 +207,12 @@ TArray<FString> UHierarchyNode::GetSubMachineTransitionEvents() const
 
 TArray<FString> UHierarchyNode::GetStateEventOptions() const
 {
-	TArray<FString> Names;
+	TArray<FString> Names;	
+
+	if (this->SubMachine)
+	{
+		Names = this->SubMachine->GetStateOptions(this);
+	}
 
 	Names.Sort([&](const FString& A, const FString& B) { return A < B; });
 

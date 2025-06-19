@@ -8,7 +8,7 @@ UOnHitNode::UOnHitNode(): Component(UPrimitiveComponent::StaticClass())
 
 void UOnHitNode::Enter_Inner_Implementation()
 {
-	if (auto Comp = Cast<UPrimitiveComponent>(this->GetOwner()->FindComponentByClass(this->Component.Get())))
+	if (auto Comp = Cast<UPrimitiveComponent>(this->GetActorOwner()->FindComponentByClass(this->Component.Get())))
 	{
 		Comp->OnComponentHit.AddDynamic(this, &UOnHitNode::OnHitDetected_Internal);
 	}
@@ -16,7 +16,7 @@ void UOnHitNode::Enter_Inner_Implementation()
 
 void UOnHitNode::Exit_Inner_Implementation()
 {
-	if (auto Comp = Cast<UPrimitiveComponent>(this->GetOwner()->FindComponentByClass(this->Component.Get())))
+	if (auto Comp = Cast<UPrimitiveComponent>(this->GetActorOwner()->FindComponentByClass(this->Component.Get())))
 	{
 		Comp->OnComponentHit.RemoveAll(this);
 	}

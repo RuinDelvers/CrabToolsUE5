@@ -140,7 +140,10 @@ public:
 	void AppendNodeCopy(UStateNode* Node);
 
 	UFUNCTION(BlueprintCallable, Category = "StateMachine")
-	AActor* GetOwner() const;
+	UObject* GetOwner() const;
+
+	UFUNCTION(BlueprintCallable, Category = "StateMachine")
+	AActor* GetActorOwner() const;
 
 	UFUNCTION(BlueprintCallable, Category = "StateMachine")
 	UStateMachine* GetMachine() const { return this->OwnerMachine; }
@@ -196,7 +199,10 @@ public:
 	virtual bool Check() const { return false; }
 
 	UFUNCTION(BlueprintCallable, Category = "StateMachine|Transition")
-	AActor* GetOwner() const;
+	UObject* GetOwner() const;
+
+	UFUNCTION(BlueprintCallable, Category = "StateMachine|Transition")
+	AActor* GetActorOwner() const;
 
 	UFUNCTION(BlueprintNativeEvent, Category="StateMachine|Transition")
 	void OnTransitionTaken();
@@ -226,7 +232,10 @@ public:
 	virtual bool Check(UObject* Data) const { return false; }
 
 	UFUNCTION(BlueprintCallable, Category = "StateMachine|Transition")
-	AActor* GetOwner() const;
+	UObject* GetOwner() const;
+
+	UFUNCTION(BlueprintCallable, Category = "StateMachine|Transition")
+	AActor* GetActorOwner() const;
 
 	UFUNCTION(BlueprintNativeEvent, Category = "StateMachine|Transition")
 	void OnTransitionTaken(UObject* Data);
@@ -277,13 +286,16 @@ public:
 	void Initialize(UStateMachine* POwner);
 
 	UFUNCTION(BlueprintCallable, Category = "StateMachine")
-	virtual void SetOwner(UStateMachine* Parent);
+	void SetOwner(UStateMachine* Parent);
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category="StateMachine")
 	FORCEINLINE bool Active() const { return this->bActive; }
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "StateMachine")
-	AActor* GetOwner() const;
+	UObject* GetOwner() const;
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "StateMachine")
+	AActor* GetActorOwner() const;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "StateMachine")
 	UStateMachine* GetMachine() const;
@@ -497,7 +509,7 @@ private:
 	int MaxPrevStateStackSize = 5;
 
 	UPROPERTY(Transient, meta=(IgnorePropertySearch))
-	TObjectPtr<AActor> Owner;
+	TObjectPtr<UObject> Owner;
 
 	/* Map of name to submachines available to this state machine. */
 	UPROPERTY(DuplicateTransient, meta=(IgnorePropertySearch))
@@ -535,13 +547,16 @@ public:
 	 * state machine.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "StateMachine")
-	void Initialize(AActor* POwner);
+	void Initialize(UObject* POwner);
 
 	UFUNCTION(BlueprintCallable, Category = "StateMachine")
 	void SetActive(bool bNewActive);
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "StateMachine")
-	AActor* GetOwner() const;
+	AActor* GetActorOwner() const;
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "StateMachine")
+	UObject* GetOwner() const;
 
 	UFUNCTION(BlueprintCallable, Category = "StateMachine")
 	void Reset();

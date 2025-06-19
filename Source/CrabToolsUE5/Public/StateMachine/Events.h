@@ -46,3 +46,11 @@ namespace Events::Tasks
 	// Event emitted when no task has been received.
 	constexpr char NO_TASK[] = "TASK_NULL";
 }
+
+namespace Events::Dialogue
+{
+	constexpr char REQUEST_CONFIRMED[]  = "REQUEST_DIALOGUE";
+	constexpr char DIALOGUE_CONFIRMED[] = "DIALOGUE_CONFIRMED";
+	constexpr char DIALOGUE_FINISHED[]  = "DIALOGUE_FINISHED";
+	constexpr char DIALOGUE_FAILED[]    = "DIALOGUE_FAILED";
+}

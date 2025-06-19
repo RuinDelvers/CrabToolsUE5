@@ -9,7 +9,7 @@ void UMovementInputNode::Initialize_Inner_Implementation() {
 	Super::Initialize_Inner_Implementation();
 
 	// If the owning actor has a perspective manager, store it for simple use.
-	auto Persp = this->GetMachine()->GetOwner()->FindComponentByClass<UPerspectiveManager>();
+	auto Persp = this->GetMachine()->GetActorOwner()->FindComponentByClass<UPerspectiveManager>();
 	this->Perspective = Persp;
 }
 

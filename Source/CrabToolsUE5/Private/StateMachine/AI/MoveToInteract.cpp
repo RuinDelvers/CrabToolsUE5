@@ -116,7 +116,7 @@ void UAIMoveToInteractNode::PostTransition_Inner_Implementation()
 
 UInteractionSystem* UAIMoveToInteractNode::GetInteractionComponent() const
 {
-	auto InteractComp = this->GetOwner()->FindComponentByClass<UInteractionSystem>();
+	auto InteractComp = this->GetActorOwner()->FindComponentByClass<UInteractionSystem>();
 	
 	return InteractComp;
 }
