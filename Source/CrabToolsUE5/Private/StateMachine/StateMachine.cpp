@@ -42,7 +42,7 @@ void UStateMachine::InitSubMachines()
 void UStateMachine::Initialize(UObject* POwner)
 {
 	if (IsValid(POwner))
-	{
+	{		
 		this->Owner = POwner;	
 		this->InitFromArchetype();	
 		this->Initialize_Inner();
@@ -60,14 +60,15 @@ void UStateMachine::Initialize(UObject* POwner)
 			Node.Value->Initialize(this);
 		}		
 
+		#if STATEMACHINE_DEBUG_DATA
+			this->bWasInitialized = true;
+		#endif
 		this->UpdateState(this->StartState);
 	}
 	else
 	{
 		UE_LOG(LogStateMachine, Error, TEXT("Invalid Owner passed to Initialize in %s"), *this->GetClass()->GetName());
-	}
-
-	
+	}	
 }
 
 void UStateMachine::Initialize_Inner_Implementation() {}
@@ -105,6 +106,15 @@ UState* UStateMachine::MakeState(FName StateName)
 
 void UStateMachine::UpdateState(FName Name)
 {
+	#if STATEMACHINE_DEBUG_DATA
+		if (!this->bWasInitialized)
+		{
+			UE_LOG(LogStateMachine, Error, TEXT("State Machine %s was not initialized when calling UpdateState"),
+				*this->GetName());
+			return;
+		}
+	#endif
+
 	if (Name != this->CurrentStateName)
 	{
 		auto CurrentState = this->GetCurrentState();
@@ -165,6 +175,14 @@ void UStateMachine::UpdateState(FName Name)
 
 void UStateMachine::UpdateStateWithData(FName Name, UObject* Data, bool UsePiped)
 {
+	#if STATEMACHINE_DEBUG_DATA
+		if (!this->bWasInitialized)
+		{
+			UE_LOG(LogStateMachine, Error, TEXT("State Machine %s was not initialized when calling UpdateStateWithData"),
+				*this->GetName());
+			return;
+		}
+	#endif
 	if (Name != this->CurrentStateName)
 	{
 		auto CurrentState = this->GetCurrentState();
@@ -248,6 +266,15 @@ UStateMachine* UStateMachine::GetRootMachine()
 
 void UStateMachine::SendEvent(FName EName)
 {
+	#if STATEMACHINE_DEBUG_DATA
+		if (!this->bWasInitialized)
+		{
+			UE_LOG(LogStateMachine, Error, TEXT("State Machine %s was not initialized when calling SendEvent"),
+				*this->GetName());
+			return;
+		}
+	#endif
+
 	if (this->bIsTransitioning) { return; }
 
 	#if STATEMACHINE_DEBUG_DATA
@@ -290,6 +317,14 @@ void UStateMachine::SendEvent(FName EName)
 
 void UStateMachine::SendEventWithData(FName EName, UObject* Data)
 {
+	#if STATEMACHINE_DEBUG_DATA
+		if (!this->bWasInitialized)
+		{
+			UE_LOG(LogStateMachine, Error, TEXT("State Machine %s was not initialized when calling SendEventWithData"),
+				*this->GetName());
+			return;
+		}
+	#endif
 	if (this->bIsTransitioning) { return; }
 
 	#if STATEMACHINE_DEBUG_DATA
@@ -939,11 +974,68 @@ void UStateNode::Initialize(UStateMachine* POwner) {
 	if (POwner)
 	{
 		this->Owner = POwner;
+		this->InitNotifies();
 		this->Initialize_Inner();
 	}
 	else
 	{
 		UE_LOG(LogStateMachine, Error, TEXT("Given owner for %s was null"), *this->GetName());
+	}
+}
+
+void UStateNode::InitNotifies()
+{
+	auto NotifySign = this->FindFunction(GET_FUNCTION_NAME_CHECKED(UStateNode, EventNotifySignatureFunction));
+	auto NotifyWithDataSign = this->FindFunction(GET_FUNCTION_NAME_CHECKED(UStateNode, EventWithDataNotifySignatureFunction));
+
+	for (TFieldIterator<UFunction> FIT(this->GetClass(), EFieldIteratorFlags::IncludeSuper); FIT; ++FIT)
+	{
+		UFunction* f = *FIT;
+		FString FnName = f->GetName();
+
+		if (FnName.StartsWith("EventNotify_"))
+		{
+			FName EventName(f->GetName().RightChop(11));
+
+			if (f->IsSignatureCompatibleWith(NotifySign))
+			{
+				FEventNotify Notify;
+				FEventNotify_Single Del;
+				Del.BindUFunction(this, FName(FnName));
+
+				if (!this->EventNotifies.Contains(EventName))
+				{
+					this->EventNotifies.Add(EventName, Notify);
+				}
+
+				this->EventNotifies.Find(EventName)->AddLambda([this, Del] (FName EventName)
+					{
+						if (this->Active())
+						{
+							Del.Execute(EventName);
+						}
+					});
+			}
+			else if (f->IsSignatureCompatibleWith(NotifyWithDataSign))
+			{
+				FEventWithDataNotify Notify;
+				FEventWithDataNotify_Single Del;
+				Del.BindUFunction(this, FName(FnName));
+
+				if (!this->EventWithDataNotifies.Contains(EventName))
+				{
+					this->EventWithDataNotifies.Add(EventName, Notify);
+				}
+
+				this->EventWithDataNotifies.Find(EventName)->AddLambda([this, Del](FName EventName, UObject* Data)
+					{
+						if (this->Active())
+						{
+							Del.Execute(EventName, Data);
+						}
+					});
+			}
+		}
 	}
 }
 
@@ -971,6 +1063,11 @@ AActor* UStateNode::GetActorOwner() const
 
 void UStateNode::Event(FName EName) {
 	if (this->bActive) {
+		if (auto Notify = this->EventNotifies.Find(EName))
+		{
+			Notify->Broadcast(EName);
+		}
+
 		this->Event_Inner(EName);
 	}
 }
@@ -987,6 +1084,11 @@ void UStateNode::Event_Inner_Implementation(FName EName) {
 void UStateNode::EventWithData(FName EName, UObject* Data) {
 	if (this->bActive)
 	{
+		if (auto Notify = this->EventWithDataNotifies.Find(EName))
+		{
+			Notify->Broadcast(EName, Data);
+		}
+
 		this->EventWithData_Inner(EName, Data);
 	}
 }
@@ -1094,45 +1196,52 @@ bool UStateNode::Verify(FNodeVerificationContext& Context) const
 
 	if (SLike && SMLike)
 	{
-		for (TFieldIterator<FStructProperty> FIT(this->GetClass(), EFieldIteratorFlags::IncludeSuper); FIT; ++FIT)
+		for (TFieldIterator<FProperty> FIT(this->GetClass(), EFieldIteratorFlags::IncludeSuper); FIT; ++FIT)
 		{
-			FStructProperty* f = *FIT;
-
-			if (f->Struct == FEventSlot::StaticStruct())
+			if (FIT->GetClass() == FStructProperty::StaticClass())
 			{
-				FEventSlot Value;
-				f->GetValue_InContainer(this, &Value);
+				FStructProperty* f = CastField<FStructProperty>(*FIT);
 
-				auto Options = SLike->GetEventOptions();
-
-				if (!(Value.IsNone() || Options.Contains(Value.GetEvent())))
+				if (f->Struct == FEventSlot::StaticStruct())
 				{
-					FString Msg = FString::Printf(TEXT("Could not find Event for slot %s: %s. EName = %s"),
-						*f->GetName(),
-						*this->GetName(),
-						*FName(Value).ToString());
-					Context.Error(Msg, this);
+					FEventSlot Value;
+					f->GetValue_InContainer(this, &Value);
 
-					bErrorFree = false;
+					auto Options = SLike->GetEventOptions();
+
+					if (!(Value.IsNone() || Options.Contains(Value.GetEvent())))
+					{
+						FString Msg = FString::Printf(TEXT("Could not find Event for slot %s: %s. EName = %s"),
+							*f->GetName(),
+							*this->GetName(),
+							*FName(Value).ToString());
+						Context.Error(Msg, this);
+
+						bErrorFree = false;
+					}
+
 				}
+				else if (f->Struct == FSubMachineSlot::StaticStruct())
+				{
+					FSubMachineSlot Value;
+					f->GetValue_InContainer(this, &Value);
 
+					auto Options = SMLike->GetMachineOptions();
+
+					if (!(Value.MachineName.IsNone() || Options.Contains(Value.MachineName)))
+					{
+						FString Msg = FString::Printf(TEXT("Could not find StateMachine for slot %s: %s"),
+							*f->GetName(),
+							*this->GetName());
+						Context.Error(Msg, this);
+
+						bErrorFree = false;
+					}
+				}
 			}
-			else if (f->Struct == FSubMachineSlot::StaticStruct())
+			else if (FIT->GetClass() == FObjectProperty::StaticClass())
 			{
-				FSubMachineSlot Value;
-				f->GetValue_InContainer(this, &Value);
-
-				auto Options = SMLike->GetMachineOptions();
-
-				if (!(Value.MachineName.IsNone() || Options.Contains(Value.MachineName)))
-				{
-					FString Msg = FString::Printf(TEXT("Could not find StateMachine for slot %s: %s"),
-						*f->GetName(),
-						*this->GetName());
-					Context.Error(Msg, this);
-
-					bErrorFree = false;
-				}
+				
 			}
 		}
 	}
@@ -1244,6 +1353,32 @@ TArray<FString> UStateNode::GetMachineOptions() const
 	}
 
 	return { };
+}
+
+void UStateNode::GetNotifies(TSet<FName>& Events) const
+{
+	auto NotifySign = this->FindFunction(GET_FUNCTION_NAME_CHECKED(UStateNode, EventNotifySignatureFunction));
+	auto NotifyWithDataSign = this->FindFunction(GET_FUNCTION_NAME_CHECKED(UStateNode, EventWithDataNotifySignatureFunction));
+
+	for (TFieldIterator<UFunction> FIT(this->GetClass(), EFieldIteratorFlags::IncludeSuper); FIT; ++FIT)
+	{
+		UFunction* f = *FIT;
+		FString FnName = f->GetName();
+
+		if (FnName.StartsWith("EventNotify_"))
+		{
+			FName EventName(f->GetName().RightChop(11));
+
+			if (f->IsSignatureCompatibleWith(NotifySign))
+			{
+				Events.Add(EventName);
+			}
+			else if (f->IsSignatureCompatibleWith(NotifyWithDataSign))
+			{
+				Events.Add(EventName);
+			}
+		}
+	}
 }
 
 TArray<FString> UStateNode::GetEventOptions() const

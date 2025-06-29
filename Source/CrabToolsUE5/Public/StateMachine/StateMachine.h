@@ -260,7 +260,7 @@ class CRABTOOLSUE5_API UStateNode : public UObject, public IStateNodeLike
 {
 	GENERATED_BODY()
 
-	friend class UStateMachine;
+	//friend class UStateMachine;
 
 	UPROPERTY(Transient, DuplicateTransient)
 	TObjectPtr<UStateMachine> Owner;
@@ -273,6 +273,14 @@ class CRABTOOLSUE5_API UStateNode : public UObject, public IStateNodeLike
 		TSet<FName> EmittedEvents;
 		TSet<FName> PreEditEmittedEvents;
 	#endif
+
+	DECLARE_DELEGATE_OneParam(FEventNotify_Single, FName);
+	DECLARE_MULTICAST_DELEGATE_OneParam(FEventNotify, FName);
+	DECLARE_DELEGATE_TwoParams(FEventWithDataNotify_Single, FName, UObject*);
+	DECLARE_MULTICAST_DELEGATE_TwoParams(FEventWithDataNotify, FName, UObject*);
+
+	TMap<FName, FEventNotify> EventNotifies;
+	TMap<FName, FEventWithDataNotify> EventWithDataNotifies;
 
 public:
 
@@ -330,6 +338,7 @@ public:
 	virtual bool RequiresTick_Implementation() const;
 
 	#if WITH_EDITOR
+		virtual void GetNotifies(TSet<FName>& Events) const;
 		virtual void GetEmittedEvents(TSet<FName>& Events) const;
 		virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 		virtual void PreEditChange(FProperty* PropertyAboutToChange) override;
@@ -435,6 +444,16 @@ protected:
 			this->EmittedEvents.Add(Event);
 		#endif
 	}
+
+private:
+
+	UFUNCTION()
+	void EventNotifySignatureFunction(FName Name) {}
+
+	UFUNCTION()
+	void EventWithDataNotifySignatureFunction(FName Name) {}
+
+	void InitNotifies();
 };
 
 
@@ -450,7 +469,11 @@ class CRABTOOLSUE5_API UStateMachine
 
 private:
 	#if STATEMACHINE_DEBUG_DATA
+		/* Stack data used for debugging state machine transition sequences. */
 		FStateMachineDebugDataStack DebugData;
+
+		/* Whether or not this SM was initialized. Used for debugging only. */
+		bool bWasInitialized = false;
 	#endif
 
 	/* Struct used for identifying unique states. */

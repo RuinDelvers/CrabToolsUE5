@@ -1,24 +1,74 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Engine/StaticMeshActor.h"
 #include "Components/TimelineComponent.h"
+#include "Navigation/NavLinkProxy.h"
+#include "Components/StaticMeshComponent.h"
 #include "UObject/WeakObjectPtrTemplates.h"
 #include "DoorActor.generated.h"
 
+UCLASS(ClassGroup = (General), meta = (BlueprintSpawnableComponent))
+class CRABTOOLSUE5_API UDoorActorMeshComponent : public UStaticMeshComponent
+{
+	GENERATED_BODY()
+
+private:
+
+	static TWeakObjectPtr<UCurveVector> DefaultRotationCurve;
+	static TWeakObjectPtr<UCurveVector> DefaultTranslationCurve;
+
+private:
+	
+	UPROPERTY(EditAnywhere, Category="Curves", meta=(AllowPrivateAccess))
+	TObjectPtr<UCurveVector> Rotation;
+
+	UPROPERTY(EditAnywhere, Category = "Curves", meta = (AllowPrivateAccess))
+	TObjectPtr<UCurveVector> Translation;
+
+	UPROPERTY()
+	FVector InitPosition;
+
+	UPROPERTY()
+	FRotator InitRotation;
+
+public:
+
+	static UCurveVector* GetDefaultRotationCurve();
+	static UCurveVector* GetDefaultTranslationCurve();
+
+public:
+
+	UDoorActorMeshComponent();
+
+	virtual void BeginPlay() override;
+
+	void Update(float Alpha);
+};
+
 UCLASS(Blueprintable, meta=(PrioritizeCategories="DoorActor"))
-class ADoorActor : public AStaticMeshActor
+class ADoorActor : public ANavLinkProxy
 {
 	GENERATED_BODY()
 
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FFinishMovement);
 
 private:
+
 	/* Dynamically created curve asset that is used as a default curve. */
-	static TWeakObjectPtr<UCurveFloat> SharedCurve;
+	static TWeakObjectPtr<UCurveFloat> DefaultForwardCurve;
+	static TWeakObjectPtr<UCurveFloat> DefaultReverseCurve;
+
+public:
+
+	static UCurveFloat* GetDefaultForwardCurve();
+	static UCurveFloat* GetDefaultReverseCurve();
+
+private:
+
+	TArray<TObjectPtr<UDoorActorMeshComponent>> Components;
 
 public:	
-	// Sets default values for this actor's properties
+	
 	ADoorActor();
 
 protected:
@@ -55,8 +105,6 @@ protected:
 
 	UFUNCTION()
 	void FinishMovement();
-
-	UCurveFloat* GetDefaultCurve();
 
 public:
 

@@ -39,6 +39,18 @@ FName UEdStateNode::GetStateName() const
 	}
 }
 
+TSet<FName> UEdStateNode::GetNotifies() const
+{
+	TSet<FName> Notifies;
+
+	for (const auto& Node : this->Nodes)
+	{
+		Node->GetNotifies(Notifies);
+	}
+
+	return Notifies;
+}
+
 FName UEdStateNode::SetStateName(FName NewName)
 {
 	FName OldName = this->StateName;

@@ -124,6 +124,7 @@ public:
 	#endif
 
 	virtual bool IsActive() const;
+	TSet<FName> GetNotifies() const;
 
 private:
 

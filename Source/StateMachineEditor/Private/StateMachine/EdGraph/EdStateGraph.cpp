@@ -672,9 +672,23 @@ TArray<FString> UEdStateGraph::GetEventOptions() const
 	this->AppendEmitterEvents(Names);
 	this->GetBlueprintOwner()->AppendInterfaceEvents(Names);
 
+	
+
 	Names.Sort([&](const FString& A, const FString& B) { return A < B; });
 
 	return Names;
+}
+
+TSet<FName> UEdStateGraph::GetNotifies() const
+{
+	TSet<FName> Notifies;
+
+	for (const auto& States : this->GetStates())
+	{
+		Notifies.Append(States->GetNotifies());
+	}
+
+	return Notifies;
 }
 
 void UEdStateGraph::AppendEmitterEvents(TArray<FString>& Names) const

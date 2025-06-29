@@ -72,7 +72,11 @@ public:
 	void ClearDelegates();
 	TSubclassOf<UState> GetStateClass() const { return this->DefaultStateClass; }
 	const TArray<class UEdStateGraph*>& GetSubgraphs() { return this->SubGraphs; }
-	/* Returns the set of events defined by this SMBP. */
+	
+	/*
+	 * Returns the set of events defined by this SMBP. This includes events defined for external events being sent to
+	 * the SM as well as Node notifies that are listening for specific events.
+	 */
 	TSet<FName> GetEventSet() const;
 
 	// IStateMachineLike Interface

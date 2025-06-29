@@ -1,8 +1,104 @@
 #include "Actors/DoorActor.h"
+#include "Curves/CurveVector.h"
 
-TWeakObjectPtr<UCurveFloat> ADoorActor::SharedCurve = nullptr;
+#pragma region Door Component
+TWeakObjectPtr<UCurveVector> UDoorActorMeshComponent::DefaultRotationCurve = nullptr;
+TWeakObjectPtr<UCurveVector> UDoorActorMeshComponent::DefaultTranslationCurve = nullptr;
 
-// Sets default values
+UCurveVector* UDoorActorMeshComponent::GetDefaultRotationCurve()
+{
+	if (!DefaultRotationCurve.IsValid())
+	{
+		DefaultRotationCurve = NewObject<UCurveVector>();
+
+		DefaultRotationCurve->FloatCurves[1].UpdateOrAddKey(0, 0);
+		DefaultRotationCurve->FloatCurves[1].UpdateOrAddKey(1, 90);
+
+		DefaultRotationCurve->AddToRoot();
+	}
+
+	return DefaultRotationCurve.Get();
+}
+
+UCurveVector* UDoorActorMeshComponent::GetDefaultTranslationCurve()
+{
+	if (!DefaultTranslationCurve.IsValid())
+	{
+		DefaultTranslationCurve = NewObject<UCurveVector>();
+
+		DefaultTranslationCurve->AddToRoot();
+	}
+
+	return DefaultTranslationCurve.Get();
+}
+
+UDoorActorMeshComponent::UDoorActorMeshComponent()
+{
+	this->Rotation = GetDefaultRotationCurve();
+	this->Translation = GetDefaultTranslationCurve();
+}
+
+void UDoorActorMeshComponent::BeginPlay()
+{
+	Super::BeginPlay();
+
+	this->InitPosition = this->GetComponentLocation();
+	this->InitRotation = this->GetComponentRotation();
+}
+
+void UDoorActorMeshComponent::Update(float Alpha)
+{
+
+	auto NewRotation = FMath::Lerp(
+		this->InitRotation,
+		this->InitRotation + this->Rotation->GetVectorValue(Alpha).Rotation(),
+		Alpha);
+
+	auto NewTranslation = FMath::Lerp(
+		this->InitPosition,
+		this->InitPosition + this->Rotation->GetVectorValue(Alpha),
+		Alpha);
+
+	this->SetRelativeRotation(NewRotation);
+}
+
+#pragma endregion
+
+#pragma region DoorActor
+
+TWeakObjectPtr<UCurveFloat> ADoorActor::DefaultForwardCurve = nullptr;
+TWeakObjectPtr<UCurveFloat> ADoorActor::DefaultReverseCurve = nullptr;
+
+UCurveFloat* ADoorActor::GetDefaultForwardCurve()
+{
+	if (!ADoorActor::DefaultForwardCurve.IsValid())
+	{
+		ADoorActor::DefaultForwardCurve = NewObject<UCurveFloat>();
+
+		DefaultForwardCurve->FloatCurve.UpdateOrAddKey(0.f, 0.f);
+		DefaultForwardCurve->FloatCurve.UpdateOrAddKey(1.f, 1.f);
+
+		ADoorActor::DefaultForwardCurve.Get()->AddToRoot();
+	}
+
+	return ADoorActor::DefaultForwardCurve.Get();
+}
+
+UCurveFloat* ADoorActor::GetDefaultReverseCurve()
+{
+	if (!ADoorActor::DefaultForwardCurve.IsValid())
+	{
+		ADoorActor::DefaultReverseCurve = NewObject<UCurveFloat>();
+
+		DefaultReverseCurve->FloatCurve.UpdateOrAddKey(0.f, 0.f);
+		DefaultReverseCurve->FloatCurve.UpdateOrAddKey(1.f, 1.f);
+
+		ADoorActor::DefaultReverseCurve.Get()->AddToRoot();
+	}
+
+	return ADoorActor::DefaultReverseCurve.Get();
+}
+
 ADoorActor::ADoorActor()
 : PlayRate(1),
 	AngleDelta(90),
@@ -14,6 +110,7 @@ ADoorActor::ADoorActor()
 		TEXT("DoorRotationTimeline"));
 
 	this->RootComponent->SetMobility(EComponentMobility::Movable);
+	this->SetActorHiddenInGame(false);
 }
 
 // Called when the game starts or when spawned
@@ -21,12 +118,20 @@ void ADoorActor::BeginPlay()
 {
 	Super::BeginPlay();
 
+	for (const auto& Comps : this->GetComponents())
+	{
+		if (auto DoorComp = Cast<UDoorActorMeshComponent>(Comps))
+		{
+			this->Components.Add(DoorComp);
+		}
+	}
+
 	this->Axis = this->GetActorRotation().RotateVector(FVector::UpVector);
 	this->BaseRotation = this->GetActorRotation().Quaternion();
 
 	if (!this->MovementCurve)
 	{
-		this->MovementCurve = this->GetDefaultCurve();
+		this->MovementCurve = this->GetDefaultForwardCurve();
 	}	
 
 	this->MovementTimeline->SetPlayRate(this->PlayRate);
@@ -40,19 +145,6 @@ void ADoorActor::BeginPlay()
 		this->MovementTimeline->AddInterpFloat(this->MovementCurve, MovementTrack);
 		this->MovementTimeline->SetTimelineFinishedFunc(EndMovementTrack);
 	}
-}
-
-UCurveFloat* ADoorActor::GetDefaultCurve()
-{
-	if (!ADoorActor::SharedCurve.IsValid())
-	{
-		ADoorActor::SharedCurve = NewObject<UCurveFloat>();
-
-		SharedCurve->FloatCurve.UpdateOrAddKey(0.f, 0.f);
-		SharedCurve->FloatCurve.UpdateOrAddKey(1.f, 1.f);
-	}
-
-	return ADoorActor::SharedCurve.Get();
 }
 
 void ADoorActor::ActivateDoor(bool OpenQ)
@@ -74,10 +166,10 @@ void ADoorActor::UpdatePosition(float alpha)
 {
 	this->CurrentAlpha = alpha;
 
-	float Angle = FMath::Lerp(0.0f, this->AngleDelta, alpha);
-	FQuat Rotation(this->Axis, FMath::DegreesToRadians(Angle));
-
-	this->SetActorRotation(Rotation * this->BaseRotation);
+	for (const auto& Doors : this->Components)
+	{
+		Doors->Update(alpha);
+	}
 }
 
 void ADoorActor::FinishMovement()
@@ -90,3 +182,5 @@ void ADoorActor::SetPlayRate(float NewPlayRate)
 	this->PlayRate = NewPlayRate;
 	this->MovementTimeline->SetPlayRate(this->PlayRate);
 }
+
+#pragma endregion

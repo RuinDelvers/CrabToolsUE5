@@ -15,12 +15,15 @@ ADynamicActorSpawner::ADynamicActorSpawner()
 		ConstructorHelpers::FObjectFinderOptional<UTexture2D> Icon(
 			TEXT("/CrabToolsUE5/Icons/ActorSpawnerIcon.ActorSpawnerIcon"));
 
-		this->EditorSprite->Sprite = Icon.Get();
-		this->EditorSprite->bHiddenInGame = true;
-		this->EditorSprite->SetupAttachment(this->RootComponent);
-		this->EditorSprite->SetRelativeScale3D_Direct(FVector(0.4f, 0.4f, 0.4f));
-		this->EditorSprite->SetRelativeLocation_Direct(50 * FVector::UpVector);
-		this->EditorSprite->SetSimulatePhysics(false);
+		if (EditorSprite)
+		{
+			this->EditorSprite->Sprite = Icon.Get();
+			this->EditorSprite->bHiddenInGame = true;
+			this->EditorSprite->SetupAttachment(this->RootComponent);
+			this->EditorSprite->SetRelativeScale3D_Direct(FVector(0.4f, 0.4f, 0.4f));
+			this->EditorSprite->SetRelativeLocation_Direct(50 * FVector::UpVector);
+			this->EditorSprite->SetSimulatePhysics(false);
+		}
 
 	#endif // WITH_EDITORONLY_DATA
 }

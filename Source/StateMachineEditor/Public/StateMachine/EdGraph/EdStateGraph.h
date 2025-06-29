@@ -201,6 +201,7 @@ public:
 	bool IsVariable() const;
 	FName GetCategoryName() const;
 	FName GetClassPrefix() const;
+	TSet<FName> GetNotifies() const;
 	FName RenameNode(UEdBaseStateNode* Node, FName NewName);
 
 	UEdStateNode* GetStateNodeByName(FName Name) const;

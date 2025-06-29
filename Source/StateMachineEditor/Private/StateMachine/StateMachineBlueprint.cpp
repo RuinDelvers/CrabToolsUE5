@@ -211,6 +211,8 @@ void UStateMachineBlueprint::RenameGraph(UEdStateGraph* Graph, FName Name)
 bool UStateMachineBlueprint::Modify(bool bAlwaysMarkDirty)
 {
 	//FBlueprintEditorUtils::MarkBlueprintAsModified(this);
+	UE_LOG(LogTemp, Warning, TEXT("Modified something in SM Blueprint?"));
+	this->MarkPackageDirty();
 	bool Modified = Super::Modify(bAlwaysMarkDirty);
 	return Modified;
 }
@@ -270,6 +272,7 @@ TSet<FName> UStateMachineBlueprint::GetEventSet() const
 	{
 		EventNames.Add(Ev->GetEventName());
 	}
+	EventNames.Append(this->MainGraph->GetNotifies());
 
 	for (auto& SubGraph : this->SubGraphs)
 	{
@@ -277,6 +280,8 @@ TSet<FName> UStateMachineBlueprint::GetEventSet() const
 		{
 			EventNames.Add(Ev->GetEventName());
 		}
+
+		EventNames.Append(SubGraph->GetNotifies());
 	}
 
 	return EventNames;

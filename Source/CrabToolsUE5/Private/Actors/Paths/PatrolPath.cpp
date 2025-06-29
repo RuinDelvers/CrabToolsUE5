@@ -20,22 +20,27 @@ APatrolPath::APatrolPath(): bIsCycle(true)
 
 		ConstructorHelpers::FObjectFinderOptional<UTexture2D> Icon(
 			TEXT("/CrabToolsUE5/Icons/PatrolPathIcon.PatrolPathIcon"));
-
-		this->EditorSprite->Sprite = Icon.Get();
-		this->EditorSprite->bHiddenInGame = true;
-		this->EditorSprite->SetupAttachment(this->RootComponent);
-		this->EditorSprite->SetRelativeScale3D_Direct(FVector(0.4f, 0.4f, 0.4f));
-		this->EditorSprite->SetRelativeLocation_Direct(50*FVector::UpVector);
-		this->EditorSprite->SetSimulatePhysics(false);
+		if (EditorSprite)
+		{
+			this->EditorSprite->Sprite = Icon.Get();
+			this->EditorSprite->bHiddenInGame = true;
+			this->EditorSprite->SetupAttachment(this->RootComponent);
+			this->EditorSprite->SetRelativeScale3D_Direct(FVector(0.4f, 0.4f, 0.4f));
+			this->EditorSprite->SetRelativeLocation_Direct(50 * FVector::UpVector);
+			this->EditorSprite->SetSimulatePhysics(false);
+		}
 		
 		this->PathSpline = CreateEditorOnlyDefaultSubobject<USplineComponent>(TEXT("PathDisplay"));
 
-		this->PathSpline->SetClosedLoop(this->bIsCycle);
-		this->PathSpline->bHiddenInGame = true;
-		this->PathSpline->SetVisibility(false);
-		this->PathSpline->bDrawDebug = false;
-		this->PathSpline->SetupAttachment(EditorSprite);
-		this->PathSpline->SetSimulatePhysics(false);
+		if (PathSpline)
+		{
+			this->PathSpline->SetClosedLoop(this->bIsCycle);
+			this->PathSpline->bHiddenInGame = true;
+			this->PathSpline->SetVisibility(false);
+			this->PathSpline->bDrawDebug = false;
+			this->PathSpline->SetupAttachment(EditorSprite);
+			this->PathSpline->SetSimulatePhysics(false);
+		}
 
 	#endif
 
