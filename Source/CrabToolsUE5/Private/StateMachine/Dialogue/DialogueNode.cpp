@@ -1,9 +1,14 @@
 #include "StateMachine/Dialogue/DialogueNode.h"
 #include "StateMachine/Events.h"
 
+UDialogueNode::UDialogueNode()
+{
+	this->Choices = CreateDefaultSubobject<UDialogueDataStruct>(TEXT("Data"));
+}
+
 void UDialogueNode::Initialize_Inner_Implementation()
 {
-	for (const auto& Dialogue : this->Choices.DialogueData)
+	for (const auto& Dialogue : this->Choices->DialogueData)
 	{
 		Dialogue->OnDialogueSelected.AddDynamic(this, &UDialogueNode::HandleDialogueSelection);
 	}
@@ -16,7 +21,7 @@ void UDialogueNode::GetEmittedEvents(TSet<FName>& Events) const
 {
 	Super::GetEmittedEvents(Events);
 
-	for (const UDialogueData* Choice : this->Choices.DialogueData)
+	for (const UDialogueData* Choice : this->Choices->DialogueData)
 	{
 		Events.Add(Choice->GetEvent());
 	}
@@ -38,21 +43,6 @@ void UDialogueNode::PostTransition_Inner_Implementation()
 	}
 }
 
-void UDialogueNode::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
-{
-	Super::PostEditChangeProperty(PropertyChangedEvent);
-
-	for (int i = 0; i < this->Choices.DialogueData.Num(); ++i) 
-	{
-		auto& Choice = this->Choices.DialogueData[i];
-
-		if (!IsValid(Choice))
-		{
-			this->Choices.DialogueData[i] = NewObject<UDialogueData>(this);
-		}
-	}
-}
-
 void UDialogueNode::HandleDialogueSelection(const UDialogueData* Data)
 {
 	if (this->Active())
@@ -61,49 +51,22 @@ void UDialogueNode::HandleDialogueSelection(const UDialogueData* Data)
 	}
 }
 
-#pragma region Dialogue State Component
-
-void UDialogueStateComponent::AttemptDialogueWithActor(AActor* Actor)
+#if WITH_EDITOR
+void UDialogueNode::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
-	IEventListenerInterface::Execute_EventWithData(this->GetOwner(), Events::Dialogue::REQUEST_CONFIRMED, Actor);
-}
+	Super::PostEditChangeProperty(PropertyChangedEvent);
 
-bool UDialogueStateComponent::HandShake(UDialogueStateComponent* Conversee)
-{
-	if (this->Participants.Num() == 0)
+	for (int i = 0; i < this->Choices->DialogueData.Num(); ++i) 
 	{
-		this->Participants.Add(Conversee);
-		Conversee->Participants.Add(this);
+		auto& Choice = this->Choices->DialogueData[i];
 
-		this->OnDialogueStarted.Broadcast();
-		Conversee->OnDialogueStarted.Broadcast();
-
-		return true;
-	}
-
-	return false;
-}
-
-void UDialogueStateComponent::FinishDialogue()
-{
-	TArray<TObjectPtr<UDialogueStateComponent>> OldParts = this->Participants.Array();
-	this->Participants.Empty();
-
-	this->FinishDialogueInner();
-
-	for (const auto& Part : OldParts)
-	{
-		Part->FinishDialogueInner();
+		if (!IsValid(Choice))
+		{
+			this->Choices->DialogueData[i] = NewObject<UDialogueData>(this);
+		}
 	}
 }
-
-void UDialogueStateComponent::FinishDialogueInner()
-{
-	this->Participants.Empty();
-	this->OnDialogueFinished.Broadcast();
-}
-
-#pragma endregion
+#endif
 
 #pragma region Attempt Dialogue Node
 void UAttemptDialogueNode::Initialize_Inner_Implementation()

@@ -314,23 +314,21 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "RPG", meta = (ExpandEnumAsExecs = "Result", DeterminesOutputType = "SClass"))
 	UStateMachine* GetMachineAs(TSubclassOf<UStateMachine> SClass, ESearchResult& Result) const;
 
-	UFUNCTION(BlueprintCallable, Category = "StateMachine",
+	UFUNCTION(BlueprintCallable, BlueprintInternalUseOnly, Category = "StateMachine",
 		meta = (HideSelfPin=true))
 	void EmitEvent(FName EName);
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "StateMachine")
 	UState* GetState() const;
 
-	UFUNCTION(BlueprintCallable, Category = "StateMachine",
+	UFUNCTION(BlueprintCallable, BlueprintInternalUseOnly, Category = "StateMachine",
 		meta = (HideSelfPin=true))
 	void EmitEventWithData(FName EName, UObject* Data);
 
-	UFUNCTION(BlueprintCallable, Category = "StateMachine", meta=(DisplayName="EmitEvent"),
-		meta = (HideSelfPin=true))
+	UFUNCTION(BlueprintCallable, Category = "StateMachine", meta = (HideSelfPin=true))
 	void EmitEventSlot(const FEventSlot& ESlot);
 
-	UFUNCTION(BlueprintCallable, Category = "StateMachine", meta = (DisplayName = "EmitEventWithData"),
-		meta = (HideSelfPin=true))
+	UFUNCTION(BlueprintCallable, Category = "StateMachine", meta = (HideSelfPin=true))
 	void EmitEventSlotWithData(const FEventSlot& ESlot, UObject* Data);
 
 	UFUNCTION(BlueprintNativeEvent, Category = "StateMachine")
@@ -756,4 +754,6 @@ public:
 
 	UFUNCTION()
 	TArray<FString> DoPropertySearch() const;
+
+	void Verify(FNodeVerificationContext& Context);
 };

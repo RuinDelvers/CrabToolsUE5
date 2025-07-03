@@ -26,7 +26,6 @@ void UCancelAbilityNode::Enter_Inner_Implementation()
 
 void UCancelAbilityNode::EnterWithData_Inner_Implementation(UObject* Data)
 {
-	UE_LOG(LogTemp, Warning, TEXT("This path was taken?"));
 	if (auto Abi = Cast<UAbility>(Data))
 	{
 		Abi->Cancel();

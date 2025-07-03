@@ -157,7 +157,7 @@ void UStateMachineBlueprintGeneratedClass::CleanAndSanitize()
 	this->Archetype.CleanAndSanitize();
 
 	#if WITH_EDITORONLY_DATA
-		this->EventSet.Empty();
+		this->Archetype.EventSet.Empty();
 	#endif
 }
 
@@ -402,7 +402,19 @@ const FStateArchetypeData* UStateMachineBlueprintGeneratedClass::GetStateArchety
 				{
 					Found = Parent->GetStateArchetypeData(StateName, MachineName);
 				}
+				else
+				{
+					UE_LOG(LogStateMachine, Error, TEXT("Failed to find to find state data %s for machine %s"),
+						*StateName.ToString(),
+						*MachineName.ToString());
+				}
 			}
+		}
+		else
+		{
+			UE_LOG(LogStateMachine, Error, TEXT("Failed to find to find state data %s for machine %s"),
+				*StateName.ToString(),
+				*MachineName.ToString());
 		}
 	}
 
@@ -451,4 +463,59 @@ UStateMachine* UStateMachineBlueprintGeneratedClass::GetMostRecentParentArchetyp
 void UStateMachineBlueprintGeneratedClass::VerifyClass(FNodeVerificationContext& Context)
 {
 
+}
+
+TSet<FName> UStateMachineBlueprintGeneratedClass::GetEventSet(FName MachineName) const
+{
+	TSet<FName> EventNames;
+
+	if (MachineName.IsNone())
+	{
+		EventNames.Append(this->Archetype.EventSet);
+	}
+	else
+	{
+		if (this->SubArchetypes.Contains(MachineName))
+		{
+			EventNames.Append(this->SubArchetypes[MachineName].EventSet);
+		}
+	}
+
+	if (auto Parent = this->GetParent())
+	{
+		EventNames.Append(Parent->GetEventSet(MachineName));
+	}
+
+	return EventNames;
+}
+
+TSet<FName> UStateMachineBlueprintGeneratedClass::GetTotalEventSet() const
+{
+	TSet<FName> EventNames = this->GetEventSet();
+
+	for (const auto& SubArch : this->SubArchetypes)
+	{
+		EventNames.Append(this->GetEventSet(SubArch.Key));
+	}
+
+	return EventNames;
+}
+
+bool UStateMachineBlueprintGeneratedClass::HasEvent(FName EName, FName MachineName) const
+{
+	auto Parent = this->GetParent();
+
+	if (MachineName.IsNone())
+	{
+		return this->Archetype.EventSet.Contains(EName) || (Parent ? Parent->HasEvent(EName, MachineName) : false);
+	}
+	else
+	{
+		if (auto SubArch = this->SubArchetypes.Find(MachineName))
+		{
+			return SubArch->EventSet.Contains(EName) || (Parent ? Parent->HasEvent(EName, MachineName) : false);
+		}
+	}
+
+	return false;
 }

@@ -513,7 +513,7 @@ TSet<FName> UStateMachine::GetEvents() const {
 
 	if (auto BPGC = this->GetGeneratedClass())
 	{
-		List.Append(BPGC->EventSet);
+		List.Append(BPGC->GetTotalEventSet());
 	}
 
 	for (const auto& States : this->Graph) {
@@ -1241,7 +1241,14 @@ bool UStateNode::Verify(FNodeVerificationContext& Context) const
 			}
 			else if (FIT->GetClass() == FObjectProperty::StaticClass())
 			{
-				
+				TObjectPtr<UObject> Value = nullptr;
+				FObjectProperty* f = CastField<FObjectProperty>(*FIT);
+				f->GetValue_InContainer(this, &Value);
+
+				if (auto Prop = Cast<UStateMachineProperty>(Value))
+				{
+					Prop->Verify(Context);
+				}
 			}
 		}
 	}
@@ -1639,4 +1646,18 @@ const FSMPropertyReference& UStateMachineProperty::GetProperty()
 	}
 
 	return this->Ref;
+}
+
+void UStateMachineProperty::Verify(FNodeVerificationContext& Context)
+{
+	auto Props = this->DoPropertySearch();
+
+	if (!Props.Contains(this->Name))
+	{
+		//FString Msg = FString::Printf(
+		//	TEXT("Failed to find property %s in Node %s"),
+		//	*this->Name.ToString(),
+		//	*this->GetNode()->GetName());
+		//Context.Error(Msg, this);
+	}
 }

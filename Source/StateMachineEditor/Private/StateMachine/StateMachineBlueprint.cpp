@@ -1,17 +1,15 @@
 #include "StateMachine/StateMachineBlueprint.h"
 #include "StateMachine/StateMachineInterface.h"
 #include "StateMachine/StateMachineBlueprintGeneratedClass.h"
-#include "StateMachine/EdGraph/EdStartStateNode.h"
 #include "StateMachine/EdGraph/EdStateGraph.h"
 #include "StateMachine/EdGraph/EdEventObject.h"
 #include "StateMachine/EdGraph/StateMachineSchema.h"
 #include "StateMachine/DataStructures.h"
+#include "EdGraph/EdGraph.h"
+#include "Kismet2/BlueprintEditorUtils.h"
 #include "Engine/DataTable.h"
 
 #define LOCTEXT_NAMESPACE "UStateMachineBlueprint"
-#include "EdGraph/EdGraph.h"
-#include "Kismet2/BlueprintEditorUtils.h"
-
 #define DEFAULT_STATEMACHINE_NAME "NewStateMachine"
 
 UStateMachineBlueprint::UStateMachineBlueprint(const FObjectInitializer& ObjectInitializer)
@@ -19,7 +17,7 @@ UStateMachineBlueprint::UStateMachineBlueprint(const FObjectInitializer& ObjectI
 	MainGraph(nullptr),
 	DefaultStateClass(UState::StaticClass())
 {
-	
+
 }
 
 UClass* UStateMachineBlueprint::GetBlueprintClass() const
@@ -211,7 +209,6 @@ void UStateMachineBlueprint::RenameGraph(UEdStateGraph* Graph, FName Name)
 bool UStateMachineBlueprint::Modify(bool bAlwaysMarkDirty)
 {
 	//FBlueprintEditorUtils::MarkBlueprintAsModified(this);
-	UE_LOG(LogTemp, Warning, TEXT("Modified something in SM Blueprint?"));
 	this->MarkPackageDirty();
 	bool Modified = Super::Modify(bAlwaysMarkDirty);
 	return Modified;

@@ -3,9 +3,8 @@
 #include "StateMachine/EdGraph/EdStateNode.h"
 #include "StateMachine/EdGraph/EdAliasNode.h"
 #include "StateMachine/EdGraph/EdStateGraph.h"
-#include "StateMachine/EdGraph/EdEventObject.h"
 #include "StateMachine/StateMachineBlueprint.h"
-#include "KismetCompiler.h"
+#include "StateMachine/StateMachineBlueprintGeneratedClass.h"
 
 
 #define LOCTEXT_NAMESPACE "EdNode_GenericGraphEdge"
@@ -93,12 +92,16 @@ UEdBaseStateNode* UEdTransition::GetEndNode() const
 
 TArray<FString> UEdTransition::GetEventOptions() const
 {
-	if (auto StateNode = Cast<UEdStateNode>(this->GetStartNode()))
+	TSet<FString> EventNames;
+
+	for (const auto& EName : Cast<UEdStateGraph>(this->GetGraph())->GetEventOptions())
 	{
-		return StateNode->GetEventOptions();
+		EventNames.Add(EName);
 	}
 
-	return Cast<UEdStateGraph>(this->GetGraph())->GetEventOptions();
+	EventNames.Sort([&](const FString& A, const FString& B) { return A < B; });
+
+	return EventNames.Array();
 }
 
 TMap<FName, FTransitionData> UEdTransition::GetTransitionData(FNodeVerificationContext& Context)

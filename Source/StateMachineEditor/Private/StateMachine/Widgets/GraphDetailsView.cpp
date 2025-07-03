@@ -353,14 +353,13 @@ TSharedRef<ITableRow> FStateItem::GetEntryWidget(
 		.Padding(0, 2)
 		[
 			SAssignNew(InlineText, SInlineEditableTextBlock)
-				//.Style(FAppStyle::Get(), "Graph.StateNode.NodeTitleInlineEditableText")
 				.Text(FText::FromName(this->NodeRef->GetNodeName()))
 				.OnVerifyTextChanged(this, &FStateItem::OnVerifyNameTextChanged)
 				.OnTextCommitted(this, &FStateItem::OnNameTextCommited)
 				.IsSelected(
 					TableRow, 
 					&STableRow<ItemPtr>::IsSelectedExclusively)
-				.IsReadOnly(&FStateItem::IsReadOnly)
+				.IsReadOnly_Raw(this, &FStateItem::IsReadOnly)
 		];
 	}
 	
@@ -401,7 +400,7 @@ bool FStateItem::OnVerifyNameTextChanged(const FText& InText, FText& OutErrorMes
 	return false;
 }
 
-bool FStateItem::IsReadOnly()
+bool FStateItem::IsReadOnly() const
 {
 	if (this->NodeRef.IsValid())
 	{
@@ -483,11 +482,10 @@ FString FStateMachineItem::SortKey() const
 
 TSharedRef<ITableRow> FStateMachineItem::GetEntryWidget(
 	const TSharedRef<STableViewBase>& OwnerTable,
-	bool bIsReadOnly)
+	bool _bIsReadOnly)
 {
 	auto TableRow = SNew(STableRow<ItemPtr>, OwnerTable)
 		.ShowSelection(true);
-
 	
 	// Make the text widget.
 	TSharedPtr<SWidget> TextWidget;
@@ -507,8 +505,10 @@ TSharedRef<ITableRow> FStateMachineItem::GetEntryWidget(
 					.IsSelected(
 						TableRow,
 						&STableRow<ItemPtr>::IsSelectedExclusively)
-					//.IsReadOnly(this->GraphRef.Get()->IsMainGraph())
-					.IsReadOnly(&FStateMachineItem::IsReadOnly)
+					//.IsReadOnly(false)
+					//.IsReadOnly(&FStateMachineItem::IsReadOnly)
+					//.IsReadOnly_Lambda([this]() { return this->IsReadOnly(); })
+					.IsReadOnly_Raw(this, &FStateMachineItem::IsReadOnly)
 			];
 	}
 
@@ -523,7 +523,7 @@ void FStateMachineItem::OnEventCreated(UEdEventObject* EventObject, bool DeferRe
 		MakeShareable(new FEventItem(EventObject)), DeferRefresh);*/
 }
 
-bool FStateMachineItem::IsReadOnly()
+bool FStateMachineItem::IsReadOnly() const
 {
 	if (this->GraphRef.Get()->IsMainGraph())
 	{
@@ -531,7 +531,12 @@ bool FStateMachineItem::IsReadOnly()
 	}
 	else if (this->GraphRef.Get()->GetGraphType() != EStateMachineGraphType::SUB_GRAPH)
 	{
-		return true;
+		switch (this->GraphRef.Get()->GetGraphType())
+		{
+			case EStateMachineGraphType::SUB_GRAPH: return false;
+			case EStateMachineGraphType::MAIN_GRAPH: return true;
+			case EStateMachineGraphType::EXTENDED_GRAPH: return true;
+		}
 	}
 
 	return false;
@@ -866,7 +871,7 @@ FReply SSubGraphDetails::OnKeyDown(const FGeometry& MyGeometry, const FKeyEvent&
 	auto Selected = this->TreeView->GetSelectedItems();
 	if (KeyEvent.GetKey() == EKeys::Delete || KeyEvent.GetKey() == EKeys::BackSpace)
 	{
-		for (auto Item : Selected)
+		for (auto& Item : Selected)
 		{
 			Item->Delete(true);
 		}
@@ -875,7 +880,7 @@ FReply SSubGraphDetails::OnKeyDown(const FGeometry& MyGeometry, const FKeyEvent&
 	}
 	else if (KeyEvent.GetKey() == EKeys::F2 && Selected.Num() == 1)
 	{
-		auto Item = Selected[0];
+		auto& Item = Selected[0];
 		this->TreeView->RequestScrollIntoView(Item);
 		Item->EnterRenameMode();
 
@@ -1111,11 +1116,6 @@ void SGraphDetailsView::AddReferencedObjects(FReferenceCollector& Collector) {
 
 }
 
-void OnGraphSelected(UEdStateGraph* Graph)
-{
-
-}
-
 void SGraphDetailsView::BindEvents(TSharedPtr<class FEditor> InEditor) {
 	if (auto BPObj = InEditor->GetStateMachineBlueprintObj())
 	{
@@ -1144,9 +1144,10 @@ void FGraphDetailsViewItem::GetChildren(TArray< ItemPtr >& OutChildren) const
 FReply SGraphDetailsView::OnKeyDown(const FGeometry& MyGeometry, const FKeyEvent& KeyEvent)
 {
 	auto Selected = this->TreeView->GetSelectedItems();
+
 	if (KeyEvent.GetKey() == EKeys::Delete || KeyEvent.GetKey() == EKeys::BackSpace)
 	{
-		for (auto Item : Selected)
+		for (auto& Item : Selected)
 		{
 			Item->Delete(true);
 		}
@@ -1155,7 +1156,7 @@ FReply SGraphDetailsView::OnKeyDown(const FGeometry& MyGeometry, const FKeyEvent
 	}
 	else if (KeyEvent.GetKey() == EKeys::F2 && Selected.Num() == 1)
 	{
-		auto Item = Selected[0];
+		auto& Item = Selected[0];
 		this->TreeView->RequestScrollIntoView(Item);
 		Item->EnterRenameMode();
 

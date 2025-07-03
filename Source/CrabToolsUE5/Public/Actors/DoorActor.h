@@ -65,6 +65,7 @@ public:
 
 private:
 
+	UPROPERTY(Transient)
 	TArray<TObjectPtr<UDoorActorMeshComponent>> Components;
 
 public:	
@@ -79,12 +80,12 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "DoorActor")
 	float PlayRate;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DoorActor",
-		meta=(ClampMin="-360", ClampMax="360", UIMin="-360", UIMax="360.0"))
-	float AngleDelta;
 	float CurrentAlpha;
 	FVector Axis;
 	FQuat BaseRotation;
+
+	UPROPERTY(VisibleAnywhere, Category="DoorActor")
+	bool bOpen = false;
 
 	UPROPERTY(BlueprintReadOnly, Category="DoorActor")
 	TObjectPtr<UTimelineComponent> MovementTimeline;
@@ -114,9 +115,19 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "DoorActor")
 	void SetPlayRate(float NewPlayRate);
 	
-	UFUNCTION(BlueprintCallable, CallInEditor, Category = "DoorActor")
+	UFUNCTION(BlueprintCallable, Category = "DoorActor")
 	FORCEINLINE void OpenDoor() { ActivateDoor(true); }
 
-	UFUNCTION(BlueprintCallable, CallInEditor, Category = "DoorActor")
+	UFUNCTION(BlueprintCallable, Category = "DoorActor")
 	FORCEINLINE void CloseDoor() { ActivateDoor(false); }
+
+	UFUNCTION(BlueprintCallable, CallInEditor, Category = "DoorActor")
+	void ToggleDoorEditor();
+
+	UFUNCTION(BlueprintCallable, Category = "DoorActor")
+	void ToggleDoor();
+
+private:
+
+	TArray<TObjectPtr<UDoorActorMeshComponent>>& GetDoorComponents();
 };

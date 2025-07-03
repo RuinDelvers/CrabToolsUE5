@@ -253,29 +253,45 @@ bool UEdStateGraph::HasEvent(FName EName) const
 	}
 	else
 	{
-		bHasEvent = this->DoesEmitterHaveEvent(EName) || this->GetBlueprintOwner()->HasEvent(EName);
-
-		if (!this->IsMainGraph())
+		if (auto BPGC = this->GetBlueprintOwner()->GetStateMachineGeneratedClass())
 		{
-			UStateMachineBlueprintGeneratedClass* BPGC = nullptr;
-
-			if (this->GraphType == EStateMachineGraphType::EXTENDED_GRAPH)
+			if (auto Parent = BPGC->GetParent())
 			{
-				BPGC = Cast<UStateMachineBlueprintGeneratedClass>(this->MachineArchetypeOverride.Value->GetClass());
+				bHasEvent = Parent->HasEvent(EName, this->GetGraphName());
 			}
-			else if (this->GraphType == EStateMachineGraphType::EXTENDED_GRAPH)
-			{
-				BPGC = Cast<UStateMachineBlueprintGeneratedClass>(this->MachineArchetype->GetClass());
-			}
+		}		
 
-			if (BPGC != nullptr)
+		if (!bHasEvent)
+		{
+			bHasEvent = this->DoesEmitterHaveEvent(EName) || this->GetBlueprintOwner()->HasEvent(EName);
+
+			if (!this->IsMainGraph())
 			{
-				for (auto& IFace : BPGC->Interfaces)
+				UStateMachineBlueprintGeneratedClass* BPGC = nullptr;
+
+				if (this->GraphType == EStateMachineGraphType::EXTENDED_GRAPH)
 				{
-					if (IFace->HasEvent(EName))
+					BPGC = Cast<UStateMachineBlueprintGeneratedClass>(this->MachineArchetypeOverride.Value->GetClass());
+				}
+				else if (this->GraphType == EStateMachineGraphType::SUB_GRAPH)
+				{
+					BPGC = Cast<UStateMachineBlueprintGeneratedClass>(this->MachineArchetype->GetClass());
+				}
+
+				if (BPGC != nullptr)
+				{
+					bHasEvent = BPGC->HasEvent(EName, this->GetGraphName());
+
+					if (!bHasEvent)
 					{
-						bHasEvent = true;
-						break;
+						for (auto& IFace : BPGC->Interfaces)
+						{
+							if (IFace->HasEvent(EName))
+							{
+								bHasEvent = true;
+								break;
+							}
+						}
 					}
 				}
 			}
@@ -660,6 +676,18 @@ TArray<FString> UEdStateGraph::GetStateOptions(const UObject* Asker) const
 	return Names;
 }
 
+TSet<FName> UEdStateGraph::DefinedEvents() const
+{
+	TSet<FName> EventNames;
+
+	for (const auto& Ev : this->EventObjects)
+	{
+		EventNames.Add(Ev->GetEventName());
+	}
+
+	return EventNames;
+}
+
 TArray<FString> UEdStateGraph::GetEventOptions() const
 {
 	TArray<FString> Names;
@@ -672,7 +700,19 @@ TArray<FString> UEdStateGraph::GetEventOptions() const
 	this->AppendEmitterEvents(Names);
 	this->GetBlueprintOwner()->AppendInterfaceEvents(Names);
 
-	
+	if (this->GraphType == EStateMachineGraphType::EXTENDED_GRAPH && !this->OverridenMachine.IsNone())
+	{
+		if (auto BPObj = this->GetBlueprintOwner())
+		{
+			if (auto Class = BPObj->GetStateMachineGeneratedClass()->GetParent())
+			{
+				for (const auto& Ev : Class->GetEventSet(this->GetGraphName()))
+				{
+					Names.Add(Ev.ToString());
+				}
+			}
+		}
+	}
 
 	Names.Sort([&](const FString& A, const FString& B) { return A < B; });
 

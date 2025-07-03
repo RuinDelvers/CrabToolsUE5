@@ -63,11 +63,19 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "UtilityStructures", 
 		meta = (ExpandEnumAsExecs = "Result"))
-	void ActivateNAryGate(UPARAM(ref) FNAryGate& Gate, ETriggerBranch& Result);
+	static void ActivateNAryGate(UPARAM(ref) FNAryGate& Gate, ETriggerBranch& Result);
 
 	UFUNCTION(BlueprintCallable, Category = "UtilityStructures",
 		meta = (ExpandEnumAsExecs = "Result"))
-	void DeactivateNAryGate(UPARAM(ref) FNAryGate& Gate, ETriggerBranch& Result);
+	static void DeactivateNAryGate(UPARAM(ref) FNAryGate& Gate, ETriggerBranch& Result);
+
+	/*
+	 * This will generate a dynamic class that is a child of the given Parent class. This can be useful when
+	 * classes are utilized for a singleton design pattern. For example, NavAreas only have their default
+	 * objects utilized, and thus being able to generate a dynamic NavArea class can be useful.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Utility", meta=(DeterminesOutputType="Parent"))
+	static TSubclassOf<UObject> GenerateDynamicClass(TSubclassOf<UObject> Parent, UObject* Owner);
 };
 
 namespace UtilsFunctions

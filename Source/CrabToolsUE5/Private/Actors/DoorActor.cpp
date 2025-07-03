@@ -10,9 +10,10 @@ UCurveVector* UDoorActorMeshComponent::GetDefaultRotationCurve()
 	if (!DefaultRotationCurve.IsValid())
 	{
 		DefaultRotationCurve = NewObject<UCurveVector>();
+		DefaultRotationCurve->Rename(TEXT("Default Rotation Curve"));
 
-		DefaultRotationCurve->FloatCurves[1].UpdateOrAddKey(0, 0);
-		DefaultRotationCurve->FloatCurves[1].UpdateOrAddKey(1, 90);
+		DefaultRotationCurve->FloatCurves[2].UpdateOrAddKey(0, 0);
+		DefaultRotationCurve->FloatCurves[2].UpdateOrAddKey(1, 90);
 
 		DefaultRotationCurve->AddToRoot();
 	}
@@ -25,6 +26,7 @@ UCurveVector* UDoorActorMeshComponent::GetDefaultTranslationCurve()
 	if (!DefaultTranslationCurve.IsValid())
 	{
 		DefaultTranslationCurve = NewObject<UCurveVector>();
+		DefaultTranslationCurve->Rename(TEXT("Default Translation Curve"));
 
 		DefaultTranslationCurve->AddToRoot();
 	}
@@ -48,16 +50,9 @@ void UDoorActorMeshComponent::BeginPlay()
 
 void UDoorActorMeshComponent::Update(float Alpha)
 {
-
-	auto NewRotation = FMath::Lerp(
-		this->InitRotation,
-		this->InitRotation + this->Rotation->GetVectorValue(Alpha).Rotation(),
-		Alpha);
-
-	auto NewTranslation = FMath::Lerp(
-		this->InitPosition,
-		this->InitPosition + this->Rotation->GetVectorValue(Alpha),
-		Alpha);
+	auto NewRotationVector = this->Rotation->GetVectorValue(Alpha);
+	auto NewRotation = FRotator(NewRotationVector.X, NewRotationVector.Z, NewRotationVector.Y);
+	auto NewTranslation = this->Translation->GetVectorValue(Alpha);
 
 	this->SetRelativeRotation(NewRotation);
 }
@@ -101,30 +96,24 @@ UCurveFloat* ADoorActor::GetDefaultReverseCurve()
 
 ADoorActor::ADoorActor()
 : PlayRate(1),
-	AngleDelta(90),
 	CurrentAlpha(0)
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
+
 	this->MovementTimeline = CreateDefaultSubobject<UTimelineComponent>(
 		TEXT("DoorRotationTimeline"));
 
 	this->RootComponent->SetMobility(EComponentMobility::Movable);
 	this->SetActorHiddenInGame(false);
+	this->SetActorEnableCollision(true);
+	
 }
 
 // Called when the game starts or when spawned
 void ADoorActor::BeginPlay()
 {
 	Super::BeginPlay();
-
-	for (const auto& Comps : this->GetComponents())
-	{
-		if (auto DoorComp = Cast<UDoorActorMeshComponent>(Comps))
-		{
-			this->Components.Add(DoorComp);
-		}
-	}
 
 	this->Axis = this->GetActorRotation().RotateVector(FVector::UpVector);
 	this->BaseRotation = this->GetActorRotation().Quaternion();
@@ -149,15 +138,18 @@ void ADoorActor::BeginPlay()
 
 void ADoorActor::ActivateDoor(bool OpenQ)
 {
+	this->bOpen = OpenQ;
 	this->MovementTimeline->Stop();
 	this->MovementTimeline->SetNewTime(this->CurrentAlpha);
 
-	if (OpenQ)
+	if (this->bOpen)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("Opening the door?"));
 		this->MovementTimeline->Play();
 	}
 	else
 	{
+		UE_LOG(LogTemp, Warning, TEXT("Closing the door?"));
 		this->MovementTimeline->Reverse();
 	}
 }
@@ -166,7 +158,7 @@ void ADoorActor::UpdatePosition(float alpha)
 {
 	this->CurrentAlpha = alpha;
 
-	for (const auto& Doors : this->Components)
+	for (const auto& Doors : this->GetDoorComponents())
 	{
 		Doors->Update(alpha);
 	}
@@ -181,6 +173,40 @@ void ADoorActor::SetPlayRate(float NewPlayRate)
 {
 	this->PlayRate = NewPlayRate;
 	this->MovementTimeline->SetPlayRate(this->PlayRate);
+}
+
+void ADoorActor::ToggleDoorEditor()
+{
+	this->bOpen = !this->bOpen;
+
+	for (const auto& Doors : this->GetDoorComponents())
+	{
+		Doors->Update(this->bOpen ? 1.0 : 0.0);
+	}
+
+	this->MarkPackageDirty();
+}
+
+void ADoorActor::ToggleDoor()
+{
+	this->bOpen = !this->bOpen;
+	this->ActivateDoor(this->bOpen);
+}
+
+TArray<TObjectPtr<UDoorActorMeshComponent>>& ADoorActor::GetDoorComponents()
+{
+	if (this->Components.Num() == 0)
+	{
+		for (const auto& Comps : this->GetComponents())
+		{
+			if (auto DoorComp = Cast<UDoorActorMeshComponent>(Comps))
+			{
+				this->Components.Add(DoorComp);
+			}
+		}
+	}
+
+	return this->Components;
 }
 
 #pragma endregion

@@ -1,13 +1,7 @@
 #pragma once
 
-#include "CoreMinimal.h"
-#include "Layout/Visibility.h"
-#include "Misc/NotifyHook.h"
-
 #include "Widgets/DeclarativeSyntaxSupport.h"
 #include "Widgets/SCompoundWidget.h"
-#include "Widgets/Views/SExpanderArrow.h"
-#include "Widgets/Views/STableRow.h"
 #include "Widgets/Views/STreeView.h"
 #include "Widgets/Layout/SWidgetSwitcher.h"
 #include "Widgets/Text/SInlineEditableTextBlock.h"
@@ -121,7 +115,7 @@ protected:
 	TSharedPtr<SInlineEditableTextBlock> InlineText;
 
 public:
-	virtual void EnterRenameMode() override { this->InlineText->EnterEditingMode(); }
+	virtual void EnterRenameMode() override	{ this->InlineText->EnterEditingMode(); }
 };
 
 class FStateItem : public FBaseEditableTextItem
@@ -143,7 +137,7 @@ private:
 	void OnNameTextCommited(const FText& InText, ETextCommit::Type CommitInfo);
 	void OnNameChanged(FName Old, FName Name);
 	void OnNodeDeleted();
-	bool IsReadOnly();
+	bool IsReadOnly() const;
 
 	void Select() override { this->NodeRef->Inspect(); }
 
@@ -177,7 +171,7 @@ private:
 	void OnEventCreated(UEdEventObject* Event, bool DeferRefresh);
 	void OnGraphChanged(const FEdGraphEditAction& Action);
 
-	bool IsReadOnly();
+	bool IsReadOnly() const;
 
 	void Select() override;
 	virtual void Delete(bool DeferRefresh = false) override;

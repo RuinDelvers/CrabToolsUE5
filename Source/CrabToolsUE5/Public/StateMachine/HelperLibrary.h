@@ -16,10 +16,10 @@ class CRABTOOLSUE5_API UStateMachineHelperLibrary : public UBlueprintFunctionLib
 public:
 	
 	/* Primarily used for K2_Nodes that may need to bind to a function. */
-	UFUNCTION(BlueprintCallable, Category="Utility")
+	UFUNCTION(BlueprintCallable, BlueprintInternalUseOnly, Category="StateMachine")
 	static void EmitEvent(UObject* Obj, FName EName);
 
 	/* Primarily used for K2_Nodes that may need to bind to a function. */
-	UFUNCTION(BlueprintCallable, Category="Utility")
+	UFUNCTION(BlueprintCallable, BlueprintInternalUseOnly, Category="StateMachine")
 	static void EmitEventWithData(UObject* Obj, FName EName, UObject* Data);
 };

@@ -155,7 +155,9 @@ public:
 	void Select();
 
 	/* Creates a new event and returns it. */
-	UEdEventObject* CreateEvent();	
+	UEdEventObject* CreateEvent();
+	/* Returns the events defined by the event objects only in this graph. */
+	TSet<FName> DefinedEvents() const;
 
 	void Initialize(UStateMachineBlueprint* BP);
 

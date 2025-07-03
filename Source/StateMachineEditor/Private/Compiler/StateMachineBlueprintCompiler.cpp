@@ -308,9 +308,10 @@ void FStateMachineBlueprintCompilerContext::FinishCompilingClass(UClass* Class)
 			{
 				auto SubSM = SubGraph->CompileStateMachine(Context);
 				BPGClass->AddStateMachine(SubSM, SubGraph->GetGraphName());
+				BPGClass->SubArchetypes[SubGraph->GetGraphName()].AppendEvents(SubGraph->DefinedEvents());
 			}
 
-			BPGClass->EventSet.Append(SMBP->GetEventSet());
+			BPGClass->Archetype.AppendEvents(SMBP->GetMainGraph()->DefinedEvents());
 		}
 	}
 

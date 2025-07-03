@@ -5,6 +5,47 @@
  * state machines. 
  */
 
+#include "GameFramework/InputSettings.h"
+
+namespace Events::Input::Devices
+{
+	// See EHardwareDevicePrimaryType in InputSettings.h for the device types.
+	constexpr char INPUT_DEVICE_UNSPECIFIED[]        = "INPUT_DEVICE_UNSPECIFIED";
+	constexpr char INPUT_DEVICE_KEYBOARD_AND_MOUSE[] = "INPUT_DEVICE_KEYBOARD_AND_MOUSE";
+	constexpr char INPUT_DEVICE_GAMEPAD[]            = "INPUT_DEVICE_GAMEPAD";
+	constexpr char INPUT_DEVICE_TOUCH[]              = "INPUT_DEVICE_TOUCH";
+	constexpr char INPUT_DEVICE_MOTION_TRACKING[]    = "INPUT_DEVICE_MOTION_TRACKING";
+	constexpr char INPUT_DEVICE_RACING_WHEEL[]       = "INPUT_DEVICE_RACING_WHEEL";
+	constexpr char INPUT_DEVICE_FLIGHT_STICK[]       = "INPUT_DEVICE_FLIGHT_STICK";
+	constexpr char INPUT_DEVICE_CAMERA[]             = "INPUT_DEVICE_CAMERA";
+	constexpr char INPUT_DEVICE_INSTRUMENT[]         = "INPUT_DEVICE_INSTRUMENT";
+	constexpr char INPUT_DEVICE_CUSTOM_TYPE_A[]     = "INPUT_DEVICE_CUSTOM_TYPE_A";
+	constexpr char INPUT_DEVICE_CUSTOM_TYPE_B[]     = "INPUT_DEVICE_CUSTOM_TYPE_B";
+	constexpr char INPUT_DEVICE_CUSTOM_TYPE_C[]     = "INPUT_DEVICE_CUSTOM_TYPE_C";
+	constexpr char INPUT_DEVICE_CUSTOM_TYPE_D[]     = "INPUT_DEVICE_CUSTOM_TYPE_D";
+
+	static FName DeviceToEvent(EHardwareDevicePrimaryType DType)
+	{
+		switch (DType)
+		{
+			case EHardwareDevicePrimaryType::Unspecified: return INPUT_DEVICE_UNSPECIFIED;
+			case EHardwareDevicePrimaryType::KeyboardAndMouse: return INPUT_DEVICE_KEYBOARD_AND_MOUSE;
+			case EHardwareDevicePrimaryType::Gamepad: return INPUT_DEVICE_GAMEPAD;
+			case EHardwareDevicePrimaryType::Touch: return INPUT_DEVICE_TOUCH;
+			case EHardwareDevicePrimaryType::MotionTracking: return INPUT_DEVICE_MOTION_TRACKING;
+			case EHardwareDevicePrimaryType::RacingWheel: return INPUT_DEVICE_RACING_WHEEL;
+			case EHardwareDevicePrimaryType::FlightStick: return INPUT_DEVICE_FLIGHT_STICK;
+			case EHardwareDevicePrimaryType::Camera: return INPUT_DEVICE_CAMERA;
+			case EHardwareDevicePrimaryType::Instrument: return INPUT_DEVICE_INSTRUMENT;
+			case EHardwareDevicePrimaryType::CustomTypeA: return INPUT_DEVICE_CUSTOM_TYPE_A;
+			case EHardwareDevicePrimaryType::CustomTypeB: return INPUT_DEVICE_CUSTOM_TYPE_B;
+			case EHardwareDevicePrimaryType::CustomTypeC: return INPUT_DEVICE_CUSTOM_TYPE_C;
+			case EHardwareDevicePrimaryType::CustomTypeD: return INPUT_DEVICE_CUSTOM_TYPE_D;
+			default: return INPUT_DEVICE_UNSPECIFIED;
+		}
+	}
+}
+
 namespace Events::AI
 {
 	// Event for when a path following entity has arrived at their desitnation.
@@ -53,4 +94,5 @@ namespace Events::Dialogue
 	constexpr char DIALOGUE_CONFIRMED[] = "DIALOGUE_CONFIRMED";
 	constexpr char DIALOGUE_FINISHED[]  = "DIALOGUE_FINISHED";
 	constexpr char DIALOGUE_FAILED[]    = "DIALOGUE_FAILED";
+	constexpr char MONOLOGUE_FINISHED[] = "MONOLOGUE_FINISHED";
 }

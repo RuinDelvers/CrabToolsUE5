@@ -163,6 +163,8 @@ TArray<FString> UEdStateNode::GetEventOptions() const
 	for (auto& Event : EventsSet) { EventArray.Add(Event.ToString()); }
 	for (auto& Event : this->GetStateGraph()->GetEventOptions()) { EventArray.Add(Event); }
 	
+	EventArray.Sort([&](const FString& A, const FString& B) { return A < B; });
+
 	return EventArray;
 }
 
@@ -254,7 +256,8 @@ bool UEdStateNode::UpdateStateArchetypeOverride()
 				{
 					if (auto Class = BPObj->GetStateMachineGeneratedClass()->GetParent())
 					{
-						auto Data = Class->GetStateArchetypeData(this->GetStateGraph()->GetFName(), this->StateExtension);
+						auto Data = Class->GetStateArchetypeData(this->StateExtension, this->GetStateGraph()->GetFName());
+						check(Data);
 						auto DuplicatedState = DuplicateObject(Data->GetArchetype(), this);
 						this->Accessibility = Data->Access;
 						this->StateClassOverride.DefaultObject = DuplicatedState;
@@ -268,7 +271,8 @@ bool UEdStateNode::UpdateStateArchetypeOverride()
 				{
 					if (auto Class = BPObj->GetStateMachineGeneratedClass()->GetParent())
 					{
-						auto Data = Class->GetStateArchetypeData(this->GetStateGraph()->GetFName(), this->StateExtension);
+						auto Data = Class->GetStateArchetypeData(this->StateExtension, this->GetStateGraph()->GetFName());
+						check(Data);
 						bOverrideWasModified = UPropertyManagementLibrary::UpdateObjectInheritanceProperties<UState>(
 							Data->GetArchetype(),
 							this->StateClassOverride.DefaultObject,

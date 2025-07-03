@@ -5,18 +5,12 @@
 #include "BlueprintActionDatabaseRegistrar.h"
 #include "BlueprintNodeSpawner.h"
 #include "Containers/EnumAsByte.h"
-#include "Containers/Map.h"
-#include "Containers/UnrealString.h"
 #include "EdGraph/EdGraph.h"
 #include "EdGraph/EdGraphPin.h"
-#include "EdGraph/EdGraphSchema.h"
 #include "EdGraphSchema_K2.h"
-#include "EditorCategoryUtils.h"
 #include "Engine/MemberReference.h"
-#include "HAL/PlatformMath.h"
 #include "Internationalization/Internationalization.h"
 #include "K2Node_CallFunction.h"
-#include "K2Node_IfThenElse.h"
 #include "Kismet2/BlueprintEditorUtils.h"
 #include "Kismet2/CompilerResultsLog.h"
 #include "KismetCompiler.h"
@@ -26,11 +20,6 @@
 #include "Templates/Casts.h"
 #include "UObject/Class.h"
 #include "UObject/NameTypes.h"
-#include "UObject/Object.h"
-#include "UObject/ObjectPtr.h"
-#include "UObject/UObjectBaseUtility.h"
-#include "UObject/UnrealNames.h"
-#include "UObject/WeakObjectPtr.h"
 #include "UObject/WeakObjectPtrTemplates.h"
 #include "StateMachine/StateMachine.h"
 #include "StateMachine/StateMachineBlueprintGeneratedClass.h"
@@ -181,7 +170,7 @@ void UK2Node_EmitEventFromMachine::GetMenuActions(FBlueprintActionDatabaseRegist
 
 FText UK2Node_EmitEventFromMachine::GetMenuCategory() const
 {
-	return FEditorCategoryUtils::GetCommonCategory(FCommonEditorCategory::Utilities);
+	return NSLOCTEXT("K2Node_EmitEventFromMachine", "Category", "State Machine");
 }
 
 bool UK2Node_EmitEventFromMachine::IsConnectionDisallowed(const UEdGraphPin* MyPin, const UEdGraphPin* OtherPin, FString& OutReason) const
@@ -282,7 +271,7 @@ void UK2Node_EmitEventFromMachine::ExpandNode(class FKismetCompilerContext& Comp
 	}
 	else
 	{
-		CompilerContext.MessageLog.Error(*LOCTEXT("EmitEventFromInterfaceNoInterface_Error", "EmitEventFromInterface must have a StateMachine specified.").ToString(), this);
+		CompilerContext.MessageLog.Error(*LOCTEXT("NoStateMachine_Error", "EmitEventFromMachine must have a StateMachine specified.").ToString(), this);
 		// we break exec links so this is the only error we get
 		BreakAllNodeLinks();
 		return;

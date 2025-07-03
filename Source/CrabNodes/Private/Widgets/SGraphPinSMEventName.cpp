@@ -1,8 +1,6 @@
 #include "Widgets/SGraphPinSMEventName.h"
 
 #include "Containers/Array.h"
-#include "Engine/DataTable.h"
-#include "HAL/PlatformCrt.h"
 #include "StateMachine/StateMachineInterface.h"
 #include "StateMachine/StateMachineBlueprintGeneratedClass.h"
 #include "StateMachine/StateMachine.h"
@@ -11,7 +9,7 @@
 
 class UEdGraphPin;
 
-void SGraphPinSMEventName::Construct(const FArguments& InArgs, UEdGraphPin* InGraphPinObj, UStateMachineInterface* InInterface, TSubclassOf<UStateMachine> SMClass)
+void SGraphPinSMEventName::Construct(const FArguments& InArgs, UEdGraphPin* InGraphPinObj, UStateMachineInterface* InInterface, TSubclassOf<UStateMachine> SMClass, TSubclassOf<UStateNode> Node)
 {
 	if (IsValid(InInterface))
 	{
@@ -20,6 +18,20 @@ void SGraphPinSMEventName::Construct(const FArguments& InArgs, UEdGraphPin* InGr
 	else if (SMClass)
 	{
 
+	}
+	else if (Node)
+	{
+		RefreshNameList(Cast<UStateNode>(Node->GetDefaultObject()));
+	}
+
+	SGraphPinNameList::Construct(SGraphPinNameList::FArguments(), InGraphPinObj, NameList);
+}
+
+void SGraphPinSMEventName::Construct(const FArguments& InArgs, UEdGraphPin* InGraphPinObj, TSubclassOf<UStateNode> Node)
+{
+	if (Node)
+	{
+		RefreshNameList(Cast<UStateNode>(Node->GetDefaultObject()));
 	}
 
 	SGraphPinNameList::Construct(SGraphPinNameList::FArguments(), InGraphPinObj, NameList);
@@ -49,13 +61,30 @@ void SGraphPinSMEventName::RefreshNameList(UStateMachineInterface* Interface)
 	}
 }
 
+void SGraphPinSMEventName::RefreshNameList(UStateNode* Node)
+{
+	NameList.Empty();
+
+	if (Node)
+	{
+		TSet<FName> Events;
+		Node->GetEmittedEvents(Events);
+
+		for (auto& Name : Events)
+		{
+			TSharedPtr<FName> RowNameItem = MakeShareable(new FName(Name));
+			NameList.Add(RowNameItem);
+		}
+	}
+}
+
 void SGraphPinSMEventName::RefreshNameList(TSubclassOf<UStateMachine> NewInterface)
 {
 	NameList.Empty();
 
 	if (auto SMGC = Cast<UStateMachineBlueprintGeneratedClass>(NewInterface))
 	{
-		for (auto& EName : SMGC->EventSet)
+		for (auto& EName : SMGC->GetEventSet(NAME_None))
 		{
 			TSharedPtr<FName> RowNameItem = MakeShareable(new FName(EName));
 			NameList.Add(RowNameItem);

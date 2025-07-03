@@ -1,8 +1,6 @@
 #pragma once
 
-#include "CoreMinimal.h"
 #include "UObject/ObjectMacros.h"
-#include "Binding/DynamicPropertyPath.h"
 #include "Engine/BlueprintGeneratedClass.h"
 #include "StateMachine/StateMachine.h"
 #include "StateMachineBlueprintGeneratedClass.generated.h"
@@ -52,6 +50,11 @@ private:
 	UPROPERTY()
 	TObjectPtr<UStateMachine> Archetype;
 
+	#if WITH_EDITORONLY_DATA
+		UPROPERTY()
+		TSet<FName> EventSet;
+	#endif
+
 public:
 
 	FStateMachineArchetypeData() {}
@@ -78,6 +81,10 @@ public:
 	void SetArchetype(UStateMachine* NewMachine) { this->Archetype = NewMachine; }
 	UStateMachine* CreateStateMachine(UStateMachine* Parent, FName ParentKey) const;
 	void CleanAndSanitize();
+
+	#if WITH_EDITORONLY_DATA
+		void AppendEvents(const TSet<FName> NewEvents) { this->EventSet.Append(NewEvents); }
+	#endif
 };
 
 UCLASS()
@@ -95,9 +102,6 @@ public:
 
 	#if WITH_EDITORONLY_DATA
 		UPROPERTY()
-		TSet<FName> EventSet;
-
-		UPROPERTY()
 		TSet<TSoftObjectPtr<UStateMachineInterface>> Interfaces;
 	#endif //WITH_EDITORONLY_DATA
 
@@ -114,6 +118,9 @@ public:
 	TArray<FName> GetSubMachineOptions() const;
 	UStateMachine* ConstructSubMachine(UStateMachine* Outer, FName Key) const;
 	FName GetStartState(FName MachineName = NAME_None) const;
+	TSet<FName> GetEventSet(FName MachineName = NAME_None) const;
+	TSet<FName> GetTotalEventSet() const;
+	bool HasEvent(FName EName, FName MachineName = NAME_None) const;
 
 	void CollectExtendibleStates(TSet<FString>& StateNames, FName SubMachineName = NAME_None) const;
 	void CollectOverrideableStates(TSet<FString>& StateNames, FName SubMachineName = NAME_None) const;

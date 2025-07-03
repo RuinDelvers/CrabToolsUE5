@@ -117,3 +117,25 @@ void UUtilsLibrary::DeactivateNAryGate(FNAryGate& Gate, ETriggerBranch& Result)
 {
 	Result = Gate.Deactivate();
 }
+
+TSubclassOf<UObject> UUtilsLibrary::GenerateDynamicClass(TSubclassOf<UObject> Parent, UObject* Owner)
+{
+	if (!Parent || !Owner)
+	{
+		return nullptr;
+	}
+
+	FName GenClassName = FName(FString::Printf(TEXT("gen_%s_from_%s"), *Parent->GetName(), *Owner->GetName()));
+
+	UClass* GenClass = NewObject<UClass>(Owner->GetPackage(), GenClassName, RF_Public);
+	GenClass->PurgeClass(false);
+
+	GenClass->PropertyLink = Parent->PropertyLink;
+	GenClass->CppClassStaticFunctions.SetAddReferencedObjects(Parent->CppClassStaticFunctions.GetAddReferencedObjects());
+	GenClass->SetSuperStruct(Parent);
+	GenClass->StaticLink(true);
+	GenClass->AssembleReferenceTokenStream();
+	GenClass->Bind();
+
+	return GenClass;
+}

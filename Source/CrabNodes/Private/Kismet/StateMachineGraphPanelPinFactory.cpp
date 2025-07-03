@@ -1,5 +1,6 @@
 #include "Kismet/StateMachineGraphPanelPinFactory.h"
 #include "Kismet/K2Node_EmitEventFromInterface.h"
+#include "Kismet/K2Node_EmitEventFromNodeList.h"
 #include "Kismet/K2Node_EmitEventFromMachine.h"
 #include "Kismet/K2Node_EmitEventWithDataFromInterface.h"
 #include "EdGraphSchema_K2.h"
@@ -49,7 +50,7 @@ TSharedPtr<class SGraphPin> FStateMachineGraphPanelPinFactory::CreatePin(class U
 					else if (auto NodeType2 = Cast<UK2Node_EmitEventWithDataFromInterface>(Outer))
 					{
 						NodeType2->OnInterfaceChanged.AddSP(Pin, &SGraphPinSMEventName::RefreshNameList);
-					}
+					}					
 
 					return Pin;
 				}
@@ -61,6 +62,12 @@ TSharedPtr<class SGraphPin> FStateMachineGraphPanelPinFactory::CreatePin(class U
 					return Pin;
 				}
 			}
+		}
+		else if (auto NodeListType = Cast<UK2Node_EmitEventFromNodeList>(Outer))
+		{
+			TSubclassOf<UStateNode> NodeClass = NodeListType->GetBlueprint()->GeneratedClass.Get();
+			auto Pin = SNew(SGraphPinSMEventName, InPin, NodeClass);
+			return Pin;
 		}
 	}
 
