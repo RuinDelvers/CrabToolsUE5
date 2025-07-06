@@ -163,20 +163,62 @@ void UStateMachineBlueprintGeneratedClass::CleanAndSanitize()
 
 FName UStateMachineBlueprintGeneratedClass::GetStartState(FName MachineName) const
 {
+	// Unused, only for starting the call chain.
+	bool _CanOverride = false;
+	return this->GetStartState_Inner(MachineName, _CanOverride);
+}
+
+FName UStateMachineBlueprintGeneratedClass::GetStartState_Local(FName MachineName, bool& CanOverride) const
+{
 	if (MachineName.IsNone())
 	{
-		return Cast<UStateMachine>(this->GetDefaultObject())->StartState;
+		CanOverride = this->Archetype.bCanOverrideStart;
+		return this->Archetype.StartState;
 	}
 	else
 	{
 		if (auto Data = this->SubArchetypes.Find(MachineName))
 		{
-			return Data->Archetype.Get()->StartState;
+			CanOverride = Data->bCanOverrideStart;
+			return Data->StartState;
 		}
 		else
 		{
+			CanOverride = true;
 			return NAME_None;
 		}
+	}
+}
+
+FName UStateMachineBlueprintGeneratedClass::GetStartState_Inner(FName MachineName, bool& CanOverride) const
+{
+	if (auto Parent = this->GetParent())
+	{
+		bool ParentAllowedOverride = false;
+		auto ParentStart = Parent->GetStartState_Inner(MachineName, ParentAllowedOverride);
+
+		if (ParentAllowedOverride)
+		{
+			bool LocalOverride = false;
+			auto LocalName = this->GetStartState_Local(MachineName, LocalOverride);
+
+			if (LocalName.IsNone())
+			{
+				return ParentStart;
+			}
+			else
+			{
+				return LocalName;
+			}
+		}
+		else
+		{
+			return ParentStart;
+		}
+	}
+	else
+	{
+		return this->GetStartState_Local(MachineName, CanOverride);
 	}
 }
 

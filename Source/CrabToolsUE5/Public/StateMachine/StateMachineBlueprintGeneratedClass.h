@@ -61,6 +61,9 @@ public:
 	FStateMachineArchetypeData(UStateMachine* Machine) : Archetype(Machine) {}
 
 	UPROPERTY()
+	FName StartState;
+
+	UPROPERTY()
 	TMap<FName, FStateArchetypeData> StateData;
 
 	UPROPERTY()
@@ -147,4 +150,8 @@ public:
 	#if WITH_EDITOR
 		bool DoesImplementInterface(UStateMachineInterface* Interface) const;
 	#endif
+
+private:
+	FName GetStartState_Local(FName MachineName, bool& CanOverride) const;
+	FName GetStartState_Inner(FName MachineName, bool& CanOverride) const;
 };

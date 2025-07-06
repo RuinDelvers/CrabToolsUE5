@@ -63,12 +63,37 @@ void UStateMachine::Initialize(UObject* POwner)
 		#if STATEMACHINE_DEBUG_DATA
 			this->bWasInitialized = true;
 		#endif
-		this->UpdateState(this->StartState);
+
+
+		this->UpdateState(this->GetStartState());
 	}
 	else
 	{
 		UE_LOG(LogStateMachine, Error, TEXT("Invalid Owner passed to Initialize in %s"), *this->GetClass()->GetName());
 	}	
+}
+
+FName UStateMachine::GetStartState() const
+{
+	if (this->CachedStartState.IsNone())
+	{
+		if (this->ParentKey.IsNone())
+		{
+			if (auto BPGC = Cast<UStateMachineBlueprintGeneratedClass>(this->GetClass()))
+			{
+				this->CachedStartState = BPGC->GetStartState();
+			}
+		}
+		else
+		{
+			if (auto BPGC = Cast<UStateMachineBlueprintGeneratedClass>(this->ParentMachine->GetClass()))
+			{
+				this->CachedStartState = BPGC->GetStartState(this->ParentKey);
+			}
+		}
+	}
+
+	return this->CachedStartState;
 }
 
 void UStateMachine::Initialize_Inner_Implementation() {}
@@ -249,7 +274,7 @@ void UStateMachine::Tick(float DeltaTime) {
 
 
 void UStateMachine::Reset() {
-	this->UpdateState(this->StartState);
+	this->UpdateState(this->GetStartState());
 }
 
 UStateMachine* UStateMachine::GetRootMachine()

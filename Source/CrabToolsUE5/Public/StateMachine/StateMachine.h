@@ -487,12 +487,12 @@ private:
 			return ID;
 		}
 
-		bool Valid(int OID)
+		bool Valid(int OID) const
 		{
 			return OID == this->ID;
 		}
 
-		int CurrentID()
+		int CurrentID() const
 		{
 			return this->ID;
 		}
@@ -500,6 +500,9 @@ private:
 
 	/* Whether or not a transition is happening. */
 	bool bIsTransitioning = false;
+
+	/* Simple cached value for retrieving start state data. Do not read from this directly. Use GetStartState. */
+	mutable FName CachedStartState;
 
 	/* The Graph of the state machine. */
 	UPROPERTY(DuplicateTransient, meta=(IgnorePropertySearch))
@@ -548,8 +551,8 @@ public:
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FTickRequirementUpdated, bool, NeedsTick);
 	FTickRequirementUpdated OnTickRequirementUpdated;
 
-	UPROPERTY(VisibleAnywhere, meta=(IgnorePropertySearch))
-	FName StartState;
+	//UPROPERTY(VisibleAnywhere, meta=(IgnorePropertySearch))
+	//FName StartState;
 
 	UPROPERTY(BlueprintAssignable, Category="StateMachine", meta = (IgnorePropertySearch))
 	FStateChangedEvent OnStateChanged;
@@ -715,6 +718,8 @@ public:
 	void AddEventEmitter(UEventEmitter* Emitter) { this->EventEmitters.Add(Emitter); }
 
 protected:
+
+	FName GetStartState() const;
 
 	UFUNCTION(BlueprintNativeEvent, Category = "StateMachine")
 	void Initialize_Inner();

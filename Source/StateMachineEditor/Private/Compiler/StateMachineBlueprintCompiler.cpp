@@ -200,7 +200,7 @@ void FStateMachineBlueprintCompilerContext::CleanAndSanitizeClass(UBlueprintGene
 
 	if (auto SMObj = Cast<UStateMachine>(InOutOldCDO))
 	{
-		SMObj->StartState = NAME_None;
+		//SMObj->StartState = NAME_None;
 	}
 }
 
@@ -262,9 +262,9 @@ void FStateMachineBlueprintCompilerContext::CopyTermDefaultsToDefaultObject(UObj
 		{
 			if (auto SMBP = this->StateMachineBlueprint())
 			{
-				FName StartName = SMBP->GetMainGraph()->GetStartStateName();
+				//FName StartName = SMBP->GetMainGraph()->GetStartStateName();
 				
-				StateMachine->StartState = StartName;
+				//StateMachine->StartState = StartName;
 			}
 		}
 	}	

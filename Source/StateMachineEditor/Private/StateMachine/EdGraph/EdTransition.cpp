@@ -99,6 +99,8 @@ TArray<FString> UEdTransition::GetEventOptions() const
 		EventNames.Add(EName);
 	}
 
+	EventNames.Append(this->GetStartNode()->GetEventOptions());
+
 	EventNames.Sort([&](const FString& A, const FString& B) { return A < B; });
 
 	return EventNames.Array();

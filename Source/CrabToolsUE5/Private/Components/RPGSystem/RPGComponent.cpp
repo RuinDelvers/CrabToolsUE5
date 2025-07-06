@@ -1,7 +1,4 @@
 #include "Components/RPGSystem/RPGComponent.h"
-#include "UObject/UnrealTypePrivate.h"
-
-
 
 #pragma region Component Code
 URPGComponent::URPGComponent(const FObjectInitializer& ObjectInitializer): Super(ObjectInitializer) {

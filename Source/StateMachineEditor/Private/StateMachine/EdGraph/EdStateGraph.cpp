@@ -193,7 +193,7 @@ FName UEdStateGraph::GetParentDefinedStartState() const
 
 			if (LocalStart.IsNone())
 			{
-				Found = Data->GetArchetype()->StartState;
+				Found = Data->StartState;
 			}
 			else
 			{
@@ -202,7 +202,7 @@ FName UEdStateGraph::GetParentDefinedStartState() const
 		}
 		else
 		{
-			Found = Data->GetArchetype()->StartState;
+			Found = Data->StartState;
 		}	
 	}
 
@@ -232,7 +232,11 @@ FName UEdStateGraph::GetLocallyDefinedStartState() const
 
 FName UEdStateGraph::GetStartStateName() const
 {
-	if (this->GraphType == EStateMachineGraphType::MAIN_GRAPH || this->GraphType == EStateMachineGraphType::SUB_GRAPH)
+	if (this->GraphType == EStateMachineGraphType::MAIN_GRAPH)
+	{
+		return this->GetLocallyDefinedStartState();
+	}
+	else if (this->GraphType == EStateMachineGraphType::SUB_GRAPH)
 	{
 		return this->GetLocallyDefinedStartState();
 	}
@@ -535,8 +539,8 @@ FStateMachineArchetypeData UEdStateGraph::CompileStateMachine(FNodeVerificationC
 		Data.AddStateData(State->GetStateName(), BuiltState);
 	}
 
-	Data.GetArchetype()->StartState = this->GetStartStateName();
-	
+	//Data.GetArchetype()->StartState = this->GetStartStateName();
+	Data.StartState = this->GetStartStateName();	
 
 	return Data;
 }
