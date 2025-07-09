@@ -1,9 +1,10 @@
 #pragma once
 
 #include <limits>
-#include "Templates/SharedPointer.h"
 #include "Utils/Enums.h"
 #include "RPGComponent.generated.h"
+
+class URPGProperty;
 
 /* Base class for all Status objects for the RPG System*/
 UCLASS(Blueprintable, DefaultToInstanced, CollapseCategories, EditInlineNew)
@@ -94,10 +95,6 @@ private:
 	void Remove();
 };
 
-
-#pragma region Integer Attributes
-
-
 UCLASS(Blueprintable, DefaultToInstanced, CollapseCategories, EditInlineNew)
 class CRABTOOLSUE5_API UIntOperator: public UObject
 {
@@ -126,75 +123,6 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category="RPG|Operators")
 	URPGComponent* GetOwner() const { return this->Owner; }
 };
-
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FIntAttributeObserver, int, Value);
-DECLARE_DYNAMIC_DELEGATE_OneParam(FIntAttributeCallback, int, Value);
-
-USTRUCT(BlueprintType, meta = (DisableSplitPin))
-struct CRABTOOLSUE5_API FIntAttribute 
-{
-	GENERATED_USTRUCT_BODY()
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="RPG|Attributes", meta=(AllowPrivateAccess=true))
-	int BaseValue = 0;
-	int CompValue;
-
-	URPGComponent* Owner;
-
-	UPROPERTY(EditDefaultsOnly, Instanced, Category = "RPG|Attributes", meta = (AllowPrivateAccess = true))
-	TArray<UIntOperator*> Operators;
-
-	TArray<FIntResource*> Dependencies;
-
-public:
-
-	FIntAttributeObserver ValueChangedEvent;
-
-	int GetValue() const;
-	void SetValue(int UValue);
-	void Operate(UIntOperator* Op);
-	void UnOperate(UIntOperator* Op);
-	void SetOwner(URPGComponent* UOwner);
-	void Initialize(URPGComponent* UOwner);
-	void Refresh();
-	void AddDependency(FIntResource* Dep);
-};
-
-USTRUCT(BlueprintType, meta = (DisableSplitPin))
-struct CRABTOOLSUE5_API FIntResource
-{
-	GENERATED_USTRUCT_BODY()
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "RPG|Attributes", meta = (AllowPrivateAccess = true))
-	int Value = 0;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "RPG|Attributes", meta = (AllowPrivateAccess = true, GetOptions = "GetIntAttributeNames"))
-	FName MinAttribute;
-	FIntAttribute* MinAttributeRef;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "RPG|Attributes", meta = (AllowPrivateAccess = true, GetOptions="GetIntAttributeNames"))
-	FName MaxAttribute;
-	FIntAttribute* MaxAttributeRef;
-
-	URPGComponent* Owner;
-
-
-public:
-
-	FIntAttributeObserver ValueChangedEvent;
-
-	int GetValue() const { return this->Value; }
-	void SetValue(int UValue);
-	void SetOwner(URPGComponent* UOwner);
-	void Initialize(URPGComponent* UOwner);
-	void Refresh();
-
-	int GetMax() const;
-	int GetMin() const;
-	float GetPercent() const;
-};
-
-#pragma endregion
 
 #pragma region Float Attributes & Resources
 
@@ -228,71 +156,6 @@ public:
 	URPGComponent* GetOwner() const { return this->Owner; }
 };
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FFloatAttributeObserver, float, Value);
-DECLARE_DYNAMIC_DELEGATE_OneParam(FFloatAttributeCallback, float, Value);
-
-USTRUCT(BlueprintType, meta = (DisableSplitPin))
-struct CRABTOOLSUE5_API FFloatAttribute
-{
-	GENERATED_USTRUCT_BODY()
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "RPG|Attributes", meta = (AllowPrivateAccess = true))
-	float BaseValue = 0;
-	float CompValue;
-
-	URPGComponent* Owner;
-
-	UPROPERTY(EditDefaultsOnly, Instanced, Category = "RPG|Attributes", meta = (AllowPrivateAccess = true))
-	TArray<UFloatOperator*> Operators;
-
-	TArray<FFloatResource*> Dependencies;
-
-public:
-	FFloatAttributeObserver ValueChangedEvent;
-
-	float GetValue() const;
-	void SetValue(float UValue);
-	void Operate(UFloatOperator* Op);
-	void UnOperate(UFloatOperator* Op);
-	void SetOwner(URPGComponent* UOwner);
-	void Initialize(URPGComponent* UOwner);
-	void Refresh();
-	void AddDependency(FFloatResource* Dep);
-};
-
-USTRUCT(BlueprintType, meta=(DisableSplitPin))
-struct CRABTOOLSUE5_API FFloatResource
-{
-	GENERATED_USTRUCT_BODY()
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "RPG|Attributes", meta = (AllowPrivateAccess = true))
-	float Value = 0;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "RPG|Attributes", meta = (AllowPrivateAccess = true, GetOptions = "GetFloatAttributeNames"))
-	FName MinAttribute;
-	FFloatAttribute* MinAttributeRef;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "RPG|Attributes", meta = (AllowPrivateAccess = true, GetOptions = "GetFloatAttributeNames"))
-	FName MaxAttribute;
-	FFloatAttribute* MaxAttributeRef;
-
-	URPGComponent* Owner;
-
-
-public:
-	FFloatAttributeObserver ValueChangedEvent;
-
-	float GetValue() const { return this->Value; }
-	void SetValue(float UValue);
-	void SetOwner(URPGComponent* UOwner);
-	void Initialize(URPGComponent* UOwner);
-	void Refresh();
-
-	float GetMax() const;
-	float GetMin() const;
-	float GetPercent() const;
-};
-
 #pragma endregion
 
 /* Component that handles control, access, and manipualtion of Resources and Attributes in an RPG Setting.*/
@@ -305,12 +168,6 @@ class CRABTOOLSUE5_API URPGComponent : public UActorComponent
 	UPROPERTY(EditDefaultsOnly, Instanced, Category="RPG|Status")
 	TSet<TObjectPtr<UStatus>> Statuses;
 	TSet<TObjectPtr<UStatus>> TickedStatuses;
-
-	UPROPERTY(BlueprintReadOnly, Category = "RPG", meta=(AllowPrivateAccess=true))
-	FIntAttribute ZeroInt;
-
-	UPROPERTY(BlueprintReadOnly, Category = "RPG", meta = (AllowPrivateAccess = true))
-	FFloatAttribute ZeroFloat;
 
 public:
 
@@ -334,24 +191,21 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "RPG|Status", meta=(ExpandEnumAsExecs="Result", DeterminesOutputType="SClass"))
 	UStatus* GetStatus(TSubclassOf<UStatus> SClass, ESearchResult& Result);
 
+	UFUNCTION(BlueprintCallable, Category = "RPG|Status")
+	URPGProperty* FindRPGPropertyByName(FName Ref) const;
+
+	TArray<FString> GetRPGPropertyNames(TSubclassOf<URPGProperty> Props) const;
 
 protected:
 
-	virtual void InitializeComponent() override;
+	virtual void BeginPlay() override;
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	#if WITH_EDITOR
 		virtual void PostEditChangeProperty(struct FPropertyChangedEvent& e) override;
+		virtual void PostLinkerChange() override;
 	#endif
 
 	virtual void PostLoad() override;
 	void Validate();
-
-private:
-
-	UFUNCTION()
-	TArray<FString> GetIntAttributeNames() const;
-
-	UFUNCTION()
-	TArray<FString> GetFloatAttributeNames() const;
 };

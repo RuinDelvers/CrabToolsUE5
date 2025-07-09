@@ -1,4 +1,5 @@
 #include "Components/RPGSystem/RPGComponent.h"
+#include "Components/RPGSystem/RPGProperty.h"
 
 #pragma region Component Code
 URPGComponent::URPGComponent(const FObjectInitializer& ObjectInitializer): Super(ObjectInitializer) {
@@ -7,37 +8,21 @@ URPGComponent::URPGComponent(const FObjectInitializer& ObjectInitializer): Super
 	PrimaryComponentTick.bCanEverTick = true;
 }
 
-void URPGComponent::InitializeComponent()
+void URPGComponent::BeginPlay()
 {
-	Super::InitializeComponent();
-
-	for (TFieldIterator<FStructProperty> FIT(this->GetClass(), EFieldIteratorFlags::IncludeSuper); FIT; ++FIT)
+	for (TFieldIterator<FObjectProperty> FIT(this->GetClass(), EFieldIteratorFlags::IncludeSuper); FIT; ++FIT)
 	{
-		FStructProperty* f = *FIT;
+		FObjectProperty* f = *FIT;
+		TObjectPtr<UObject> Value;
 
-		if (f->Struct == FIntAttribute::StaticStruct())
+		if (f->PropertyClass->IsChildOf<URPGProperty>())
 		{
-			auto Value = f->ContainerPtrToValuePtr<FIntAttribute>(this);
-			Value->SetOwner(this);
-			Value->Initialize(this);
-		}
-		else if (f->Struct == FIntResource::StaticStruct())
-		{
-			auto Value = f->ContainerPtrToValuePtr<FIntResource>(this);
-			Value->SetOwner(this);
-			Value->Initialize(this);
-		}
-		else if (f->Struct == FFloatAttribute::StaticStruct())
-		{
-			auto Value = f->ContainerPtrToValuePtr<FFloatAttribute>(this);
-			Value->SetOwner(this);
-			Value->Initialize(this);
-		}
-		else if (f->Struct == FFloatResource::StaticStruct())
-		{
-			auto Value = f->ContainerPtrToValuePtr<FFloatResource>(this);
-			Value->SetOwner(this);
-			Value->Initialize(this);
+			f->GetValue_InContainer(this, &Value);
+
+			if (auto Prop = Cast<URPGProperty>(Value))
+			{
+				Prop->Initialize(this);
+			}
 		}
 	}
 
@@ -53,6 +38,8 @@ void URPGComponent::InitializeComponent()
 			}
 		}
 	}
+
+	Super::BeginPlay();
 }
 
 void URPGComponent::TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -88,48 +75,6 @@ void URPGComponent::TurnEnd()
 	}
 }
 
-TArray<FString> URPGComponent::GetIntAttributeNames() const
-{
-	TArray<FString> Names = { FName(NAME_None).ToString() };
-
-	for (TFieldIterator<FStructProperty> FIT(this->GetClass(), EFieldIteratorFlags::IncludeSuper); FIT; ++FIT) {
-		FStructProperty* f = *FIT;
-
-		if (f->Struct == FIntAttribute::StaticStruct()) {
-			Names.Add(f->GetFName().ToString());
-		}
-	}
-
-	Names.Sort([&](const FString& A, const FString& B) { return A < B; });
-
-	return Names;
-}
-
-TArray<FString> URPGComponent::GetFloatAttributeNames() const
-{
-	TArray<FString> Names = { FName(NAME_None).ToString() };
-
-	for (TFieldIterator<FStructProperty> FIT(this->GetClass(), EFieldIteratorFlags::IncludeSuper); FIT; ++FIT) {
-		FStructProperty* f = *FIT;
-
-		if (f->Struct == FFloatAttribute::StaticStruct()) {
-			Names.Add(f->GetFName().ToString());
-		}
-	}
-
-	Names.Sort([&](const FString& A, const FString& B) { return A < B; });
-
-	return Names;
-}
-
-#if WITH_EDITOR
-void URPGComponent::PostEditChangeProperty(struct FPropertyChangedEvent& e)
-{
-	Super::PostEditChangeProperty(e);
-	this->Validate();
-}
-#endif
-
 void URPGComponent::PostLoad()
 {
 	Super::PostLoad();
@@ -138,26 +83,44 @@ void URPGComponent::PostLoad()
 
 void URPGComponent::Validate()
 {
-	for (TFieldIterator<FStructProperty> FIT(this->GetClass(), EFieldIteratorFlags::IncludeSuper); FIT; ++FIT) {
-		FStructProperty* f = *FIT;
+	/*
+	for (TFieldIterator<FObjectProperty> FIT(this->GetClass(), EFieldIteratorFlags::IncludeSuper); FIT; ++FIT)
+	{		
+		FObjectProperty* f = *FIT;
 
-		if (f->Struct == FIntAttribute::StaticStruct()) {
-			auto Value = f->ContainerPtrToValuePtr<FIntAttribute>(this);
-			Value->SetOwner(this);
-		}
-		else if (f->Struct == FIntResource::StaticStruct()) {
-			auto Value = f->ContainerPtrToValuePtr<FIntResource>(this);
-			Value->SetOwner(this);
-		}
-		else if (f->Struct == FFloatAttribute::StaticStruct()) {
-			auto Value = f->ContainerPtrToValuePtr<FFloatAttribute>(this);
-			Value->SetOwner(this);
-		}
-		else if (f->Struct == FFloatResource::StaticStruct()) {
-			auto Value = f->ContainerPtrToValuePtr<FFloatResource>(this);
-			Value->SetOwner(this);
+		if (f->PropertyClass->IsChildOf<URPGProperty>())
+		{
+			TObjectPtr<UObject> Value;
+			f->GetValue_InContainer(this, &Value);
+
+			if (!IsValid(Value))
+			{
+				//auto NonNullValue = NewObject<URPGProperty>(this->GetOutermostObject(), f->PropertyClass);
+				//f->SetValue_InContainer(this, NonNullValue);
+			}
 		}
 	}
+	*/
+}
+
+TArray<FString> URPGComponent::GetRPGPropertyNames(TSubclassOf<URPGProperty> Props) const
+{
+	TArray<FString> Names;
+
+	for (TFieldIterator<FObjectProperty> FIT(this->GetClass(), EFieldIteratorFlags::IncludeSuper); FIT; ++FIT)
+	{
+		FObjectProperty* f = *FIT;
+
+		if (f->PropertyClass->IsChildOf(Props))
+		{
+			Names.Add(f->GetName());
+		}
+	}
+
+	Names.Sort([&](const FString& A, const FString& B) { return A < B; });
+
+	return Names;
+	
 }
 
 void URPGComponent::ApplyStatus(UStatus* Status)
@@ -203,320 +166,40 @@ UStatus* URPGComponent::GetStatus(TSubclassOf<UStatus> SClass, ESearchResult& Re
 	return nullptr;
 }
 
-#pragma endregion
-
-#pragma region Integer Attributes & Resources
-
-void FIntAttribute::SetOwner(URPGComponent* UOwner) { 
-	this->Owner = UOwner; 
-
-	for (auto& Op : this->Operators) {
-		if (Op) {
-			Op->SetOwner(UOwner);
-		}
-	}
-}
-
-int FIntAttribute::GetValue() const {
-	return this->CompValue;
-}
-
-
-void FIntAttribute::SetValue(int UValue)
+URPGProperty* URPGComponent::FindRPGPropertyByName(FName Ref) const
 {
-	this->BaseValue = UValue;
-	this->Refresh();
-}
+	auto Prop = this->GetClass()->FindPropertyByName(Ref);
 
-void FIntAttribute::Operate(UIntOperator* Op) {
-	Op->SetOwner(this->Owner);
-	this->Operators.Add(Op);
-
-	this->Refresh();
-}
-
-void FIntAttribute::UnOperate(UIntOperator* Op) {
-	auto Removed = this->Operators.Remove(Op);
-
-	if (Removed > 0) {
-		Op->SetOwner(nullptr);
-	}
-
-	this->Refresh();
-}
-
-void FIntAttribute::Initialize(URPGComponent* UOwner) {
-	this->SetOwner(UOwner);
-
-	for (auto& Op : this->Operators) {
-		if (Op) {
-			Op->SetOwner(UOwner);
-			Op->Initialize();
-		}
-	}	
-	this->Refresh();
-}
-
-void FIntAttribute::Refresh() {
-	// Sort operators as necessary.
-	this->Operators.Sort([](const UIntOperator& A, const UIntOperator& B) { 
-		return A.GetPriority() > B.GetPriority(); 
-	});
-
-	this->CompValue = this->BaseValue;
-	for (auto& Op : this->Operators) {
-		if (Op) {
-			this->CompValue = Op->Operate(this->CompValue);
-		}
-	}
-
-	for (auto Dep : this->Dependencies)
+	if (Prop)
 	{
-		Dep->Refresh();
-	}
+		if (auto ObjProp = CastField<FObjectProperty>(Prop))
+		{
+			if (ObjProp->PropertyClass->IsChildOf<URPGProperty>())
+			{
+				TObjectPtr<UObject> Value;
+				ObjProp->GetValue_InContainer(this, &Value);
 
-	this->ValueChangedEvent.Broadcast(this->CompValue);
-}
-
-void FIntAttribute::AddDependency(FIntResource* Dep) {
-	if (Dep) {
-		this->Dependencies.Add(Dep);
-	}
-}
-
-void FIntResource::SetOwner(URPGComponent* UOwner) {
-	this->Owner = UOwner;
-}
-
-void FIntResource::Initialize(URPGComponent* UOwner) {
-	this->SetOwner(UOwner);
-	FProperty* MaxProp = UOwner->GetClass()->FindPropertyByName(this->MaxAttribute);
-	FProperty* MinProp = UOwner->GetClass()->FindPropertyByName(this->MinAttribute);
-
-	if (FStructProperty* SProp = CastField<FStructProperty>(MaxProp)) {
-		if (SProp->Struct == FIntAttribute::StaticStruct()) {
-			this->MaxAttributeRef = SProp->ContainerPtrToValuePtr<FIntAttribute>(UOwner);
-
-			if (this->MaxAttributeRef) {
-				this->MaxAttributeRef->AddDependency(this);
+				return Cast<URPGProperty>(Value);
 			}
 		}
 	}
 
-	if (FStructProperty* SProp = CastField<FStructProperty>(MinProp)) {
-		if (SProp->Struct == FIntAttribute::StaticStruct()) {
-			this->MinAttributeRef = SProp->ContainerPtrToValuePtr<FIntAttribute>(UOwner);
-
-			if (this->MinAttributeRef) {
-				this->MinAttributeRef->AddDependency(this);
-			}
-		}
-	}
+	return nullptr;
 }
 
-void FIntResource::SetValue(int UValue) {
-	this->Value = UValue;
-	this->Refresh();
-}
-
-void FIntResource::Refresh() {
-	this->Value = FMath::Clamp(this->Value, this->GetMin(), this->GetMax());
-	this->ValueChangedEvent.Broadcast(this->Value);
-}
-
-int FIntResource::GetMax() const {
-	if (this->MaxAttributeRef) {
-		return this->MaxAttributeRef->GetValue();
-	}
-	else {
-		return MAX_int32;
-	}
-}
-
-int FIntResource::GetMin() const {
-	if (this->MinAttributeRef) {
-		return this->MinAttributeRef->GetValue();
-	}
-	else {
-		return MIN_int32;
-	}
-}
-
-float FIntResource::GetPercent() const {
-	int Min = this->GetMin();
-	int Max = this->GetMax();
-	int Diff = Max - Min;
-
-	if (Diff == 0) {
-		return 0.0;
-	}
-	else {
-		float MinFloat = (float) Min;
-		float MaxFloat = (float) Max;
-
-		return FMath::Clamp(this->GetValue() / (MaxFloat - MinFloat), 0.0, 1.0);
-	}
-
-	
-}
-
-#pragma endregion
-
-#pragma region Float Attributes & Resources
-
-
-void FFloatAttribute::SetOwner(URPGComponent* UOwner) {
-	this->Owner = UOwner;
-
-	for (auto& Op : this->Operators) {
-		if (Op) {
-			Op->SetOwner(UOwner);
-		}
-	}
-}
-
-float FFloatAttribute::GetValue() const {
-	return this->CompValue;
-}
-
-void FFloatAttribute::SetValue(float UValue)
+#if WITH_EDITOR
+void URPGComponent::PostEditChangeProperty(struct FPropertyChangedEvent& e)
 {
-	this->BaseValue = UValue;
-	this->Refresh();
+	Super::PostEditChangeProperty(e);
+	this->Validate();
 }
 
-
-void FFloatAttribute::Operate(UFloatOperator* Op) {
-	Op->SetOwner(this->Owner);
-	this->Operators.Add(Op);
-
-	this->Refresh();
+void URPGComponent::PostLinkerChange()
+{
+	Super::PostLinkerChange();
+	this->Validate();
 }
-
-void FFloatAttribute::UnOperate(UFloatOperator* Op) {
-	auto Removed = this->Operators.Remove(Op);
-
-	if (Removed > 0) {
-		Op->SetOwner(nullptr);
-	}
-
-	this->Refresh();
-}
-
-void FFloatAttribute::Initialize(URPGComponent* UOwner) {
-	this->SetOwner(UOwner);
-
-	for (auto& Op : this->Operators) {
-		if (Op) {
-			Op->SetOwner(UOwner);
-			Op->Initialize();
-		}
-	}
-
-	this->Refresh();
-}
-
-void FFloatAttribute::Refresh() {
-	// Sort operators as necessary.
-	this->Operators.Sort([](const UFloatOperator& A, const UFloatOperator& B) {
-		return A.GetPriority() > B.GetPriority();
-		});
-
-	this->CompValue = this->BaseValue;
-
-	for (auto& Op : this->Operators) {
-		if (Op) {
-			this->CompValue = Op->Operate(this->CompValue);
-		}
-	}
-
-	for (auto Dep : this->Dependencies)
-	{
-		Dep->Refresh();
-	}
-
-	this->ValueChangedEvent.Broadcast(this->CompValue);
-}
-
-void FFloatAttribute::AddDependency(FFloatResource* Dep) {
-	if (Dep) {
-		this->Dependencies.Add(Dep);
-	}
-}
-
-void FFloatResource::SetOwner(URPGComponent* UOwner) {
-	this->Owner = UOwner;
-}
-
-void FFloatResource::Initialize(URPGComponent* UOwner) {
-	this->SetOwner(UOwner);
-	FProperty* MaxProp = UOwner->GetClass()->FindPropertyByName(this->MaxAttribute);
-	FProperty* MinProp = UOwner->GetClass()->FindPropertyByName(this->MinAttribute);
-
-	if (FStructProperty* SProp = CastField<FStructProperty>(MaxProp)) {
-		if (SProp->Struct == FFloatAttribute::StaticStruct()) {
-			this->MaxAttributeRef = SProp->ContainerPtrToValuePtr<FFloatAttribute>(UOwner);
-
-			if (this->MaxAttributeRef) {
-				this->MaxAttributeRef->AddDependency(this);
-			}
-		}
-	}
-
-	if (FStructProperty* SProp = CastField<FStructProperty>(MinProp)) {
-		if (SProp->Struct == FFloatAttribute::StaticStruct()) {
-			this->MinAttributeRef = SProp->ContainerPtrToValuePtr<FFloatAttribute>(UOwner);
-
-			if (this->MinAttributeRef) {
-				this->MinAttributeRef->AddDependency(this);
-			}
-		}
-	}
-}
-
-void FFloatResource::SetValue(float UValue) {
-	this->Value = UValue;
-	this->Refresh();
-}
-
-void FFloatResource::Refresh() {
-	this->Value = FMath::Clamp(this->Value, this->GetMin(), this->GetMax());
-	this->ValueChangedEvent.Broadcast(this->Value);
-}
-
-float FFloatResource::GetMax() const {
-	if (this->MaxAttributeRef) {
-		return this->MaxAttributeRef->GetValue();
-	}
-	else {
-		return std::numeric_limits<float>::infinity();
-	}
-}
-
-float FFloatResource::GetMin() const {
-	if (this->MinAttributeRef) {
-		return this->MinAttributeRef->GetValue();
-	}
-	else {
-		return -std::numeric_limits<float>::infinity();
-	}
-}
-
-float FFloatResource::GetPercent() const {
-	float Min = this->GetMin();
-	float Max = this->GetMax();
-	bool IsMinFinite = FMath::IsFinite(Min);
-	bool IsMaxFinite = FMath::IsFinite(Max);
-
-	if (IsMinFinite && IsMaxFinite) {
-		return FMath::Clamp(this->GetValue() / (Max - Min), 0.0, 1.0);
-	}
-	else {
-		return 0.0;
-	}
-}
-
-#pragma endregion
+#endif
 
 #pragma region Statuses
 
