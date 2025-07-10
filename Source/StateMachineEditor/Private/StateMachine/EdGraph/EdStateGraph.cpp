@@ -94,7 +94,7 @@ FName UEdStateGraph::GetNewStateName()
 	{
 		if (UEdStateNode* CastNode = Cast<UEdStateNode>(Node))
 		{
-			FString NodeName = CastNode->GetStateName().ToString();
+			FString NodeName = CastNode->GetNodeName().ToString();
 
 			if (NodeName.StartsWith(DEFAULT_NODE_NAME))
 			{

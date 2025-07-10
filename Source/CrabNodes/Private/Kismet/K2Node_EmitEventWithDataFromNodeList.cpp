@@ -53,11 +53,11 @@ FText UK2Node_EmitEventWithDataFromNodeList::GetNodeTitle(ENodeTitleType::Type T
 {
 	if (TitleType == ENodeTitleType::MenuTitle)
 	{
-		return LOCTEXT("ListViewTitle", "Emit Event");
+		return LOCTEXT("ListViewTitle", "Emit Event With Data");
 	}
 	else
 	{
-		return LOCTEXT("Interface_Title", "Emit Event With Data From Interface");
+		return LOCTEXT("Interface_Title", "Emit Event With Data");
 	}
 }
 

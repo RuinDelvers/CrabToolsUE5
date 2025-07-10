@@ -7,20 +7,16 @@
 #include "EdGraph/EdGraph.h"
 #include "EdGraph/EdGraphPin.h"
 #include "EdGraphSchema_K2.h"
-#include "Engine/MemberReference.h"
 #include "Internationalization/Internationalization.h"
 #include "K2Node_CallFunction.h"
 #include "Kismet2/BlueprintEditorUtils.h"
 #include "Kismet2/CompilerResultsLog.h"
 #include "KismetCompiler.h"
-#include "Math/Color.h"
 #include "Misc/AssertionMacros.h"
-#include "Styling/AppStyle.h"
 #include "Templates/Casts.h"
 #include "UObject/Class.h"
 #include "UObject/NameTypes.h"
 #include "UObject/ObjectPtr.h"
-#include "UObject/UObjectBaseUtility.h"
 #include "StateMachine/StateMachineInterface.h"
 #include "StateMachine/HelperLibrary.h"
 
@@ -86,7 +82,8 @@ void UK2Node_EmitEventFromInterface::RefreshEventOptions()
 
 	if (auto SMI = Cast<UStateMachineInterface>(this->GetInterfacePin()->DefaultObject))
 	{
-		this->OnInterfaceChanged.Broadcast(SMI);
+		auto EventSet = this->GetEventSet();
+		this->OnEventSetChanged.Broadcast(EventSet);
 	}
 }
 
@@ -356,6 +353,16 @@ void UK2Node_EmitEventFromInterface::NotifyPinConnectionListChanged(UEdGraphPin*
 			RefreshEventOptions();
 		}
 	}
+}
+
+TSet<FName> UK2Node_EmitEventFromInterface::GetEventSet() const
+{
+	if (auto SMI = Cast<UStateMachineInterface>(this->GetInterfacePin()->DefaultObject))
+	{
+		return SMI->GetEvents();
+	}
+
+	return {};
 }
 
 #undef LOCTEXT_NAMESPACE

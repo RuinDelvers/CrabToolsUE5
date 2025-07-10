@@ -339,7 +339,6 @@ void UStateMachine::SendEvent(FName EName)
 	}
 }
 
-
 void UStateMachine::SendEventWithData(FName EName, UObject* Data)
 {
 	#if STATEMACHINE_DEBUG_DATA
@@ -1126,6 +1125,11 @@ void UStateNode::SetOwner(UStateMachine* Parent) {
 	this->Owner = Parent;
 }
 
+void UStateNode::SetActive(bool bNewActive)
+{
+	this->bActive = bNewActive;
+	this->SetActive_Inner(bNewActive);
+}
 
 void UStateNode::Tick(float DeltaTime) {
 	if (this->bActive) {
@@ -1141,39 +1145,37 @@ void UStateNode::PostTransition()
 	}
 }
 
-void UStateNode::Exit() {
-	if (this->bActive) {
-		this->bActive = false;
-		this->Exit_Inner();
-	}	
-}
-
-void UStateNode::ExitWithData(UObject* Data) {
-	if (this->bActive) {
-		this->bActive = false;
-		this->ExitWithData_Inner(Data);
-	}
-}
-
-void UStateNode::ExitWithData_Inner_Implementation(UObject* Data) {
+void UStateNode::Exit()
+{
+	this->SetActive(false);
 	this->Exit_Inner();
 }
 
-void UStateNode::Enter() {
-	if (!this->bActive) {
-		this->bActive = true;
-		this->Enter_Inner();
-	}
+void UStateNode::ExitWithData(UObject* Data)
+{
+	this->SetActive(false);
+	this->ExitWithData_Inner(Data);
 }
 
-void UStateNode::EnterWithData(UObject* Data) {
-	if (!this->bActive) {
-		this->bActive = true;
-		this->EnterWithData_Inner(Data);
-	}
+void UStateNode::ExitWithData_Inner_Implementation(UObject* Data)
+{
+	this->Exit_Inner();
 }
 
-void UStateNode::EnterWithData_Inner_Implementation(UObject* Data) {
+void UStateNode::Enter()
+{
+	this->SetActive(true);
+	this->Enter_Inner();
+}
+
+void UStateNode::EnterWithData(UObject* Data)
+{
+	this->SetActive(true);
+	this->EnterWithData_Inner(Data);
+}
+
+void UStateNode::EnterWithData_Inner_Implementation(UObject* Data)
+{
 	this->Enter_Inner();
 }
 

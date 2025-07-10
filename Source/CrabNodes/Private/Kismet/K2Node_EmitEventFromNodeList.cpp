@@ -103,7 +103,7 @@ bool UK2Node_EmitEventFromNodeList::IsConnectionDisallowed(const UEdGraphPin* My
 
 void UK2Node_EmitEventFromNodeList::PinDefaultValueChanged(UEdGraphPin* ChangedPin) 
 {
-
+	this->RefreshEventOptions();
 }
 
 FText UK2Node_EmitEventFromNodeList::GetTooltipText() const
@@ -138,11 +138,11 @@ FText UK2Node_EmitEventFromNodeList::GetNodeTitle(ENodeTitleType::Type TitleType
 {
 	if (TitleType == ENodeTitleType::MenuTitle)
 	{
-		return LOCTEXT("ListViewTitle", "Emit Event With Data");
+		return LOCTEXT("ListViewTitle", "Emit Event");
 	}
 	else
 	{
-		return LOCTEXT("Interface_Title", "Emit Event With Data");
+		return LOCTEXT("Interface_Title", "Emit Event");
 	}
 }
 
@@ -180,6 +180,23 @@ FSlateIcon UK2Node_EmitEventFromNodeList::GetIconAndTint(FLinearColor& OutColor)
 	return Icon;
 }
 
+void UK2Node_EmitEventFromNodeList::NotifyPinConnectionListChanged(UEdGraphPin* Pin)
+{
+	Super::NotifyPinConnectionListChanged(Pin);
+
+	RefreshEventOptions();
+}
+
+void UK2Node_EmitEventFromNodeList::RefreshEventOptions()
+{
+	// When the Interface pin gets a new value assigned, we need to update the Slate UI so that SGraphNodeCallParameterCollectionFunction will update the ParameterName drop down
+	UEdGraph* Graph = GetGraph();
+	Graph->NotifyNodeChanged(this);
+
+	auto EventSet = this->GetEventSet();
+	this->OnEventSetChanged.Broadcast(EventSet);
+}
+
 void UK2Node_EmitEventFromNodeList::PostReconstructNode()
 {
 	Super::PostReconstructNode();
@@ -196,6 +213,26 @@ void UK2Node_EmitEventFromNodeList::EarlyValidation(class FCompilerResultsLog& M
 		MessageLog.Error(*LOCTEXT("MissingPins", "Missing pins in @@").ToString(), this);
 		return;
 	}
+}
+
+TSet<FName> UK2Node_EmitEventFromNodeList::GetEventSet() const
+{
+	TSet<FName> Emitted;
+
+	if (auto Node = Cast<UStateNode>(this->GetSelfPin()->DefaultObject))
+	{
+		Node->GetEmittedEvents(Emitted);
+	}
+
+	if (auto BPGC = this->GetBlueprint()->GeneratedClass.Get())
+	{
+		if (auto Node = Cast<UStateNode>(BPGC->GetDefaultObject()))
+		{
+			Node->GetEmittedEvents(Emitted);
+		}
+	}
+
+	return Emitted;
 }
 
 #undef LOCTEXT_NAMESPACE

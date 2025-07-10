@@ -1,40 +1,28 @@
 #include "Widgets/SGraphPinSMEventName.h"
 
 #include "Containers/Array.h"
-#include "StateMachine/StateMachineInterface.h"
-#include "StateMachine/StateMachineBlueprintGeneratedClass.h"
-#include "StateMachine/StateMachine.h"
+#include "Kismet/K2Node_EmitEventBase.h"
 #include "Templates/SharedPointer.h"
 #include "UObject/NameTypes.h"
 
 class UEdGraphPin;
 
-void SGraphPinSMEventName::Construct(const FArguments& InArgs, UEdGraphPin* InGraphPinObj, UStateMachineInterface* InInterface, TSubclassOf<UStateMachine> SMClass, TSubclassOf<UStateNode> Node)
+void SGraphPinSMEventName::Construct(const FArguments& InArgs, UEdGraphPin* InGraphPinObj, UK2Node_EmitEventBase* Node)
 {
-	if (IsValid(InInterface))
-	{
-		RefreshNameList(InInterface);
-	}
-	else if (SMClass)
-	{
-
-	}
-	else if (Node)
-	{
-		RefreshNameList(Cast<UStateNode>(Node->GetDefaultObject()));
-	}
-
+	this->RefreshNameList(Node->GetEventSet());
+	Node->OnEventSetChanged.AddSP(this, &SGraphPinSMEventName::RefreshNameList);
 	SGraphPinNameList::Construct(SGraphPinNameList::FArguments(), InGraphPinObj, NameList);
 }
 
-void SGraphPinSMEventName::Construct(const FArguments& InArgs, UEdGraphPin* InGraphPinObj, TSubclassOf<UStateNode> Node)
+void SGraphPinSMEventName::RefreshNameList(const TSet<FName>& Names)
 {
-	if (Node)
-	{
-		RefreshNameList(Cast<UStateNode>(Node->GetDefaultObject()));
-	}
+	NameList.Empty();
 
-	SGraphPinNameList::Construct(SGraphPinNameList::FArguments(), InGraphPinObj, NameList);
+	for (auto& Name : Names)
+	{
+		TSharedPtr<FName> RowNameItem = MakeShareable(new FName(Name));
+		NameList.Add(RowNameItem);
+	}
 }
 
 SGraphPinSMEventName::SGraphPinSMEventName()
@@ -43,51 +31,4 @@ SGraphPinSMEventName::SGraphPinSMEventName()
 
 SGraphPinSMEventName::~SGraphPinSMEventName()
 {
-}
-
-
-void SGraphPinSMEventName::RefreshNameList(UStateMachineInterface* Interface)
-{
-	NameList.Empty();
-
-	if (Interface)
-	{		
-		auto Names = Interface->GetEvents();
-		for (auto& Name : Names)
-		{
-			TSharedPtr<FName> RowNameItem = MakeShareable(new FName(Name));
-			NameList.Add(RowNameItem);
-		}
-	}
-}
-
-void SGraphPinSMEventName::RefreshNameList(UStateNode* Node)
-{
-	NameList.Empty();
-
-	if (Node)
-	{
-		TSet<FName> Events;
-		Node->GetEmittedEvents(Events);
-
-		for (auto& Name : Events)
-		{
-			TSharedPtr<FName> RowNameItem = MakeShareable(new FName(Name));
-			NameList.Add(RowNameItem);
-		}
-	}
-}
-
-void SGraphPinSMEventName::RefreshNameList(TSubclassOf<UStateMachine> NewInterface)
-{
-	NameList.Empty();
-
-	if (auto SMGC = Cast<UStateMachineBlueprintGeneratedClass>(NewInterface))
-	{
-		for (auto& EName : SMGC->GetEventSet(NAME_None))
-		{
-			TSharedPtr<FName> RowNameItem = MakeShareable(new FName(EName));
-			NameList.Add(RowNameItem);
-		}
-	}
 }

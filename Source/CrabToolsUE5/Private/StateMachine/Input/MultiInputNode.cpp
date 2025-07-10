@@ -8,18 +8,38 @@ void UMultiInputNode::Initialize_Inner_Implementation() {
 	this->PawnOwner = Cast<APawn>(this->GetMachine()->GetActorOwner());
 }
 
-void UMultiInputNode::Enter_Inner_Implementation()
+void UMultiInputNode::BindInput()
 {
 	if (this->PawnOwner && this->PawnOwner->InputComponent)
 	{
-		UInputDelegateBinding::BindInputDelegates(this->GetClass(), this->PawnOwner->InputComponent, this);
+		if (!this->bIsBound)
+		{
+			this->bIsBound = true;
+			UInputDelegateBinding::BindInputDelegates(this->GetClass(), this->PawnOwner->InputComponent, this);
+		}
 	}
 }
 
-void UMultiInputNode::Exit_Inner_Implementation()
+void UMultiInputNode::UnbindInput()
 {
 	if (this->PawnOwner && this->PawnOwner->InputComponent)
 	{
-		this->PawnOwner->InputComponent->ClearBindingsForObject(this);
+		if (this->bIsBound)
+		{
+			this->bIsBound = false;
+			this->PawnOwner->InputComponent->ClearBindingsForObject(this);
+		}
+	}
+}
+
+void UMultiInputNode::SetActive_Inner_Implementation(bool bNewActive)
+{
+	if (bNewActive)
+	{
+		this->BindInput();
+	}
+	else
+	{
+		this->UnbindInput();
 	}
 }

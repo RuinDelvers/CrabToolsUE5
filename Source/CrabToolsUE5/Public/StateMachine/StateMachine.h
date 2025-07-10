@@ -351,7 +351,7 @@ public:
 	void Exit();
 	void ExitWithData(UObject* Data);
 	void PostTransition();
-	void SetActive(bool bNewActive) { this->bActive = bNewActive; }
+	void SetActive(bool bNewActive);
 
 	/* Runs a verification check on the node. Returns true if no error, false if an error happened. */
 	bool Verify(FNodeVerificationContext& Context) const;
@@ -418,6 +418,10 @@ protected:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "StateMachine")
 	void DeleteEvent(FName Event);
 	virtual void DeleteEvent_Implementation(FName Event);
+
+	UFUNCTION(BlueprintNativeEvent, Category = "StateMachine")
+	void SetActive_Inner(bool bNewActive);
+	virtual void SetActive_Inner_Implementation(bool bNewActive) {}
 
 	#if WITH_EDITOR
 		UFUNCTION()

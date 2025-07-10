@@ -1,22 +1,9 @@
 #pragma once
 
-#include "UObject/WeakObjectPtrTemplates.h"
 #include "StateMachine/DataStructures.h"
 #include "EdEventObject.generated.h"
 
 class UEdStateGraph;
-
-class FEventObjectActionEvents
-{
-public:
-
-	DECLARE_MULTICAST_DELEGATE_TwoParams(FEventRenamed, FName, FName)
-	FEventRenamed OnEventRenamed;
-
-	DECLARE_MULTICAST_DELEGATE(FEventRemoved)
-	FEventRemoved OnEventRemoved;
-
-};
 
 UCLASS(MinimalAPI)
 class UEdEventObject : public UObject
@@ -31,7 +18,17 @@ class UEdEventObject : public UObject
 
 public:
 
-	FEventObjectActionEvents Events;
+	class FEventObjectActionEvents
+	{
+	public:
+
+		DECLARE_MULTICAST_DELEGATE_TwoParams(FEventRenamed, FName, FName)
+		FEventRenamed OnEventRenamed;
+
+		DECLARE_MULTICAST_DELEGATE(FEventRemoved)
+		FEventRemoved OnEventRemoved;
+
+	} Events;
 
 public:
 

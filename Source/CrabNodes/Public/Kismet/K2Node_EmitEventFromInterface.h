@@ -1,15 +1,11 @@
 #pragma once
 
 #include "Containers/Array.h"
-#include "CoreMinimal.h"
 #include "EdGraph/EdGraphNode.h"
-#include "EdGraph/EdGraphNodeUtils.h"
-#include "HAL/PlatformCrt.h"
 #include "Internationalization/Text.h"
-#include "K2Node.h"
 #include "Textures/SlateIcon.h"
 #include "UObject/ObjectMacros.h"
-#include "UObject/UObjectGlobals.h"
+#include "Kismet/K2Node_EmitEventBase.h"
 
 #include "K2Node_EmitEventFromInterface.generated.h"
 
@@ -23,19 +19,11 @@ class UScriptStruct;
 struct FLinearColor;
 
 UCLASS()
-class CRABNODES_API UK2Node_EmitEventFromInterface : public UK2Node
+class CRABNODES_API UK2Node_EmitEventFromInterface : public UK2Node_EmitEventBase
 {
 	GENERATED_UCLASS_BODY()
 
-public:
-
-	DECLARE_MULTICAST_DELEGATE_OneParam(FInterfaceChanged, UStateMachineInterface*)
-	FInterfaceChanged OnInterfaceChanged;
-
 protected:
-
-	/** Tooltip text for this node. */
-	FText NodeTooltip;
 
 public:
 
@@ -69,6 +57,8 @@ public:
 	UEdGraphPin* GetEventPin() const;
 
 	void OnInterfaceRowListChanged(const UStateMachineInterface* Interface);
+
+	virtual TSet<FName> GetEventSet() const override;
 
 protected:
 	/**

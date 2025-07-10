@@ -120,6 +120,15 @@ void UCompositeNode::PostTransition_Inner_Implementation()
 	}
 }
 
+void UCompositeNode::SetActive_Inner_Implementation(bool bNewActive)
+{
+	for (const auto& Child : this->Nodes)
+	{
+		Child.Value->SetActive(bNewActive);
+	}
+}
+
+
 bool UCompositeNode::HasPipedData_Implementation() const
 {
 	for (const auto& Child : this->Nodes)

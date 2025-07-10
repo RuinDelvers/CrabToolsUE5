@@ -20,9 +20,19 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category="Pawn")
 	TObjectPtr<APawn> PawnOwner;
 
+	UPROPERTY(BlueprintReadOnly, Category = "Pawn")
+	bool bIsBound = false;
+
 public:
 
+	UFUNCTION(BlueprintCallable, Category="Input")
+	void BindInput();
+
+	UFUNCTION(BlueprintCallable, Category = "Input")
+	void UnbindInput();
+
+protected:
+
 	virtual void Initialize_Inner_Implementation() override;
-	virtual void Enter_Inner_Implementation() override;
-	virtual void Exit_Inner_Implementation() override;
+	virtual void SetActive_Inner_Implementation(bool bNewActive) override;
 };

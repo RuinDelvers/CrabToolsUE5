@@ -8,15 +8,11 @@
 #include "EdGraph/EdGraph.h"
 #include "EdGraph/EdGraphPin.h"
 #include "EdGraphSchema_K2.h"
-#include "Engine/MemberReference.h"
 #include "Internationalization/Internationalization.h"
 #include "K2Node_CallFunction.h"
 #include "Kismet2/BlueprintEditorUtils.h"
-#include "Kismet2/CompilerResultsLog.h"
 #include "KismetCompiler.h"
-#include "Math/Color.h"
 #include "Misc/AssertionMacros.h"
-#include "Styling/AppStyle.h"
 #include "Templates/Casts.h"
 #include "UObject/Class.h"
 #include "UObject/NameTypes.h"
@@ -80,14 +76,8 @@ void UK2Node_EmitEventFromMachine::RefreshEventOptions()
 	UEdGraph* Graph = GetGraph();
 	Graph->NotifyNodeChanged(this);
 
-	
-	this->OnInterfaceChanged.Broadcast(this->GetSMClass());
-	/*
-	if (auto SMI = Cast<UStateMachineInterface>(this->GetInterfacePin()->DefaultObject))
-	{
-		
-	}
-	*/	
+	auto Events = this->GetEventSet();
+	this->OnEventSetChanged.Broadcast(Events);
 }
 
 void UK2Node_EmitEventFromMachine::OnInterfaceRowListChanged(TSubclassOf<UStateMachine> Interface)
@@ -328,18 +318,16 @@ void UK2Node_EmitEventFromMachine::EarlyValidation(class FCompilerResultsLog& Me
 			const FName CurrentName = FName(*EventPin->GetDefaultAsString());
 			if (auto SMGC = Cast<UStateMachineBlueprintGeneratedClass>(Interface))
 			{
-				/*
-				if (!Interface->GetEvents().Contains(CurrentName))
+				if (!SMGC->GetTotalEventSet().Contains(CurrentName))
 				{
 					const FString Msg = FText::Format(
-						LOCTEXT("WrongEventFmt", "'{0}' row name is not stored in '{1}'. @@"),
+						LOCTEXT("WrongEventFmt", "'{0}' is not an event for SM Class '{1}'. @@"),
 						FText::FromString(CurrentName.ToString()),
 						FText::FromString(GetFullNameSafe(Interface))
 					).ToString();
 					MessageLog.Error(*Msg, this);
 					return;
 				}
-				*/
 			}
 		}
 	}	
@@ -368,6 +356,20 @@ void UK2Node_EmitEventFromMachine::NotifyPinConnectionListChanged(UEdGraphPin* P
 			RefreshEventOptions();
 		}
 	}
+}
+
+TSet<FName> UK2Node_EmitEventFromMachine::GetEventSet() const
+{
+	if (auto SMClass = this->GetSMClass())
+	{
+		if (auto BPGC = Cast<UStateMachineBlueprintGeneratedClass>(SMClass))
+		{
+			return BPGC->GetTotalEventSet();
+		}
+		
+	}
+
+	return {};
 }
 
 #undef LOCTEXT_NAMESPACE

@@ -48,6 +48,7 @@ public:
 	virtual void PostTransition_Inner_Implementation() override;
 	virtual bool HasPipedData_Implementation() const override;
 	virtual UObject* GetPipedData_Implementation() override;
+	virtual void SetActive_Inner_Implementation(bool bNewActive) override;
 
 	#if WITH_EDITORONLY_DATA
 		virtual void GetEmittedEvents(TSet<FName>& Events) const override;

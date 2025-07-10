@@ -10,6 +10,7 @@
 #include "Textures/SlateIcon.h"
 #include "UObject/ObjectMacros.h"
 #include "UObject/UObjectGlobals.h"
+#include "Kismet/K2Node_EmitEventBase.h"
 
 #include "K2Node_EmitEventFromMachine.generated.h"
 
@@ -23,19 +24,9 @@ class UScriptStruct;
 struct FLinearColor;
 
 UCLASS()
-class CRABNODES_API UK2Node_EmitEventFromMachine : public UK2Node
+class CRABNODES_API UK2Node_EmitEventFromMachine : public UK2Node_EmitEventBase
 {
 	GENERATED_UCLASS_BODY()
-
-public:
-
-	DECLARE_MULTICAST_DELEGATE_OneParam(FInterfaceChanged, TSubclassOf<UStateMachine>)
-	FInterfaceChanged OnInterfaceChanged;
-
-protected:
-
-	/** Tooltip text for this node. */
-	FText NodeTooltip;
 
 public:
 
@@ -71,6 +62,8 @@ public:
 	void OnInterfaceRowListChanged(TSubclassOf<UStateMachine> Interface);
 
 	TSubclassOf<UStateMachine> GetSMClass() const;
+
+	virtual TSet<FName> GetEventSet() const override;
 
 protected:
 	/**

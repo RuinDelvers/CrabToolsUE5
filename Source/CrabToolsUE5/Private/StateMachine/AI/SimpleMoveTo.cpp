@@ -1,13 +1,12 @@
 #include "StateMachine/AI/SimpleMoveTo.h"
 #include "AIController.h"
 #include "Navigation/PathFollowingComponent.h"
-#include "Utils/UtilsLibrary.h"
 #include "StateMachine/IStateMachineLike.h"
 #include "StateMachine/Events.h"
 #include "StateMachine/AI/AIStructs.h"
 
 
-UAISimpleMoveToNode::UAISimpleMoveToNode()
+UAISimpleMoveToNode::UAISimpleMoveToNode(): MovementResult(EPathFollowingResult::Aborted)
 {
 	this->AddEmittedEvent(Events::AI::ARRIVE);
 	this->AddEmittedEvent(Events::AI::LOST);
@@ -50,8 +49,6 @@ void UAISimpleMoveToNode::PostTransition_Inner_Implementation()
 	}
 	else
 	{
-		this->BindCallback();
-
 		if (auto Value = this->GetMovementData())
 		{
 			auto Ctrl = this->GetAIController();

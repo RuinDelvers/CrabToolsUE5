@@ -7,6 +7,7 @@ class UStateMachineInterface;
 class UEdGraphPin;
 class UStateMachine;
 class UStateNode;
+class UK2Node_EmitEventBase;
 
 class CRABNODES_API SGraphPinSMEventName : public SGraphPinNameList
 {
@@ -17,20 +18,12 @@ public:
 	void Construct(
 		const FArguments& InArgs,
 		UEdGraphPin* InGraphPinObj,
-		UStateMachineInterface* InInterface=nullptr,
-		TSubclassOf<UStateMachine> SMClass=nullptr,
-		TSubclassOf<UStateNode> SMNode=nullptr);
-
-	void Construct(
-		const FArguments& InArgs,
-		UEdGraphPin* InGraphPinObj,
-		TSubclassOf<UStateNode> SMNode);
+		UK2Node_EmitEventBase* Node);
 
 	SGraphPinSMEventName();
 	virtual ~SGraphPinSMEventName();
 
-	void RefreshNameList(UStateMachineInterface* NewInterface);
-	void RefreshNameList(TSubclassOf<UStateMachine> NewInterface);
-	void RefreshNameList(UStateNode* Node);
+private:
 
+	void RefreshNameList(const TSet<FName>& Names);
 };

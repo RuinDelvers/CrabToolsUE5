@@ -5,6 +5,7 @@
 #include "K2Node.h"
 #include "Textures/SlateIcon.h"
 #include "UObject/ObjectMacros.h"
+#include "Kismet/K2Node_EmitEventBase.h"
 
 #include "K2Node_EmitEventFromNodeList.generated.h"
 
@@ -19,14 +20,9 @@ struct FLinearColor;
 class UStateNode;
 
 UCLASS()
-class CRABNODES_API UK2Node_EmitEventFromNodeList : public UK2Node
+class CRABNODES_API UK2Node_EmitEventFromNodeList : public UK2Node_EmitEventBase
 {
 	GENERATED_UCLASS_BODY()
-
-protected:
-
-	/** Tooltip text for this node. */
-	FText NodeTooltip;
 
 public:
 
@@ -46,12 +42,15 @@ public:
 	virtual FText GetMenuCategory() const override;
 	virtual bool IsConnectionDisallowed(const UEdGraphPin* MyPin, const UEdGraphPin* OtherPin, FString& OutReason) const override;
 	virtual void EarlyValidation(class FCompilerResultsLog& MessageLog) const override;
+	virtual void NotifyPinConnectionListChanged(UEdGraphPin* Pin) override;
 	//~ End UK2Node Interface
 
 	UEdGraphPin* GetSelfPin() const;
 	UEdGraphPin* GetThenPin() const;
 	/** Get the spawn transform input pin */	
 	UEdGraphPin* GetEventPin() const;
+
+	virtual TSet<FName> GetEventSet() const override;
 
 protected:
 	/**
@@ -62,4 +61,6 @@ protected:
 	 * @param   PinDescription	A string describing the pin's purpose
 	 */
 	void SetPinToolTip(UEdGraphPin& MutatablePin, const FText& PinDescription) const;
+
+	void RefreshEventOptions();
 };

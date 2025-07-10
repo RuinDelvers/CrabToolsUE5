@@ -136,6 +136,14 @@ bool UArrayNode::HasPipedData_Implementation() const
 	return false;
 }
 
+void UArrayNode::SetActive_Inner_Implementation(bool bNewActive)
+{
+	for (const auto& Child : this->Nodes)
+	{
+		Child->SetActive(bNewActive);
+	}
+}
+
 UObject* UArrayNode::GetPipedData_Implementation()
 {
 	auto Data = NewObject<UArrayNodeData>(this);
