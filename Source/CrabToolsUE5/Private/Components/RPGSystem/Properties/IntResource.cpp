@@ -42,8 +42,13 @@ void UIntResource::Initialize_Inner_Implementation()
 
 void UIntResource::SetValue(int UValue)
 {
-	this->Value = UValue;
-	this->Refresh();
+	auto NewValue = FMath::Clamp(UValue, this->GetMin(), this->GetMax());
+
+	if (NewValue != this->Value)
+	{
+		this->Value = UValue;
+		this->OnResourceChanged.Broadcast(this);
+	}
 }
 
 float UIntResource::GetPercent() const
@@ -67,8 +72,13 @@ float UIntResource::GetPercent() const
 
 void UIntResource::Refresh()
 {
-	this->Value = FMath::Clamp(this->Value, this->GetMin(), this->GetMax());
-	this->OnResourceChanged.Broadcast(this);
+	auto NewValue = FMath::Clamp(this->Value, this->GetMin(), this->GetMax());
+
+	if (NewValue != this->Value)
+	{
+		this->Value = NewValue;
+		this->OnResourceChanged.Broadcast(this);
+	}	
 }
 
 void UIntResource::OnAttributeChanged(UBaseIntAttribute* Attr)

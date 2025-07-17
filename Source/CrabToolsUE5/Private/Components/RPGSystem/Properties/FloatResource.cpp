@@ -42,8 +42,13 @@ void UFloatResource::Initialize_Inner_Implementation()
 
 void UFloatResource::SetValue(float UValue)
 {
-	this->Value = UValue;
-	this->Refresh();
+	auto NewValue = FMath::Clamp(UValue, this->GetMin(), this->GetMax());
+
+	if (NewValue != this->Value)
+	{
+		this->Value = UValue;
+		this->OnResourceChanged.Broadcast(this);
+	}
 }
 
 float UFloatResource::GetPercent() const
@@ -65,8 +70,13 @@ float UFloatResource::GetPercent() const
 
 void UFloatResource::Refresh()
 {
-	this->Value = FMath::Clamp(this->Value, this->GetMin(), this->GetMax());
-	this->OnResourceChanged.Broadcast(this);
+	auto NewValue = FMath::Clamp(this->Value, this->GetMin(), this->GetMax());
+
+	if (NewValue != this->Value)
+	{
+		this->Value = NewValue;
+		this->OnResourceChanged.Broadcast(this);
+	}
 }
 
 void UFloatResource::OnAttributeChanged(UBaseFloatAttribute* Attr)

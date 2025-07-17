@@ -1,5 +1,6 @@
 #include "Utils/UtilsLibrary.h"
 #include "Utils/Enums.h"
+#include "Engine/InputDelegateBinding.h"
 
 void UUtilsLibrary::ActivateTimeGatedBool(FTimeGatedBool& input) {
 	input.Reset();
@@ -138,4 +139,20 @@ TSubclassOf<UObject> UUtilsLibrary::GenerateDynamicClass(TSubclassOf<UObject> Pa
 	GenClass->Bind();
 
 	return GenClass;
+}
+
+void UUtilsLibrary::BindObjectToEnhancedInput(UObject* Obj, APawn* Pawn)
+{
+	if (IsValid(Obj) && IsValid(Pawn))
+	{
+		UInputDelegateBinding::BindInputDelegates(Obj->GetClass(), Pawn->InputComponent, Obj);
+	}
+}
+
+void UUtilsLibrary::UnbindObjectToEnhancedInput(UObject* Obj, APawn* Pawn)
+{
+	if (IsValid(Obj) && IsValid(Pawn))
+	{
+		Pawn->InputComponent->ClearBindingsForObject(Obj);
+	}
 }

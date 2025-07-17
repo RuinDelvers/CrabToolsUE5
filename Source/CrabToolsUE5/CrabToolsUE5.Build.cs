@@ -27,6 +27,7 @@ public class CrabToolsUE5 : ModuleRules
 				"EnhancedInput",
 				"UMG",
 				"Slate",
+				"InputCore",
 				"AIModule",
 				// ... add other public dependencies that you statically link with here ...
 			});

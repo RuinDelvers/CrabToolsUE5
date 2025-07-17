@@ -375,39 +375,39 @@ protected:
 	virtual bool Verify_Inner(FNodeVerificationContext& Context) const { return true; }
 	
 	/* Function called by Initialize_Internal. Override this to setup your init code. */
-	UFUNCTION(BlueprintNativeEvent, Category = "StateMachine")
+	UFUNCTION(BlueprintNativeEvent, Category = "StateMachine", meta=(DisplayName="Initialize"))
 	void Initialize_Inner();
 	virtual void Initialize_Inner_Implementation();
 
-	UFUNCTION(BlueprintNativeEvent, Category = "StateMachine")
+	UFUNCTION(BlueprintNativeEvent, Category = "StateMachine", meta = (DisplayName = "Event"))
 	void Event_Inner(FName EName);	
 	virtual void Event_Inner_Implementation(FName EName);
 
-	UFUNCTION(BlueprintNativeEvent, Category = "StateMachine")
+	UFUNCTION(BlueprintNativeEvent, Category = "StateMachine", meta = (DisplayName = "EventWithData"))
 	void EventWithData_Inner(FName EName, UObject* Data);
 	virtual void EventWithData_Inner_Implementation(FName EName, UObject* Data);
 
-	UFUNCTION(BlueprintNativeEvent, Category = "StateMachine")
+	UFUNCTION(BlueprintNativeEvent, Category = "StateMachine", meta = (DisplayName = "Enter"))
 	void Enter_Inner();	
 	virtual void Enter_Inner_Implementation() {}
 
-	UFUNCTION(BlueprintNativeEvent, Category = "StateMachine")
+	UFUNCTION(BlueprintNativeEvent, Category = "StateMachine", meta = (DisplayName = "EnterWithData"))
 	void EnterWithData_Inner(UObject* Data);	
 	virtual void EnterWithData_Inner_Implementation(UObject* Data);
 
-	UFUNCTION(BlueprintNativeEvent, Category = "StateMachine")
+	UFUNCTION(BlueprintNativeEvent, Category = "StateMachine", meta = (DisplayName = "Tick"))
 	void Tick_Inner(float DeltaTime);	
 	virtual void Tick_Inner_Implementation(float DeltaTime) {}
 
-	UFUNCTION(BlueprintNativeEvent, Category = "StateMachine")
+	UFUNCTION(BlueprintNativeEvent, Category = "StateMachine", meta = (DisplayName = "Exit"))
 	void Exit_Inner();
 	virtual void Exit_Inner_Implementation() {}
 
-	UFUNCTION(BlueprintNativeEvent, Category = "StateMachine")
+	UFUNCTION(BlueprintNativeEvent, Category = "StateMachine", meta = (DisplayName = "PostTransition"))
 	void PostTransition_Inner();
 	virtual void PostTransition_Inner_Implementation() {}
 
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "StateMachine")
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "StateMachine", meta = (DisplayName = "ExitWithData"))
 	void ExitWithData_Inner(UObject* Data);	
 	virtual void ExitWithData_Inner_Implementation(UObject* Data);
 
@@ -419,7 +419,7 @@ protected:
 	void DeleteEvent(FName Event);
 	virtual void DeleteEvent_Implementation(FName Event);
 
-	UFUNCTION(BlueprintNativeEvent, Category = "StateMachine")
+	UFUNCTION(BlueprintNativeEvent, Category = "StateMachine", meta = (DisplayName = "OnSetActive"))
 	void SetActive_Inner(bool bNewActive);
 	virtual void SetActive_Inner_Implementation(bool bNewActive) {}
 

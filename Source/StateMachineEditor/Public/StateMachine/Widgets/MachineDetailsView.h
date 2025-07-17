@@ -18,7 +18,8 @@ class STATEMACHINEEDITOR_API SMachineDetailsView
 : public SCompoundWidget, public FNotifyHook, public FGCObject
 {
 private:
-	TSharedPtr<class SKismetInspector> Inspector;
+
+	TSharedPtr<IDetailsView> Inspector;
 
 public:
 

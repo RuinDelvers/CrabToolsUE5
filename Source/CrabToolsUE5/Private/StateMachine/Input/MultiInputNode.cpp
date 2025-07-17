@@ -10,10 +10,10 @@ void UMultiInputNode::Initialize_Inner_Implementation() {
 
 void UMultiInputNode::BindInput()
 {
-	if (this->PawnOwner && this->PawnOwner->InputComponent)
+	if (!this->bIsBound)
 	{
-		if (!this->bIsBound)
-		{
+		if (this->PawnOwner && this->PawnOwner->InputComponent)
+		{		
 			this->bIsBound = true;
 			UInputDelegateBinding::BindInputDelegates(this->GetClass(), this->PawnOwner->InputComponent, this);
 		}
@@ -22,10 +22,10 @@ void UMultiInputNode::BindInput()
 
 void UMultiInputNode::UnbindInput()
 {
-	if (this->PawnOwner && this->PawnOwner->InputComponent)
+	if (this->bIsBound)
 	{
-		if (this->bIsBound)
-		{
+		if (this->PawnOwner && this->PawnOwner->InputComponent)
+		{		
 			this->bIsBound = false;
 			this->PawnOwner->InputComponent->ClearBindingsForObject(this);
 		}

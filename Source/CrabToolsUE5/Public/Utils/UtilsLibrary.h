@@ -76,6 +76,12 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Utility", meta=(DeterminesOutputType="Parent"))
 	static TSubclassOf<UObject> GenerateDynamicClass(TSubclassOf<UObject> Parent, UObject* Owner);
+
+	UFUNCTION(BlueprintCallable, Category = "Input")
+	static void BindObjectToEnhancedInput(UObject* Obj, APawn* Pawn);
+
+	UFUNCTION(BlueprintCallable, Category = "Input")
+	static void UnbindObjectToEnhancedInput(UObject* Obj, APawn* Pawn);
 };
 
 namespace UtilsFunctions
