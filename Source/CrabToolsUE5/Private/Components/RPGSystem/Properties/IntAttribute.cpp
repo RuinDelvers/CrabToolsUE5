@@ -6,6 +6,11 @@ void UBaseIntAttribute::Initialize_Inner_Implementation()
 	this->Refresh();
 }
 
+FText UBaseIntAttribute::GetDisplayText_Implementation() const
+{
+	return FText::AsNumber(this->GetValue());
+}
+
 int UBaseIntAttribute::GetValue() const
 {
 	return this->CompValue;

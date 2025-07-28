@@ -98,18 +98,37 @@ FName UStateMachine::GetStartState() const
 
 void UStateMachine::Initialize_Inner_Implementation() {}
 
-UStateMachine* UStateNode::GetMachineAs(TSubclassOf<UStateMachine> SClass, ESearchResult& Result) const
+UStateMachine* UStateNode::GetMachineAs(TSubclassOf<UStateMachine> SClass, bool& bFound) const
 {
 	auto Class = SClass.Get();
 	auto Machine = this->GetMachine();
+
 	if (Class && Machine) {
 		if (Machine->IsA(Class)) {
-			Result = ESearchResult::Found;
+			bFound = true;
 			return Machine;
 		}
 	}
 
-	Result = ESearchResult::Found;
+	bFound = false;
+	return nullptr;
+}
+
+UStateMachine* UStateNode::GetRootMachineAs(TSubclassOf<UStateMachine> SClass, bool& bFound) const
+{
+	auto Class = SClass.Get();
+	auto Machine = this->GetRootMachine();
+
+	if (Class && Machine)
+	{
+		if (Machine->IsA(Class))
+		{
+			bFound = true;
+			return Machine;
+		}
+	}
+
+	bFound = false;
 	return nullptr;
 }
 

@@ -156,3 +156,23 @@ void UUtilsLibrary::UnbindObjectToEnhancedInput(UObject* Obj, APawn* Pawn)
 		Pawn->InputComponent->ClearBindingsForObject(Obj);
 	}
 }
+
+bool UUtilsLibrary::IsWithinCone(FVector Location, FVector Base, FVector Endpoint, float Radius, float Exponent)
+{
+	const auto Dir = (Base - Endpoint);
+	const auto Height = Dir.Length();
+	const auto DirNormed = Dir.GetUnsafeNormal();
+	const float Dist = (Location - Endpoint).Dot(DirNormed);
+
+	if (Dist >= 0 && Dist <= Height)
+	{
+		const float TestRadius = FMath::Pow((Dist / Height), Exponent) * Radius;
+		const auto OrthDist = ((Location - Endpoint) - Dist * DirNormed).Length();
+
+		return OrthDist < TestRadius;
+	}
+	else
+	{
+		return false;
+	}
+}

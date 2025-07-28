@@ -40,6 +40,11 @@ void UIntResource::Initialize_Inner_Implementation()
 	this->Maximum->OnAttributeChanged.AddDynamic(this, &UIntResource::OnAttributeChanged);
 }
 
+FText UIntResource::GetDisplayText_Implementation() const
+{
+	return FText::AsNumber(this->GetValue());
+}
+
 void UIntResource::SetValue(int UValue)
 {
 	auto NewValue = FMath::Clamp(UValue, this->GetMin(), this->GetMax());

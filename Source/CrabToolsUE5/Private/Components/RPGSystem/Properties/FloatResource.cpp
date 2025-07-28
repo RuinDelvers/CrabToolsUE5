@@ -79,6 +79,11 @@ void UFloatResource::Refresh()
 	}
 }
 
+FText UFloatResource::GetDisplayText_Implementation() const
+{
+	return FText::AsNumber(this->GetValue());
+}
+
 void UFloatResource::OnAttributeChanged(UBaseFloatAttribute* Attr)
 {
 	this->Refresh();

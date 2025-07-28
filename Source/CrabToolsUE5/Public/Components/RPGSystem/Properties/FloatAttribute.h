@@ -37,8 +37,6 @@ public:
 	float GetBaseValue() const;
 	virtual float GetBaseValue_Implementation() const { return 0; }
 
-	virtual void Initialize_Inner_Implementation() override;
-
 	UFUNCTION(BlueprintCallable, Category = "RPGProperty")
 	void Operate(UFloatOperator* Op);
 
@@ -47,6 +45,21 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "RPGProperty")
 	void Refresh();
+
+protected:
+
+	virtual void Initialize_Inner_Implementation() override;
+	virtual FText GetDisplayText_Implementation() const override;
+
+	virtual void ListenToProperty_Implementation(const FRPGPropertyChanged& Callback) override
+	{
+		OnAttributeChanged.Add(Callback);
+	}
+
+	virtual void StopListeningToProperty_Implementation(UObject* Obj) override
+	{
+		OnAttributeChanged.RemoveAll(Obj);
+	}
 };
 
 UCLASS(NotBlueprintable, DisplayName = "Zero")

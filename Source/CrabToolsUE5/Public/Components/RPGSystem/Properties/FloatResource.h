@@ -61,7 +61,18 @@ public:
 
 protected:
 
+	virtual FText GetDisplayText_Implementation() const override;
 	virtual void Initialize_Inner_Implementation() override;
+
+	virtual void ListenToProperty_Implementation(const FRPGPropertyChanged& Callback) override
+	{
+		OnResourceChanged.Add(Callback);
+	}
+
+	virtual void StopListeningToProperty_Implementation(UObject* Obj) override
+	{
+		OnResourceChanged.RemoveAll(Obj);
+	}
 
 private:
 

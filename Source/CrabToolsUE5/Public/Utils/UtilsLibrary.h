@@ -82,6 +82,13 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Input")
 	static void UnbindObjectToEnhancedInput(UObject* Obj, APawn* Pawn);
+
+	/*
+	 * Checks to see if the location is within the cone defined by the base, endpoint, and
+	 * radius. An exponent can also be applied to the cone's radius to create curvature.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Input")
+	static bool IsWithinCone(FVector Location, FVector Base, FVector Endpoint, float Radius, float Exponent=1.0);
 };
 
 namespace UtilsFunctions

@@ -29,6 +29,11 @@ void UBaseFloatAttribute::UnOperate(UFloatOperator* Op)
 	}
 }
 
+FText UBaseFloatAttribute::GetDisplayText_Implementation() const
+{
+	return FText::AsNumber(this->GetValue());
+}
+
 void UBaseFloatAttribute::Refresh()
 {
 	auto Value = this->GetBaseValue();

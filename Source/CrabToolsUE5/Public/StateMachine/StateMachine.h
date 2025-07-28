@@ -311,8 +311,11 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "StateMachine")
 	UStateMachine* GetRootMachine() const;
 
-	UFUNCTION(BlueprintCallable, Category = "RPG", meta = (ExpandEnumAsExecs = "Result", DeterminesOutputType = "SClass"))
-	UStateMachine* GetMachineAs(TSubclassOf<UStateMachine> SClass, ESearchResult& Result) const;
+	UFUNCTION(BlueprintCallable, Category = "StateMachine", meta = (DeterminesOutputType = "SClass"))
+	UStateMachine* GetMachineAs(TSubclassOf<UStateMachine> SClass, bool& bFound) const;
+
+	UFUNCTION(BlueprintCallable, Category = "StateMachine", meta = (DeterminesOutputType = "SClass"))
+	UStateMachine* GetRootMachineAs(TSubclassOf<UStateMachine> SClass, bool& bFound) const;
 
 	UFUNCTION(BlueprintCallable, BlueprintInternalUseOnly, Category = "StateMachine",
 		meta = (HideSelfPin=true))

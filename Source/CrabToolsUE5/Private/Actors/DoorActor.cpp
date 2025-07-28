@@ -144,12 +144,10 @@ void ADoorActor::ActivateDoor(bool OpenQ)
 
 	if (this->bOpen)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Opening the door?"));
 		this->MovementTimeline->Play();
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Closing the door?"));
 		this->MovementTimeline->Reverse();
 	}
 }
