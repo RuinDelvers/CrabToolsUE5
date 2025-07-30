@@ -1,12 +1,37 @@
 #include "StateMachine/AI/MoveToInteract.h"
-#include "AIController.h"
 #include "Navigation/PathFollowingComponent.h"
-#include "Utils/UtilsLibrary.h"
-#include "StateMachine/IStateMachineLike.h"
 #include "StateMachine/Events.h"
-#include "StateMachine/AI/AIStructs.h"
 #include "Components/Interaction/InteractionSystem.h"
+#include "Components/Interaction/InteractableComponent.h"
 #include "Utils/PathFindingUtils.h"
+
+UAIInteractionData* UAIInteractionData::MakeInteractionData(
+	FName InitInteraction,
+	AActor* InitInteractable,
+	UObject* InitData)
+{
+	auto Obj = NewObject<UAIInteractionData>(InitInteractable);
+
+	Obj->Interaction = InitInteraction;
+	Obj->Interactable = InitInteractable;
+	Obj->Data = InitData;
+
+	return Obj;
+}
+
+bool UAIInteractionData::IsValidData() const
+{
+	bool BaseValid = IsValid(this->Interactable);
+
+	if (BaseValid)
+	{
+		return IsValid(this->Interactable->GetComponentByClass<UInteractableComponent>());
+	}
+	else
+	{
+		return false;
+	}
+}
 
 UAIMoveToInteractNode::UAIMoveToInteractNode()
 {
@@ -22,9 +47,18 @@ void UAIMoveToInteractNode::Initialize_Inner_Implementation()
 
 void UAIMoveToInteractNode::EnterWithData_Inner_Implementation(UObject* Data)
 {
-	if (auto Interaction = Cast<UAbstractInteraction>(Data))
+	if (auto Interaction = Cast<UAIInteractionData>(Data))
 	{
-		Super::EnterWithData_Inner_Implementation(Interaction->Interactor);
+		if (Interaction->IsValidData())
+		{
+			this->CurrentData = Interaction;
+			this->BindEvents();
+			Super::EnterWithData_Inner_Implementation(Interaction->Interactable);
+		}
+		else
+		{
+			Super::EnterWithData_Inner_Implementation(nullptr);
+		}
 	}
 	else
 	{
@@ -45,6 +79,8 @@ void UAIMoveToInteractNode::Exit_Inner_Implementation()
 		this->HandleInteraction();
 	}
 
+	this->CurrentData = nullptr;
+
 	this->GetInteractionComponent()->OnInteractableAddedEvent.RemoveAll(this);
 }
 
@@ -53,11 +89,21 @@ bool UAIMoveToInteractNode::HandleInteraction()
 	bool bDidInteract = false;
 
 	auto InteractComp = this->GetInteractionComponent();
+	auto Interactable = this->GetInteractable();
 
-	if (InteractComp->HasObject(this->GoalActor))
+	if (InteractComp->HasObject(Interactable))
 	{
-		InteractComp->Select(this->GoalActor);
-		InteractComp->Interact();
+		if (this->CurrentData->Interaction.IsNone())
+		{
+			Interactable->InteractDefault(this->GetActorOwner(), this->CurrentData->Data);
+		}
+		else
+		{
+			Interactable->Interact(
+				this->CurrentData->Interaction,
+				this->GetActorOwner(),
+				this->CurrentData->Data);
+		}
 
 		bDidInteract = true;
 	}
@@ -67,17 +113,17 @@ bool UAIMoveToInteractNode::HandleInteraction()
 
 bool UAIMoveToInteractNode::HasInteractable() const
 {
-	return this->GetInteractionComponent()->HasObject(this->GoalActor);
+	return this->GetInteractionComponent()->HasObject(this->GetInteractable());
 }
 
 void UAIMoveToInteractNode::ComputeTarget()
 {
 	if (IsValid(this->GoalActor))
 	{
-		if (this->GoalActor->Implements<UInteractableInterface>())
+		if (auto Interactable = this->GetInteractable())
 		{
 			TArray<FVector> Locations;
-			IInteractableInterface::Execute_GetLocations(this->GoalActor, Locations);
+			Interactable->GetInteractionPoints(Locations);
 
 			if (Locations.Num() > 0)
 			{
@@ -99,7 +145,7 @@ void UAIMoveToInteractNode::PostTransition_Inner_Implementation()
 	{
 		this->EmitEvent(Events::AI::CANNOT_INTERACT);
 	}
-	else if (!this->GoalActor->Implements<UInteractableInterface>())
+	else if (!this->GoalActor->GetComponentByClass<UInteractableComponent>())
 	{
 		this->EmitEvent(Events::AI::CANNOT_INTERACT);
 	} 
@@ -126,12 +172,17 @@ void UAIMoveToInteractNode::BindEvents()
 	this->GetInteractionComponent()->OnInteractableAddedEvent.AddDynamic(this, &UAIMoveToInteractNode::OnInteractableAdded);
 }
 
-void UAIMoveToInteractNode::OnInteractableAdded(TScriptInterface<IInteractableInterface> Interactable)
+void UAIMoveToInteractNode::OnInteractableAdded(UInteractableComponent* Interactable)
 {
-	if (Interactable.GetObject() == this->GoalActor)
+	if (Interactable == this->GetInteractable())
 	{
 		this->EmitEvent(Events::AI::ARRIVE);
 	}
+}
+
+UInteractableComponent* UAIMoveToInteractNode::GetInteractable() const
+{
+	return this->CurrentData->Interactable->GetComponentByClass<UInteractableComponent>();
 }
 
 #if WITH_EDITOR

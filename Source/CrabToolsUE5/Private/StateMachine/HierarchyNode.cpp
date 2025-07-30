@@ -62,7 +62,8 @@ void UHierarchyNode::PostTransition_Inner_Implementation()
 	this->PerformExit();
 }
 
-void UHierarchyNode::Enter_Inner_Implementation() {
+void UHierarchyNode::Enter_Inner_Implementation()
+{
 	if (this->SubMachine) {
 		this->SubMachine->SetActive(true);
 		if (this->ResetOnEnter)
@@ -76,7 +77,8 @@ void UHierarchyNode::Enter_Inner_Implementation() {
 	}
 }
 
-void UHierarchyNode::Tick_Inner_Implementation(float DeltaTime) {
+void UHierarchyNode::Tick_Inner_Implementation(float DeltaTime)
+{
 	if (this->SubMachine)
 	{
 		this->SubMachine->Tick(DeltaTime);
@@ -121,6 +123,11 @@ void UHierarchyNode::StateChangedCallback(UStateMachine* Data)
 		if (this->ExitStates.Contains(StateName))
 		{
 			this->EmitEvent(this->ExitStates[StateName].GetEvent());
+		}
+
+		if (this->Active())
+		{
+			this->UpdateTickRequirements();
 		}
 	}
 }

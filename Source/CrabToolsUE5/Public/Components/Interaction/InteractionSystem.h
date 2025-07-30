@@ -1,12 +1,11 @@
 #pragma once
 
-#include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "UObject/WeakObjectPtrTemplates.h"
-#include "Delegates/DelegateSignatureImpl.inl"
 #include "Components/Interaction/Interactable.h"
 #include "InteractionSystem.generated.h"
 
+class UInteractableComponent;
 
 /* 
  * Interaction System used to control which nearby objects one can interact with. This
@@ -18,12 +17,12 @@ class CRABTOOLSUE5_API UInteractionSystem : public UActorComponent
 {
 	GENERATED_BODY()
 	
-	TArray<TWeakObjectPtr<UObject>> InteractableObjects;
-	int SelectedIndex;
+	TArray<TWeakObjectPtr<UInteractableComponent>> InteractableObjects;
+	int SelectedIndex = 0;
 
 public:
 
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FInteractionSelected, TScriptInterface<IInteractableInterface>, Selected);
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FInteractionSelected, UInteractableComponent*, Selected);
 
 	/* Called when a new interactable is made available. */
 	UPROPERTY(BlueprintAssignable, Category="Interaction")
@@ -46,16 +45,16 @@ public:
 	UInteractionSystem();
 	
 	UFUNCTION(BlueprintCallable, Category="Interaction")
-	void AddInteractable(UObject* Obj);
+	void AddInteractable(UInteractableComponent* Obj);
 
 	UFUNCTION(BlueprintCallable, Category="Interaction")
-	void RemoveInteractable(UObject* Obj);
+	void RemoveInteractable(UInteractableComponent* Obj);
 
 	UFUNCTION(BlueprintCallable, Category="Interaction")
-	void Interact();
+	void Interact(UObject* Data);
 
 	UFUNCTION(BlueprintCallable, Category="Interaction")
-	void InteractWith(AActor* Redirect);
+	void InteractWith(AActor* Redirect, UObject* Data);
 	
 	UFUNCTION(BlueprintCallable, Category = "Interaction")
 	void Cycle();
@@ -64,17 +63,17 @@ public:
 	int Num() { return this->InteractableObjects.Num(); }
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Interaction")
-	UObject* GetObj(int index) { return index >= 0 && index < this->InteractableObjects.Num() ? this->InteractableObjects[index].Get() : nullptr; }
+	UInteractableComponent* GetObj(int index) { return index >= 0 && index < this->InteractableObjects.Num() ? this->InteractableObjects[index].Get() : nullptr; }
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Interaction")
-	int IndexOf(UObject* Obj);
+	int IndexOf(UInteractableComponent* Obj);
 
 	UFUNCTION(BlueprintCallable, Category = "Interaction")
-	void Select(UObject* Obj);
+	void Select(UInteractableComponent* Obj);
 
 	UFUNCTION(BlueprintCallable, Category = "Interaction", meta=(ExpandBoolAsExecs="bHasObject"))
-	bool HasObject(UObject* Obj, bool& bHasObject);
-	bool HasObject(UObject* Obj);
+	bool HasObject(UInteractableComponent* Obj, bool& bHasObject);
+	bool HasObject(UInteractableComponent* Obj);
 
-	TScriptInterface<IInteractableInterface> GetSelected();
+	UInteractableComponent* GetSelected();
 };

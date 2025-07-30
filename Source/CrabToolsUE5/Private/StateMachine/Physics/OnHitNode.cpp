@@ -10,7 +10,7 @@ void UOnHitNode::Enter_Inner_Implementation()
 {
 	if (auto Comp = Cast<UPrimitiveComponent>(this->GetActorOwner()->FindComponentByClass(this->Component.Get())))
 	{
-		Comp->OnComponentHit.AddDynamic(this, &UOnHitNode::OnHitDetected_Internal);
+		Comp->OnComponentHit.AddUniqueDynamic(this, &UOnHitNode::OnHitDetected_Internal);
 	}
 }
 

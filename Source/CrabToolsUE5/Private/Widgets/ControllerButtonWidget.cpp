@@ -11,11 +11,10 @@ UControllerButtonWidget::UControllerButtonWidget(const FObjectInitializer& Objec
 
 void UControllerButtonWidget::OnWidgetRebuilt()
 {
+	this->AddChild(this->KeybindText);
 	Super::OnWidgetRebuilt();
 
-	auto System = UInputDeviceSubsystem::Get();
-
-	this->AddChild(this->KeybindText);
+	auto System = UInputDeviceSubsystem::Get();	
 
 	if (!this->IsDesignTime())
 	{
@@ -34,17 +33,38 @@ void UControllerButtonWidget::OnHardwareDeviceChanged(const FPlatformUserId User
 
 void UControllerButtonWidget::UpdateInputType(EHardwareDevicePrimaryType Type)
 {
+	this->CurrentType = Type;
+
 	switch (Type)
 	{
 	case EHardwareDevicePrimaryType::KeyboardAndMouse:
 		this->SetStyle(this->KBM_Default);
-		//this->KeybindText->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 		break;
 	case EHardwareDevicePrimaryType::Gamepad:
 		this->SetStyle(this->Gamepad_Default);
-		//this->KeybindText->SetVisibility(ESlateVisibility::Hidden);
 		break;
 	default: break;
+	}
+
+	this->UpdateInputText();
+}
+
+void UControllerButtonWidget::UpdateInputText()
+{
+	if (IsValid(this->KeybindText))
+	{
+		switch (this->CurrentType)
+		{
+		case EHardwareDevicePrimaryType::KeyboardAndMouse:
+			this->SetStyle(this->KBM_Default);
+			this->KeybindText->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+			break;
+		case EHardwareDevicePrimaryType::Gamepad:
+			this->SetStyle(this->Gamepad_Default);
+			this->KeybindText->SetVisibility(ESlateVisibility::Hidden);
+			break;
+		default: break;
+		}
 	}
 }
 
@@ -57,5 +77,12 @@ void UControllerButtonWidget::PostEditChangeProperty(FPropertyChangedEvent& Even
 	{
 		this->UpdateInputType(this->CurrentType);
 	}
+}
+
+void UControllerButtonWidget::PostLinkerChange()
+{
+	Super::PostLinkerChange();
+
+	this->UpdateInputType(this->CurrentType);
 }
 #endif

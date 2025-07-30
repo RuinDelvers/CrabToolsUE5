@@ -14,7 +14,7 @@ private:
 
 	/* Current hardware input type, also the default input type when the widget is built. */
 	UPROPERTY(EditAnywhere, Category = "Hardware", meta = (AllowPrivateAccess, ShowInnerProperties))
-	EHardwareDevicePrimaryType CurrentType = EHardwareDevicePrimaryType::Unspecified;
+	EHardwareDevicePrimaryType CurrentType = EHardwareDevicePrimaryType::KeyboardAndMouse;
 
 	/* Textblock used to display KBM keybind (if any), hidden for gamepade inputs. */
 	UPROPERTY(BlueprintReadOnly, Category="Keybinds", meta = (AllowPrivateAccess))
@@ -39,6 +39,7 @@ protected:
 
 	#if WITH_EDITOR
 		virtual void PostEditChangeProperty(FPropertyChangedEvent& Event) override;
+		virtual void PostLinkerChange() override;
 	#endif
 
 private:
@@ -47,4 +48,6 @@ private:
 	void OnHardwareDeviceChanged(const FPlatformUserId UserID, const FInputDeviceId DeviceID);
 
 	void UpdateInputType(EHardwareDevicePrimaryType Type);
+	void UpdateInputText();
+
 };
