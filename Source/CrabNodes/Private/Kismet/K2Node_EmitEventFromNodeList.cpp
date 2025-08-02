@@ -187,6 +187,25 @@ void UK2Node_EmitEventFromNodeList::NotifyPinConnectionListChanged(UEdGraphPin* 
 	RefreshEventOptions();
 }
 
+bool UK2Node_EmitEventFromNodeList::IsActionFilteredOut(FBlueprintActionFilter const& Filter)
+{
+	bool bAllBlueprintSupported = true;
+
+	for (const auto& BP : Filter.Context.Blueprints)
+	{
+		if (BP)
+		{
+			if (BP->ParentClass && !BP->ParentClass->IsChildOf<UStateNode>())
+			{
+				bAllBlueprintSupported = false;
+				break;
+			}
+		}
+	}
+
+	return !bAllBlueprintSupported;
+}
+
 void UK2Node_EmitEventFromNodeList::RefreshEventOptions()
 {
 	// When the Interface pin gets a new value assigned, we need to update the Slate UI so that SGraphNodeCallParameterCollectionFunction will update the ParameterName drop down

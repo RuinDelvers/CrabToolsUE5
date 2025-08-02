@@ -57,6 +57,17 @@ void UHierarchyNode::EventWithData_Inner_Implementation(FName EName, UObject* Da
 	}
 }
 
+bool UHierarchyNode::DoesReferenceMachine_Inner_Implementation(FName MachineName) const
+{
+	switch (this->StateMachineSource)
+	{
+		case EHierarchyInputType::DEFINED:
+			return this->Slot.MachineName == MachineName;
+		default:
+			return false;
+	}
+}
+
 void UHierarchyNode::PostTransition_Inner_Implementation()
 {
 	this->PerformExit();

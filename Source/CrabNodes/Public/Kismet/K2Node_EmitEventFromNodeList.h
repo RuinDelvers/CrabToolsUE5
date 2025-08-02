@@ -43,6 +43,7 @@ public:
 	virtual bool IsConnectionDisallowed(const UEdGraphPin* MyPin, const UEdGraphPin* OtherPin, FString& OutReason) const override;
 	virtual void EarlyValidation(class FCompilerResultsLog& MessageLog) const override;
 	virtual void NotifyPinConnectionListChanged(UEdGraphPin* Pin) override;
+	virtual bool IsActionFilteredOut(FBlueprintActionFilter const& Filter) override;
 	//~ End UK2Node Interface
 
 	UEdGraphPin* GetSelfPin() const;

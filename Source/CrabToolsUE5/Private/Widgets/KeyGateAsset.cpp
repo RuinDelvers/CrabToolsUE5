@@ -2,5 +2,10 @@
 
 bool UKeyGateAsset::Route(const UKeyGateAsset* Gate, const FKey& Input)
 {
-	return Gate->ValidKeys.Contains(Input);
+	if (IsValid(Gate))
+	{
+		return Gate->ValidKeys.Contains(Input);
+	}
+
+	return false;
 }

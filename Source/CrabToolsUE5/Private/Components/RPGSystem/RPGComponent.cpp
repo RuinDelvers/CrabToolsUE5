@@ -75,34 +75,6 @@ void URPGComponent::TurnEnd()
 	}
 }
 
-void URPGComponent::PostLoad()
-{
-	Super::PostLoad();
-	this->Validate();
-}
-
-void URPGComponent::Validate()
-{
-	/*
-	for (TFieldIterator<FObjectProperty> FIT(this->GetClass(), EFieldIteratorFlags::IncludeSuper); FIT; ++FIT)
-	{		
-		FObjectProperty* f = *FIT;
-
-		if (f->PropertyClass->IsChildOf<URPGProperty>())
-		{
-			TObjectPtr<UObject> Value;
-			f->GetValue_InContainer(this, &Value);
-
-			if (!IsValid(Value))
-			{
-				//auto NonNullValue = NewObject<URPGProperty>(this->GetOutermostObject(), f->PropertyClass);
-				//f->SetValue_InContainer(this, NonNullValue);
-			}
-		}
-	}
-	*/
-}
-
 TArray<FString> URPGComponent::GetRPGPropertyNames(TSubclassOf<URPGProperty> Props) const
 {
 	TArray<FString> Names;
@@ -186,20 +158,6 @@ URPGProperty* URPGComponent::FindRPGPropertyByName(FName Ref) const
 
 	return nullptr;
 }
-
-#if WITH_EDITOR
-void URPGComponent::PostEditChangeProperty(struct FPropertyChangedEvent& e)
-{
-	Super::PostEditChangeProperty(e);
-	this->Validate();
-}
-
-void URPGComponent::PostLinkerChange()
-{
-	Super::PostLinkerChange();
-	this->Validate();
-}
-#endif
 
 #pragma region Statuses
 

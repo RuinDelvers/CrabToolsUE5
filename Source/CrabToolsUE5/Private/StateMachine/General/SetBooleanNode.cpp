@@ -7,11 +7,6 @@ USetBooleanNode::USetBooleanNode()
 	this->Property->Params = FSMPropertySearch::Property(FBoolProperty::StaticClass());
 }
 
-void USetBooleanNode::Initialize_Inner_Implementation()
-{
-	Super::Initialize_Inner_Implementation();
-}
-
 void USetBooleanNode::Exit_Inner_Implementation()
 {
 	auto& Prop = this->Property->GetProperty();

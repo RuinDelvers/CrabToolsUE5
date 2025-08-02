@@ -267,42 +267,90 @@ bool UEdStateGraph::HasEvent(FName EName) const
 
 		if (!bHasEvent)
 		{
-			bHasEvent = this->DoesEmitterHaveEvent(EName) || this->GetBlueprintOwner()->HasEvent(EName);
-
-			if (!this->IsMainGraph())
-			{
-				UStateMachineBlueprintGeneratedClass* BPGC = nullptr;
-
-				if (this->GraphType == EStateMachineGraphType::EXTENDED_GRAPH)
-				{
-					BPGC = Cast<UStateMachineBlueprintGeneratedClass>(this->MachineArchetypeOverride.Value->GetClass());
-				}
-				else if (this->GraphType == EStateMachineGraphType::SUB_GRAPH)
-				{
-					BPGC = Cast<UStateMachineBlueprintGeneratedClass>(this->MachineArchetype->GetClass());
-				}
-
-				if (BPGC != nullptr)
-				{
-					bHasEvent = BPGC->HasEvent(EName, this->GetGraphName());
-
-					if (!bHasEvent)
-					{
-						for (auto& IFace : BPGC->Interfaces)
-						{
-							if (IFace->HasEvent(EName))
-							{
-								bHasEvent = true;
-								break;
-							}
-						}
-					}
-				}
-			}
+			bHasEvent = this->DoesEmitterHaveEvent(EName)
+				|| this->GetBlueprintOwner()->HasEvent(EName)
+				|| this->DoesArchetypeHaveEvent(EName)
+				|| this->DoesHierarchyProvideEvent(EName);
 		}
 	}	
 
 	return bHasEvent;;
+}
+
+bool UEdStateGraph::DoesHierarchyProvideEvent(FName EName) const
+{
+	if (this->IsMainGraph())
+	{
+		return false;
+	}
+
+	auto BP = this->GetBlueprintOwner();
+
+	for (const auto& State : BP->GetMainGraph()->GetStates())
+	{
+		if (State->DoesReferenceMachine(this->GetGraphName()))
+		{			
+			if (State->HasLocalEvent(EName))
+			{
+				return true;
+			}
+		}
+	}
+
+	for (const auto& SubMachine : BP->GetSubgraphs())
+	{
+		for (const auto& State : SubMachine->GetStates())
+		{
+			if (State->DoesReferenceMachine(this->GetGraphName()))
+			{
+				if (State->HasLocalEvent(EName))
+				{
+					return true;
+				}
+			}
+		}
+	}
+
+	return false;
+}
+
+bool UEdStateGraph::DoesArchetypeHaveEvent(FName EName) const
+{
+	if (this->IsMainGraph())
+	{
+		return false;
+	}
+
+	bool bHasEvent = false;
+	UStateMachineBlueprintGeneratedClass* BPGC = nullptr;
+
+	if (this->GraphType == EStateMachineGraphType::EXTENDED_GRAPH)
+	{
+		BPGC = Cast<UStateMachineBlueprintGeneratedClass>(this->MachineArchetypeOverride.Value->GetClass());
+	}
+	else if (this->GraphType == EStateMachineGraphType::SUB_GRAPH)
+	{
+		BPGC = Cast<UStateMachineBlueprintGeneratedClass>(this->MachineArchetype->GetClass());
+	}
+
+	if (BPGC != nullptr)
+	{
+		bHasEvent = BPGC->HasEvent(EName, this->GetGraphName());
+
+		if (!bHasEvent)
+		{
+			for (auto& IFace : BPGC->Interfaces)
+			{
+				if (IFace->HasEvent(EName))
+				{
+					bHasEvent = true;
+					break;
+				}
+			}
+		}
+	}
+
+	return bHasEvent;
 }
 
 bool UEdStateGraph::DoesEmitterHaveEvent(FName EName) const
@@ -713,6 +761,29 @@ TArray<FString> UEdStateGraph::GetEventOptions() const
 				for (const auto& Ev : Class->GetEventSet(this->GetGraphName()))
 				{
 					Names.Add(Ev.ToString());
+				}
+			}
+		}
+	}
+
+	// If we're not the main graph, we could be referenced by a hiearchy state that emits events.
+	if (!this->IsMainGraph())
+	{
+		for (const auto& State : this->GetBlueprintOwner()->GetMainGraph()->GetStates())
+		{
+			if (State->DoesReferenceMachine(this->GetGraphName()))
+			{
+				State->GetLocalEventOptions(Names);
+			}
+		}
+
+		for (const auto& Subgraph : this->GetBlueprintOwner()->GetSubgraphs())
+		{
+			for (const auto& State : Subgraph->GetStates())
+			{
+				if (State->DoesReferenceMachine(this->GetGraphName()))
+				{
+					State->GetLocalEventOptions(Names);
 				}
 			}
 		}

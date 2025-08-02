@@ -200,12 +200,4 @@ protected:
 
 	virtual void BeginPlay() override;
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-
-	#if WITH_EDITOR
-		virtual void PostEditChangeProperty(struct FPropertyChangedEvent& e) override;
-		virtual void PostLinkerChange() override;
-	#endif
-
-	virtual void PostLoad() override;
-	void Validate();
 };

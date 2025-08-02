@@ -1,12 +1,11 @@
 #pragma once
 
-#include "CoreMinimal.h"
 #include "StateMachine.h"
 #include "CompositeNode.generated.h"
 
 /* This is used to handle piped data for the nested structure. */
 UCLASS()
-class CRABTOOLSUE5_API UCompositeNodeData : public UStateNode, public IStateMachineDataInterface
+class CRABTOOLSUE5_API UCompositeNodeData : public UObject, public IStateMachineDataInterface
 {
 	GENERATED_BODY()
 
@@ -26,7 +25,7 @@ public:
 /**
  * State Machine Node that is a composite of other nodes.
  */
-UCLASS(Blueprintable, CollapseCategories, Category = "StateMachine")
+UCLASS(Blueprintable, CollapseCategories, HideDropdown, Category = "StateMachine")
 class CRABTOOLSUE5_API UCompositeNode : public UStateNode
 {
 	GENERATED_BODY()

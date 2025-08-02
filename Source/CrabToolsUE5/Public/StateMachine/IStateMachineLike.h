@@ -10,7 +10,6 @@ struct FSMPropertyReference
 {
     FProperty* PropertyRef = nullptr;
     TObjectPtr<UObject> StateMachine;
-    TObjectPtr<UObject> State;
 
     template <class T> T* GetValue() const
     {

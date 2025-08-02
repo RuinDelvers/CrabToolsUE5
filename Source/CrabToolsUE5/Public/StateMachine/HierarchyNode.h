@@ -96,6 +96,8 @@ public:
 	virtual void PostTransition_Inner_Implementation() override;
 	virtual bool RequiresTick_Implementation() const override;
 
+	virtual bool DoesReferenceMachine_Inner_Implementation(FName MachineName) const override;
+
 	#if WITH_EDITOR
 		virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 		virtual void GetEmittedEvents(TSet<FName>& Events) const;

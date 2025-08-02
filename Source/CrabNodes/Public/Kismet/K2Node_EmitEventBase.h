@@ -25,4 +25,5 @@ public:
 	UK2Node_EmitEventBase(const FObjectInitializer& ObjectInitializer);
 
 	virtual TSet<FName> GetEventSet() const { return {}; }
+	virtual bool IsActionFilteredOut(FBlueprintActionFilter const& Filter) override;
 };

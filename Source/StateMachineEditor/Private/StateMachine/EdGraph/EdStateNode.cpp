@@ -168,6 +168,21 @@ TArray<FString> UEdStateNode::GetEventOptions() const
 	return EventArray;
 }
 
+void UEdStateNode::GetLocalEventOptions(TArray<FString>& Names) const
+{
+	TSet<FName> PerNodeNames;
+
+	for (const auto& Node : this->Nodes)
+	{
+		Node->GetEmittedEvents(PerNodeNames);
+	}
+
+	for (const auto& Name : PerNodeNames)
+	{
+		Names.Add(Name.ToString());
+	}
+}
+
 void UEdStateNode::Delete()
 {
 	this->Modify();
@@ -191,6 +206,12 @@ bool UEdStateNode::HasEvent(FName EName)
 {
 	this->UpdateEmittedEvents();
 	return this->NodeEmittedEvents.Contains(EName) || this->GetStateGraph()->HasEvent(EName);
+}
+
+bool UEdStateNode::HasLocalEvent(FName EName)
+{
+	this->UpdateEmittedEvents();
+	return this->NodeEmittedEvents.Contains(EName);
 }
 
 void UEdStateNode::UpdateEmittedEvents()
@@ -229,6 +250,19 @@ bool UEdStateNode::IsActive() const
 	{
 		return false;
 	}
+}
+
+bool UEdStateNode::DoesReferenceMachine(FName MachineName) const
+{
+	for (const auto& Node : this->Nodes)
+	{
+		if (Node->DoesReferenceMachine(MachineName))
+		{
+			return true;
+		}
+	}
+
+	return false;
 }
 
 bool UEdStateNode::UpdateStateArchetypeOverride()

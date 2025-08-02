@@ -15,20 +15,19 @@ class CRABTOOLSUE5_API USetBooleanNode : public UStateNode
 
 private:
 
-	UPROPERTY(VisibleAnywhere, Category = "AI", meta = (ShowInnerProperties))
+	UPROPERTY(VisibleAnywhere, Category = "Properties", meta = (ShowInnerProperties))
 	TObjectPtr<UStateMachineProperty> Property;
 
-	UPROPERTY(EditAnywhere, Category = "StateMachine|Properties", meta = (AllowPrivateAccess))
+	UPROPERTY(EditAnywhere, Category = "Properties", meta = (AllowPrivateAccess))
 	bool bOnEnter = true;
 
-	UPROPERTY(EditAnywhere, Category = "StateMachine|Properties", meta = (AllowPrivateAccess))
+	UPROPERTY(EditAnywhere, Category = "Properties", meta = (AllowPrivateAccess))
 	bool bOnExit = false;
 
 public:
 
 	USetBooleanNode();
 
-	virtual void Initialize_Inner_Implementation() override;
 	virtual void Enter_Inner_Implementation() override;
 	virtual void Exit_Inner_Implementation() override;
 };

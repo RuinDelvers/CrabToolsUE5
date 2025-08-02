@@ -60,6 +60,7 @@ public:
 	/* Returns the name displayed for graph nodes and UI purposes. */
 	virtual FName GetNodeName() const { return NAME_None; }
 	virtual bool HasEvent(FName EName) { return false; }
+	virtual bool HasLocalEvent(FName EName) { return false; }
 	virtual void RenameNode(FName Name) {};
 
 	/* Begin IStateLike Interface */

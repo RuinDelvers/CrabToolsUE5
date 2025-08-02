@@ -21,6 +21,8 @@ private:
 
 	TSharedPtr<IDetailsView> Inspector;
 
+	static bool PropertyFilterRule(const FPropertyAndParent& PropertyAndParent);
+
 public:
 
 	SLATE_BEGIN_ARGS( SMachineDetailsView ){}

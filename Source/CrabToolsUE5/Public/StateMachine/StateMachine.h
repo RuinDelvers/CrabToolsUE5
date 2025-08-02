@@ -154,7 +154,7 @@ public:
 	void Exit();
 	void ExitWithData(UObject* Data);
 
-	UFUNCTION(BlueprintCallable, Category="StateMachine")
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category="StateMachine")
 	bool IsActive() const;
 
 	UFUNCTION(BlueprintNativeEvent, Category = "StateMachine")
@@ -363,6 +363,9 @@ public:
 
 	virtual UWorld* GetWorld() const override;
 
+	UFUNCTION(BlueprintCallable, Category = "StateMachine")
+	bool DoesReferenceMachine(FName MachineName) const;
+
 protected:
 
 	UFUNCTION(BlueprintCallable, Category = "StateMachine")
@@ -370,7 +373,7 @@ protected:
 
 	/* Override this with your verification code. */
 	virtual bool Verify_Inner(FNodeVerificationContext& Context) const { return true; }
-	
+
 	/* Function called by Initialize_Internal. Override this to setup your init code. */
 	UFUNCTION(BlueprintNativeEvent, Category = "StateMachine", meta=(DisplayName="Initialize"))
 	void Initialize_Inner();
@@ -419,6 +422,10 @@ protected:
 	UFUNCTION(BlueprintNativeEvent, Category = "StateMachine", meta = (DisplayName = "OnSetActive"))
 	void SetActive_Inner(bool bNewActive);
 	virtual void SetActive_Inner_Implementation(bool bNewActive) {}
+
+	UFUNCTION(BlueprintNativeEvent, Category = "StateMachine", meta = (DisplayName = "DoesReferenceMachine"))
+	bool DoesReferenceMachine_Inner(FName MachineName) const;
+	virtual bool DoesReferenceMachine_Inner_Implementation(FName MachineName) const { return false; }
 
 	#if WITH_EDITOR
 		UFUNCTION()
@@ -736,8 +743,7 @@ private:
 };
 
 
-UCLASS(Blueprintable, EditInlineNew, DefaultToInstanced, CollapseCategories, Category = "StateMachine",
-	Within=StateNode)
+UCLASS(Blueprintable, EditInlineNew, DefaultToInstanced, CollapseCategories, Category = "StateMachine")
 class CRABTOOLSUE5_API UStateMachineProperty : public UObject
 {
 	GENERATED_BODY()

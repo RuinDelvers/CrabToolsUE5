@@ -1140,6 +1140,11 @@ void UStateNode::EventWithData_Inner_Implementation(FName EName, UObject* Data) 
 	this->Event_Inner(EName);
 }
 
+bool UStateNode::DoesReferenceMachine(FName MachineName) const
+{
+	return this->DoesReferenceMachine_Inner(MachineName);
+}
+
 void UStateNode::SetOwner(UStateMachine* Parent) {
 	this->Owner = Parent;
 }

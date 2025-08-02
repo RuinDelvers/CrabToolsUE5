@@ -263,6 +263,9 @@ private:
 
 	TSet<FName> GetAllPublicStates() const;
 
+	bool DoesArchetypeHaveEvent(FName EName) const;
+	bool DoesHierarchyProvideEvent(FName EName) const;
+
 	UFUNCTION()
 	void OnDebugStateChanged(const FStateChangedEventData& Data);
 

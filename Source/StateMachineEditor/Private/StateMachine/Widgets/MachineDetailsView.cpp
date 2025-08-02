@@ -3,6 +3,38 @@
 
 #define LOCTEXT_NAMESPACE "PSM"
 
+bool SMachineDetailsView::PropertyFilterRule(const FPropertyAndParent& PropertyAndParent)
+{
+	/*
+	auto Properties = PropertyAndParent.Property.GetMetaDataMap();
+
+	if (Properties)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Property Name: %s"), *PropertyAndParent.Property.GetName())
+		for (const auto& Pair : *Properties)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Key = %s, Value = %s"), *Pair.Key.ToString(), *Pair.Value);
+		}
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("------------------------------------"));
+	*/
+
+	if (PropertyAndParent.Property.GetBoolMetaData("BlueprintPrivate"))
+	{
+		return false;
+	}
+	if (PropertyAndParent.Property.GetOwnerClass() != nullptr && PropertyAndParent.Property.GetOwnerClass()->IsChildOf<UStateNode>())
+	{
+		if (PropertyAndParent.Property.GetFName() == "EmittedEvents")
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+
 void SMachineDetailsView::Construct(
 	const FArguments& InArgs,
 	TSharedPtr<class FEditor> InEditor) 
@@ -35,16 +67,7 @@ void SMachineDetailsView::Construct(
 
 		Inspector->SetCustomFilterLabel(LOCTEXT("ShowAllParameters", "Show All Parameters"));
 		//DetailsViewWidget->SetCustomFilterDelegate(FSimpleDelegate::CreateUObject(this, &UDetailsView::ToggleShowingOnlyAllowedProperties));
-		Inspector->SetIsPropertyVisibleDelegate(FIsPropertyVisible::CreateLambda([](const FPropertyAndParent& PropertyAndParent)
-			{
-				if (PropertyAndParent.Property.GetBoolMetaData("BlueprintPrivate"))
-				{
-					return false;
-				}
-
-				return true;
-			}));
-		//DetailsViewWidget->SetIsCustomRowVisibleDelegate(FIsCustomRowVisible::CreateUObject(this, &UDetailsView::GetIsRowVisible));
+		Inspector->SetIsPropertyVisibleDelegate(FIsPropertyVisible::CreateStatic(&SMachineDetailsView::PropertyFilterRule));
 	}
 
 	ChildSlot

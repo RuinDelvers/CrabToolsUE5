@@ -141,6 +141,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Dialogue")
 	void SendMonologue(UMonologueData* Data);
 
+	UFUNCTION(BlueprintCallable, Category = "Dialogue")
+	bool IsInDialogue() const;
+
 private:
 
 	void FinishDialogueInner();

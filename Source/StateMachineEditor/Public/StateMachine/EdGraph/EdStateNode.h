@@ -111,11 +111,16 @@ public:
 	/* Returns the name which should appear on graph nodes. */
 	virtual FName GetNodeName() const override { return this->StateName; }
 	virtual bool HasEvent(FName EName) override;
+	virtual bool HasLocalEvent(FName EName) override;
 	virtual bool Modify(bool bAlwaysMarkDirty = true) override;
 
 	/* Begin IStateLike Interface */
 	virtual TArray<FString> GetEventOptions() const override;
 	/* End IStateLike Interface */
+
+	void GetLocalEventOptions(TArray<FString>& Names) const;
+
+	bool DoesReferenceMachine(FName MachineName) const;
 
 	#if WITH_EDITOR
 		virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;

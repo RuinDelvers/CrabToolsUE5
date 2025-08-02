@@ -4,9 +4,6 @@ class FStateMachineBlueprintCompiler;
 
 class FCrabNodesModule: public ICrabNodesModule, public FGCObject
 {
-private:
-
-	//TSharedPtr<FGraphPanelNodeFactory> GraphNodeFactory;
 
 public:
 

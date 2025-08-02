@@ -37,6 +37,11 @@ void UDialogueStateComponent::FinishDialogue()
 	}
 }
 
+bool UDialogueStateComponent::IsInDialogue() const
+{
+	return this->Participants.Num() > 0;
+}
+
 void UDialogueStateComponent::FinishDialogueInner()
 {
 	this->Participants.Empty();
