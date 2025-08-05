@@ -23,6 +23,7 @@ public:
 	UBooleanTransitionCondition();
 
 	virtual bool Check() const override;
+	virtual void Initialize_Inner_Implementation() override;
 };
 
 /**
@@ -43,4 +44,5 @@ public:
 
 	UBooleanTransitionDataCondition();
 	virtual bool Check(UObject* Data) const override;
+	virtual void Initialize_Inner_Implementation() override;
 };

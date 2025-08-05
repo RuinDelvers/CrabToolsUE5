@@ -1,8 +1,8 @@
 #pragma once
 
-#include "CoreMinimal.h"
-#include "SGraphNode.h"
+
 #include "EdGraph/EdGraph.h"
+#include "StateMachine/StateMachineEnum.h"
 #include "StateMachine/EdGraph/EdStateNode.h"
 #include "StateMachine/StateMachineInterface.h"
 #include "StateMachine/IStateMachineLike.h"
@@ -236,7 +236,6 @@ public:
 	virtual TArray<FString> GetEventOptions() const override;
 	virtual TArray<FString> GetConditionOptions() const override;
 	virtual TArray<FString> GetDataConditionOptions() const override;
-	virtual TArray<FString> GetPropertiesOptions(const FSMPropertySearch& SearchParam) const override;
 	
 	TArray<FString> GetInheritableStates(EStateNodeType NodeType) const;
 	FString GetDisplayName() const;

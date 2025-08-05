@@ -3,6 +3,7 @@
 #include "UObject/ObjectMacros.h"
 #include "Engine/BlueprintGeneratedClass.h"
 #include "StateMachine/StateMachine.h"
+#include "StateMachine/StateMachineEnum.h"
 #include "StateMachineBlueprintGeneratedClass.generated.h"
 
 class UStateMachineInterface;

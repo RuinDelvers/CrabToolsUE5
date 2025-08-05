@@ -81,7 +81,6 @@ public:
 
 	// IStateMachineLike Interface
 	virtual TArray<FString> GetMachineOptions() const override;
-	virtual TArray<FString> GetPropertiesOptions(const FSMPropertySearch& SearchParam) const override;
 
 	UStateMachineBlueprintGeneratedClass* GetStateMachineGeneratedClass() const;
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "CoreMinimal.h"
+#include "Properties/GenericPropertyBinding.h"
 #include "StateMachine/AI/BaseNode.h"
 #include "Navigation/PathFollowingComponent.h"
 #include "SimpleMoveTo.generated.h"
@@ -18,7 +18,7 @@ class CRABTOOLSUE5_API UAISimpleMoveToNode : public UAIBaseNode
 private:
 
 	UPROPERTY(VisibleAnywhere, Category = "AI", meta = (ShowInnerProperties))
-	TObjectPtr<UStateMachineProperty> Property;
+	TObjectPtr<UGenericPropertyBinding> Property;
 
 	EPathFollowingResult::Type MovementResult;
 
@@ -45,8 +45,6 @@ public:
 	#endif
 
 protected:
-
-	FMoveToData* GetMovementData() const;
 
 	FORCEINLINE EPathFollowingResult::Type GetMovementResult() const { return this->MovementResult; }
 

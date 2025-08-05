@@ -42,7 +42,8 @@ void UHierarchyNode::PerformExit()
 	}
 }
 
-void UHierarchyNode::Event_Inner_Implementation(FName EName){
+void UHierarchyNode::Event_Inner_Implementation(FName EName)
+{
 	if (this->SubMachine)
 	{
 		this->SubMachine->SendEvent(EName);

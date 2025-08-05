@@ -10,8 +10,7 @@ UAIRotateToNode::UAIRotateToNode()
 	this->AddEmittedEvent(Events::AI::ARRIVE);
 	this->AddEmittedEvent(Events::AI::LOST);
 
-	this->Property = CreateDefaultSubobject<UStateMachineProperty>(TEXT("RotationTarget"));
-	this->Property->Params = FSMPropertySearch::ObjectProperty(AActor::StaticClass());
+	this->Property = CreateDefaultSubobject<UGenericPropertyBinding>(TEXT("RotationTarget"));
 }
 
 void UAIRotateToNode::Tick_Inner_Implementation(float DeltaTime)
@@ -61,7 +60,7 @@ void UAIRotateToNode::EnterWithData_Inner_Implementation(UObject* Data)
 
 void UAIRotateToNode::Enter_Inner_Implementation()
 {
-	if (auto Value = this->Property->GetProperty().GetValue<AActor>())
+	if (auto Value = this->Property->GetObject<AActor>())
 	{	
 		this->TargetActor = Value;
 

@@ -102,6 +102,30 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "StateMachine")
 	TObjectPtr<UTransitionDataCondition> DataCondition;
+
+public:
+
+	void Validate();
+	void Initialize(UStateMachine* Owner);
+};
+
+USTRUCT(BlueprintType)
+struct FTransitionDataSet
+{
+	GENERATED_BODY()
+
+public:
+
+	UPROPERTY(VisibleAnywhere, Category="Transitions")
+	TMap<FName, FTransitionData> Destinations;
+
+	void Initialize(UStateMachine* Owner);
+};
+
+struct FDestinationResult
+{
+	FName Destination = NAME_None;
+	TObjectPtr<UAbstractCondition> Condition;
 };
 
 UCLASS(Blueprintable, CollapseCategories, Category = "StateMachine")
@@ -120,7 +144,7 @@ class CRABTOOLSUE5_API UState : public UObject, public IStateLike
 
 	// Map from Event Name to StateName
 	UPROPERTY(VisibleAnywhere, DuplicateTransient, Category = "StateMachine", meta = (AllowPrivateAccess))
-	TMap<FName, FTransitionData> Transitions;
+	TMap<FName, FTransitionDataSet> Transitions;
 
 public:
 
@@ -144,9 +168,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category="StateMachine")
 	FORCEINLINE UStateNode* GetNode() const { return this->Node; }
-	FORCEINLINE const TMap<FName, FTransitionData>& GetTransitions() const { return Transitions; }
+	//FORCEINLINE const TMap<FName, FTransitionData>& GetTransitions() const { return Transitions; }
 
-	void AddTransition(FName EventName, FTransitionData Data) { this->Transitions.Add(EventName, Data); }
+	void AddTransition(FName EventName, FTransitionData Data);
 
 	void Initialize(UStateMachine* POwner);
 	void Enter();
@@ -173,14 +197,12 @@ public:
 	void ExitWithData_Inner(UObject* Data);
 	virtual void ExitWithData_Inner_Implementation(UObject* Data) { this->Exit_Inner(); }
 
-	#if WITH_EDITOR
-		TArray<FString> GetPropertiesOptions(const FSMPropertySearch& SearchParam) const override;
-	#endif
-	virtual FSMPropertyReference GetStateMachineProperty(FString& Address) const override;
+	void GetDestination(FName EName, FDestinationResult& Result);
+	void GetDataDestination(FName EName, UObject* Data, FDestinationResult& Result);
 };
 
 UCLASS(BlueprintType, Abstract, Category = "StateMachine")
-class CRABTOOLSUE5_API UTransitionCondition : public UObject
+class CRABTOOLSUE5_API UAbstractCondition : public UObject
 {
 	GENERATED_BODY()
 
@@ -190,7 +212,6 @@ class CRABTOOLSUE5_API UTransitionCondition : public UObject
 public:
 
 	void Initialize(UStateMachine* NewOwner);
-	virtual bool Check() const { return false; }
 
 	UFUNCTION(BlueprintCallable, Category = "StateMachine|Transition")
 	UObject* GetOwner() const;
@@ -198,11 +219,11 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "StateMachine|Transition")
 	AActor* GetActorOwner() const;
 
-	UFUNCTION(BlueprintNativeEvent, Category="StateMachine|Transition")
+	UFUNCTION(BlueprintNativeEvent, Category = "StateMachine|Transition")
 	void OnTransitionTaken();
-	void OnTransitionTaken_Implementation() {}
+	virtual void OnTransitionTaken_Implementation() {}
 
-	UFUNCTION(BlueprintCallable, Category="StateMachine|Transition")
+	UFUNCTION(BlueprintCallable, Category = "StateMachine|Transition")
 	UStateMachine* GetMachine() const { return this->OwnerMachine; }
 
 protected:
@@ -213,36 +234,29 @@ protected:
 };
 
 UCLASS(BlueprintType, Abstract, Category = "StateMachine")
-class CRABTOOLSUE5_API UTransitionDataCondition : public UObject
+class CRABTOOLSUE5_API UTransitionCondition : public UAbstractCondition
 {
 	GENERATED_BODY()
 
-	UPROPERTY(Transient, DuplicateTransient)
-	TObjectPtr<UStateMachine> OwnerMachine;
-
 public:
 
-	void Initialize(UStateMachine* Owner);
-	virtual bool Check(UObject* Data) const { return false; }
-
-	UFUNCTION(BlueprintCallable, Category = "StateMachine|Transition")
-	UObject* GetOwner() const;
-
-	UFUNCTION(BlueprintCallable, Category = "StateMachine|Transition")
-	AActor* GetActorOwner() const;
-
-	UFUNCTION(BlueprintNativeEvent, Category = "StateMachine|Transition")
-	void OnTransitionTaken(UObject* Data);
-	void OnTransitionTaken_Implementation(UObject* Data) {}
-
-	UFUNCTION(BlueprintCallable, Category = "StateMachine|Transition")
-	FORCEINLINE UStateMachine* GetMachine() const { return this->OwnerMachine; }
+	
+	virtual bool Check() const { return false; }
 
 protected:
 
-	UFUNCTION(BlueprintNativeEvent, Category="StateMachine|Transition")
-	void Initialize_Inner();
-	virtual void Initialize_Inner_Implementation() {}
+	
+};
+
+UCLASS(BlueprintType, Abstract, Category = "StateMachine")
+class CRABTOOLSUE5_API UTransitionDataCondition : public UAbstractCondition
+{
+	GENERATED_BODY()
+
+public:
+
+	virtual bool Check(UObject* Data) const { return false; }
+
 };
 
 /**
@@ -337,7 +351,6 @@ public:
 		virtual void GetEmittedEvents(TSet<FName>& Events) const;
 		virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 		virtual void PreEditChange(FProperty* PropertyAboutToChange) override;
-		TArray<FString> GetPropertyOptions(const FSMPropertySearch& Params) const;
 	#endif
 
 	void Event(FName EName);
@@ -693,10 +706,6 @@ public:
 
 	// IStateMachineLike interface
 	virtual TArray<FString> GetStateOptions(const UObject* Asker) const override;
-	#if WITH_EDITOR
-		virtual TArray<FString> GetPropertiesOptions(const FSMPropertySearch& SearchParam) const override;
-	#endif //WITH_EDITOR
-	virtual FSMPropertyReference GetStateMachineProperty(FString& Address) const override;
 	virtual IStateMachineLike* GetSubMachine(FString& Address) const override;
 
 	UFUNCTION(BlueprintCallable, Category="StateMachine")
@@ -735,37 +744,13 @@ protected:
 
 private:
 
+	#if STATEMACHINE_DEBUG_DATA
+		void NotInitializedError();
+	#endif // STATEMACHINE_DEBUG_DATA
+
 	void InitFromArchetype();
 	void PushStateToStack(FName EName);
 	void UpdateState(FName Name);
 	void UpdateStateWithData(FName Name, UObject* Data, bool UsePiped=true);
 	void InitSubMachines();
-};
-
-
-UCLASS(Blueprintable, EditInlineNew, DefaultToInstanced, CollapseCategories, Category = "StateMachine")
-class CRABTOOLSUE5_API UStateMachineProperty : public UObject
-{
-	GENERATED_BODY()
-
-private:
-
-	bool bDidInit = false;
-	FSMPropertyReference Ref;
-
-public:
-
-	/* The name of the property to get FMovetoData from. */
-	UPROPERTY(EditAnywhere, Category = "StateMachine", meta = (GetOptions = "DoPropertySearch"))
-	FName Name;	
-	FSMPropertySearch Params;
-
-	UStateNode* GetNode() const;
-
-	const FSMPropertyReference& GetProperty();
-
-	UFUNCTION()
-	TArray<FString> DoPropertySearch() const;
-
-	void Verify(FNodeVerificationContext& Context);
 };

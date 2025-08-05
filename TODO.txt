@@ -1,0 +1,3 @@
+------------------------------------------ Optimization ----------------------------------------------
+- Check if direct function call of a ufunction is more optimal than binding it to a delegate. This is needed for
+  GenericPropertyBindings, which currently bind to a delegate when needing to call a function.

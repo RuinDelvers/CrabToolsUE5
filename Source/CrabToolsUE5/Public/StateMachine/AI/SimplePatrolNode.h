@@ -1,6 +1,6 @@
 #pragma once
 
-#include "CoreMinimal.h"
+#include "Properties/GenericPropertyBinding.h"
 #include "StateMachine/AI/BaseNode.h"
 #include "Actors/Paths/PatrolPath.h"
 #include "Navigation/PathFollowingComponent.h"
@@ -23,7 +23,7 @@ class CRABTOOLSUE5_API UAISimplePatrolNode : public UAIBaseNode
 	int RecurseGuard = 0;
 
 	UPROPERTY(VisibleAnywhere, Category="AI", meta=(ShowInnerProperties))
-	TObjectPtr<UStateMachineProperty> Property;
+	TObjectPtr<UGenericPropertyBinding> Property;
 
 	/* Previous states which would not reset the patrolling state. */
 	UPROPERTY(EditDefaultsOnly, Category = "StateMachine|AI", meta=(ShowOnlyInnerProperties))
@@ -51,6 +51,4 @@ private:
 	void MoveToNext();
 	void BindCallback();
 	void UnbindCallback();
-
-	FPatrolPathState* GetState() const;
 };

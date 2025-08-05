@@ -298,40 +298,6 @@ void UStateMachineBlueprint::AppendInterfaceEvents(TArray<FString>& Names) const
 	}
 }
 
-TArray<FString> UStateMachineBlueprint::GetPropertiesOptions(const FSMPropertySearch& SearchParam) const
-{
-	TArray<FString> Names;
-
-	for (TFieldIterator<FProperty> FIT(this->GeneratedClass, EFieldIteratorFlags::IncludeSuper); FIT; ++FIT)
-	{
-		FProperty* f = *FIT;
-
-		if (SearchParam.Matches(f))
-		{
-			Names.Add(f->GetName());
-		}
-	}
-
-	for (auto& SubMachine : this->SubGraphs)
-	{
-		for (TFieldIterator<FProperty> FIT(SubMachine->GetMachineArchetype()->GetClass(), EFieldIteratorFlags::IncludeSuper); FIT; ++FIT)
-		{
-			FProperty* f = *FIT;
-
-			if (SearchParam.Matches(f))
-			{
-				FString Formatted = FString::Printf(
-					TEXT("%s/%s"), 
-					*SubMachine->GetGraphName().ToString(), 
-					*f->GetName());
-				Names.Add(Formatted);
-			}
-		}
-	}
-
-	return Names;
-}
-
 void UStateMachineBlueprint::DeleteGraph(UEdStateGraph* Graph)
 {
 	if (this->SubGraphs.Contains(Graph))

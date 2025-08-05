@@ -8,6 +8,7 @@
 #include "StateMachine/StateMachineBlueprint.h"
 #include "StateMachine/StateMachineBlueprintGeneratedClass.h"
 #include "KismetCompiler.h"
+#include "StateMachine/Logging.h"
 #include "Engine/DataTable.h"
 #include "Utils/PropertyManagement.h"
 #include "StateMachine/DataStructures.h"
@@ -989,35 +990,6 @@ TArray<FString> UEdStateGraph::GetMachineOptions() const
 	}
 
 	Names.Sort([&](const FString& A, const FString& B) { return A < B; });
-
-	return Names;
-}
-
-TArray<FString> UEdStateGraph::GetPropertiesOptions(const FSMPropertySearch& SearchParam) const
-{
-	TArray<FString> Names = this->GetBlueprintOwner()->GetPropertiesOptions(SearchParam);
-
-	if (!this->IsMainGraph())
-	{
-		TArray<FString> NewNames;
-
-		for (auto& Name : Names)
-		{
-			NewNames.Add("../" + Name);
-		}
-
-		for (TFieldIterator<FProperty> FIT(this->MachineArchetype->GetClass(), EFieldIteratorFlags::IncludeSuper); FIT; ++FIT)
-		{
-			FProperty* f = *FIT;
-
-			if (SearchParam.Matches(f))
-			{
-				NewNames.Add(f->GetName());
-			}
-		}
-
-		Names = NewNames;
-	}
 
 	return Names;
 }

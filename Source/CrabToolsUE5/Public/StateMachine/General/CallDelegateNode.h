@@ -1,6 +1,6 @@
 #pragma once
 
-#include "CoreMinimal.h"
+#include "Properties/GenericPropertyBinding.h"
 #include "StateMachine/StateMachine.h"
 #include "CallDelegateNode.generated.h"
 
@@ -16,10 +16,10 @@ class CRABTOOLSUE5_API UCallDelegateNode : public UStateNode
 private:
 
 	UPROPERTY(VisibleAnywhere, Category = "AI", meta = (ShowInnerProperties))
-	TObjectPtr<UStateMachineProperty> EnterProperty;
+	TObjectPtr<UGenericPropertyBinding> EnterProperty;
 
 	UPROPERTY(VisibleAnywhere, Category = "AI", meta = (ShowInnerProperties))
-	TObjectPtr<UStateMachineProperty> ExitProperty;
+	TObjectPtr<UGenericPropertyBinding> ExitProperty;
 
 public:
 

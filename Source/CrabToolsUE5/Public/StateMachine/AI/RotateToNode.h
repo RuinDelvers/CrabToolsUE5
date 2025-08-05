@@ -1,6 +1,6 @@
 #pragma once
 
-#include "CoreMinimal.h"
+#include "Properties/GenericPropertyBinding.h"
 #include "StateMachine/AI/BaseNode.h"
 #include "RotateToNode.generated.h"
 
@@ -16,7 +16,7 @@ class CRABTOOLSUE5_API UAIRotateToNode : public UAIBaseNode
 private:
 
 	UPROPERTY(VisibleAnywhere, Category = "AI", meta = (ShowInnerProperties))
-	TObjectPtr<UStateMachineProperty> Property;
+	TObjectPtr<UGenericPropertyBinding> Property;
 	TWeakObjectPtr<AActor> TargetActor;
 
 

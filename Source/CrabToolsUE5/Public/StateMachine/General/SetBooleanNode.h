@@ -1,6 +1,6 @@
 #pragma once
 
-#include "CoreMinimal.h"
+#include "Properties/GenericPropertyBinding.h"
 #include "StateMachine/StateMachine.h"
 #include "SetBooleanNode.generated.h"
 
@@ -16,7 +16,7 @@ class CRABTOOLSUE5_API USetBooleanNode : public UStateNode
 private:
 
 	UPROPERTY(VisibleAnywhere, Category = "Properties", meta = (ShowInnerProperties))
-	TObjectPtr<UStateMachineProperty> Property;
+	TObjectPtr<UGenericPropertyBinding> Property;
 
 	UPROPERTY(EditAnywhere, Category = "Properties", meta = (AllowPrivateAccess))
 	bool bOnEnter = true;
@@ -28,6 +28,7 @@ public:
 
 	USetBooleanNode();
 
+	virtual void Initialize_Inner_Implementation() override;
 	virtual void Enter_Inner_Implementation() override;
 	virtual void Exit_Inner_Implementation() override;
 };

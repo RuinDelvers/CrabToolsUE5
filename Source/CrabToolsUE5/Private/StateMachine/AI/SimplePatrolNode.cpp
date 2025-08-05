@@ -13,13 +13,14 @@ UAISimplePatrolNode::UAISimplePatrolNode()
 	this->AddEmittedEvent(Events::AI::ARRIVE);
 	this->AddEmittedEvent(Events::AI::LOST);
 
-	this->Property = CreateDefaultSubobject<UStateMachineProperty>(TEXT("PatrolPathProperty"));
-	this->Property->Params = FSMPropertySearch::StructProperty(FPatrolPathState::StaticStruct());
+	this->Property = CreateDefaultSubobject<UGenericPropertyBinding>(TEXT("PatrolPathProperty"));
 }
 
 void UAISimplePatrolNode::Initialize_Inner_Implementation()
 {
 	Super::Initialize_Inner_Implementation();
+
+	this->Property->Initialize();
 
 	check(this->GetAIController());
 }
@@ -38,7 +39,10 @@ void UAISimplePatrolNode::PostTransition_Inner_Implementation()
 
 	if (bDoReset)
 	{
-		this->GetState()->Reset();
+		bool bFound = false;
+		auto& State = this->Property->GetStruct<FPatrolPathState>(bFound);
+
+		if (bFound) { State.Reset(); }
 	}
 
 	this->BindCallback();	
@@ -54,7 +58,9 @@ void UAISimplePatrolNode::Exit_Inner_Implementation()
 
 void UAISimplePatrolNode::OnMoveCompleted(FAIRequestID RequestID, EPathFollowingResult::Type Result)
 {
-	this->GetState()->Step();
+	bool bFound = false;
+	auto& State = this->Property->GetStruct<FPatrolPathState>(bFound);
+	if (bFound) { State.Step(); }
 
 	switch (Result)
 	{
@@ -77,16 +83,17 @@ void UAISimplePatrolNode::OnMoveCompleted(FAIRequestID RequestID, EPathFollowing
 
 void UAISimplePatrolNode::MoveToNext()
 {
-	auto State = this->GetState();
+	bool bFound = false;
+	auto& State = this->Property->GetStruct<FPatrolPathState>(bFound);
 
-	if (!State) { return; }
+	if (!bFound) { return; }
 
 	auto Ctrl = this->GetAIController();
-	FVector Goal = State->Point();
+	FVector Goal = State.Point();
 
 	this->RecurseGuard += 1;
 
-	if (this->RecurseGuard > State->Points())
+	if (this->RecurseGuard > State.Points())
 	{
 		// If we've recursed too many times, then remove the call back.
 		this->GetAIController()->ReceiveMoveCompleted.RemoveAll(this);
@@ -95,15 +102,6 @@ void UAISimplePatrolNode::MoveToNext()
 	Ctrl->MoveToLocation(Goal);
 
 	this->RecurseGuard = 0;
-}
-
-FPatrolPathState* UAISimplePatrolNode::GetState() const
-{
-	auto State = this->Property->GetProperty().GetValue<FPatrolPathState>();
-
-	check(State);
-
-	return State;
 }
 
 void UAISimplePatrolNode::BindCallback()

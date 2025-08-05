@@ -1,5 +1,47 @@
 #include "Properties/GenericPropertyBinding.h"
 
+#define LOCTEXT_NAMESPACE "GenericPropertyBinding"
+
+void UGenericPropertyBinding::Initialize()
+{
+	#if WITH_EDITOR
+		this->bWasInitialized = true;
+	#endif
+
+	if (this->PropertyName.IsNone())
+	{
+		return;
+	}
+	else
+	{
+		this->SetCachedProperty();
+
+		if (this->Child)
+		{
+			this->Child->Initialize();
+		}
+
+		if (auto Parent = Cast<UGenericPropertyBinding>(this->GetOuter()))
+		{
+			this->bParentCachesValue = Parent->bCacheData;
+		}
+		else
+		{
+			this->bParentCachesValue = true;
+		}
+	}
+}
+
+bool UGenericPropertyBinding::IsContainerType() const
+{
+	switch (this->PropertyType)
+	{
+		case EGenericPropertyType::OBJECT_TYPE: return true;
+		case EGenericPropertyType::STRUCT_TYPE: return true;
+		default: return false;
+	}
+}
+
 UClass* UGenericPropertyBinding::GetResultClass() const
 {
 	UClass* BaseClass = nullptr;
@@ -12,9 +54,9 @@ UClass* UGenericPropertyBinding::GetResultClass() const
 	{
 		BaseClass = Parent->GetResultClass();
 	}
-	else if (this->RootObject)
+	else if (this->RootObjectType)
 	{
-		BaseClass = this->RootObject;
+		BaseClass = this->RootObjectType;
 	}
 	else
 	{
@@ -53,9 +95,9 @@ UClass* UGenericPropertyBinding::GetSearchClass() const
 	{
 		return Parent->GetResultClass();
 	}
-	else if (this->RootObject)
+	else if (this->RootObjectType)
 	{
-		return this->RootObject;
+		return this->RootObjectType;
 	}
 	else
 	{
@@ -68,6 +110,16 @@ bool UGenericPropertyBinding::IsObjectProperty() const
 	if (auto Prop = this->GetSearchClass()->FindPropertyByName(this->PropertyName))
 	{
 		return Prop->IsA<FObjectProperty>();
+	}
+
+	return false;
+}
+
+bool UGenericPropertyBinding::IsStructProperty() const
+{
+	if (auto Prop = this->GetSearchClass()->FindPropertyByName(this->PropertyName))
+	{
+		return Prop->IsA<FStructProperty>();
 	}
 
 	return false;
@@ -99,6 +151,16 @@ bool UGenericPropertyBinding::IsFunctionReturnObjectProperty() const
 	return false;
 }
 
+bool UGenericPropertyBinding::IsDelegateProperty() const
+{
+	if (auto Prop = this->GetSearchClass()->FindPropertyByName(this->PropertyName))
+	{
+		return Prop->IsA<FMulticastDelegateProperty>();
+	}
+
+	return false;
+}
+
 void UGenericPropertyBinding::ClearCache()
 {
 	this->bCachedValues = false;
@@ -109,61 +171,162 @@ void UGenericPropertyBinding::ClearCache()
 	}
 }
 
-void UGenericPropertyBinding::SetCachedProperty() const
+UObject* UGenericPropertyBinding::GetRootObject() const
 {
-	if (this->CachedProperty == nullptr)
+	if (auto Parent = Cast<UGenericPropertyBinding>(this->GetOuter()))
 	{
-		this->CachedProperty = this->GetSearchClass()->FindPropertyByName(this->PropertyName);
+		return Parent->GetRootObject();
+	}
+	else
+	{
+		return this->GetOuter();
+	}
+}
+
+UObject* UGenericPropertyBinding::GetSourceObject() const
+{
+	if (this->RootObjectType)
+	{
+		if (this->RootObject && this->RootObject->IsA(this->RootObjectType))
+		{
+			return this->RootObject;
+		}
+		else
+		{
+			return this->GetOuter();
+		}		
+	}
+	else
+	{
+		return this->GetOuter();
+	}
+}
+
+void UGenericPropertyBinding::SetSource(UObject* NewSource)
+{
+	if (this->RootObjectType && NewSource && NewSource->IsA(this->RootObjectType))
+	{
+		this->RootObject = NewSource;
+	}
+}
+
+void UGenericPropertyBinding::SetCachedProperty()
+{
+	if (!this->bIsFunctionType)
+	{
+		auto Prop = this->GetSearchClass()->FindPropertyByName(this->PropertyName);
+
+		if (Prop->IsA<FObjectProperty>())
+		{
+			this->CachedProperty = CastFieldChecked<FObjectProperty>(Prop);
+		}
+		else if (Prop->IsA<FBoolProperty>())
+		{
+			this->CachedProperty = CastFieldChecked<FBoolProperty>(Prop);
+		}
+		else if (Prop->IsA<FMulticastInlineDelegateProperty>())
+		{
+			this->CachedProperty = CastFieldChecked<FMulticastInlineDelegateProperty>(Prop);
+		}
 	}
 }
 
 UObject* UGenericPropertyBinding::GetObject() const
 {
-	return this->GetObject_Local(this->GetOuter());
+	#if WITH_EDITOR
+		if (!this->bWasInitialized)
+		{
+			this->NotInitializedError();
+			return nullptr;
+		}
+	#endif
+	return (UObject*) this->GetContainer_Local(this->GetSourceObject(), true);
 }
 
-UObject* UGenericPropertyBinding::GetObject_Local(UObject* SourceObject, bool bRecurse) const
+void UGenericPropertyBinding::SetObject(UObject* Value)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Source Object = %s"), *SourceObject->GetName());
+	#if WITH_EDITOR
+		if (!this->bWasInitialized)
+		{
+			this->NotInitializedError();
+			return;
+		}
+	#endif
+	this->SetObject_Local(this->GetSourceObject(), Value);
+}
+
+void* UGenericPropertyBinding::GetContainer_Local(void* SourceObject, bool bRecurse) const
+{
+	if (!SourceObject)
+	{
+		this->NullSourceError();
+		return nullptr;
+	}
 
 	if (this->bCachedValues)
 	{
+		void* CachedValue = nullptr;
+
+		switch (this->PropertyType)
+		{
+			case EGenericPropertyType::STRUCT_TYPE:
+				CachedValue = this->GetCachedValue<void*>();
+				break;
+			case EGenericPropertyType::OBJECT_TYPE:
+				CachedValue = this->GetCachedValue<UObject*>();
+				break;
+			default: break;
+		}
+
 		if (this->Child && bRecurse)
 		{
 			if (this->CachedValues.Object.IsValid())
 			{
-				return this->Child->GetObject_Local(this->CachedValues.Object.Get());
+				return this->Child->GetContainer_Local(CachedValue, true);
 			}
 		}
 		else
 		{
-			if (this->CachedValues.Object.IsValid())
+			if (CachedValue)
 			{
-				return this->CachedValues.Object.Get();
+				return CachedValue;
 			}
 		}
 	}
 
-	this->SetCachedProperty();
+	void* Container = nullptr;
 
-	if (this->IsFunctionProperty() && this->IsFunctionReturnObjectProperty())
+	if (this->bIsFunctionType && this->PropertyType == EGenericPropertyType::OBJECT_TYPE)
 	{
-		this->CachedFunctionCall.BindUFunction(SourceObject, this->PropertyName);
-		return this->CachedFunctionCall.Execute();
+		Container = this->BindAndCall<UObject*>(SourceObject);
+
+		UObject* Casted = reinterpret_cast<UObject*>(Container);		
+		this->SetCachedValue<UObject*>(Casted);
+		return Casted;
 	}
-	else if (auto ObjProp = CastField<FObjectProperty>(this->CachedProperty))
+	else if (this->PropertyType == EGenericPropertyType::STRUCT_TYPE)
 	{
-		TObjectPtr<UObject> Output = *ObjProp->ContainerPtrToValuePtr<UObject*>(SourceObject);
-
-		if (this->bCacheData)
-		{
-			this->CachedValues.Object = Output;
-			this->bCachedValues = true;
-		}
+		Container = this->GetProperty<FStructProperty>()->ContainerPtrToValuePtr<void>(SourceObject);
+		this->SetCachedValue<void*>(Container);
 
 		if (this->Child && bRecurse)
 		{
-			this->Child->GetObject_Local(Output);
+			return this->Child->GetContainer_Local(Container, true);
+		}
+		else
+		{
+			return Container;
+		}
+	}
+	else
+	{
+		TObjectPtr<UObject> Output = *this->GetProperty<FObjectProperty>()->ContainerPtrToValuePtr<UObject*>(SourceObject);
+
+		this->SetCachedValue<UObject*>(Output);
+
+		if (this->Child && bRecurse)
+		{
+			return this->Child->GetContainer_Local(Output, true);
 		}
 		else
 		{
@@ -174,45 +337,102 @@ UObject* UGenericPropertyBinding::GetObject_Local(UObject* SourceObject, bool bR
 	return nullptr;
 }
 
-bool UGenericPropertyBinding::GetBool() const
-{
-	return this->GetBool_Local(this->GetOuter());
-}
-
-bool UGenericPropertyBinding::GetBool_Local(UObject* SourceObject) const
+void UGenericPropertyBinding::SetObject_Local(void* SourceObject, UObject* Value)
 {
 	if (this->Child)
 	{
-		return this->Child->GetBool_Local(this->GetObject_Local(SourceObject, false));
+		return this->Child->SetObject_Local(this->GetContainer_Local(SourceObject), Value);
 	}
 	else
 	{
-		if (this->IsFunctionProperty())
-		{
-			this->CachedBoolCall.BindUFunction(SourceObject, this->PropertyName);
-			return this->CachedBoolCall.Execute();
-		}
-		else
-		{
-			this->SetCachedProperty();
-
-			if (auto BoolProp = CastField<FBoolProperty>(this->CachedProperty))
-			{
-				UE_LOG(LogTemp, Warning, TEXT("Checking bool prop for %s"), *SourceObject->GetName())
-				bool Output = *BoolProp->ContainerPtrToValuePtr<bool>(SourceObject);
-
-				if (this->bCacheData)
-				{
-					this->CachedValues.Bool = Output;
-					this->bCachedValues = true;
-				}
-
-				return Output;
-			}
-		}
-
-		return false;
+		this->GetProperty<FObjectProperty>()->SetPropertyValue_InContainer(SourceObject, Value);
 	}
+}
+
+bool UGenericPropertyBinding::GetBool() const
+{
+	return this->GenericLocalPropGet<bool>(this->GetSourceObject());
+}
+
+void UGenericPropertyBinding::SetBool(bool Value)
+{
+	this->GenericLocalPropSet<bool>(this->GetSourceObject(), Value);
+}
+
+int UGenericPropertyBinding::GetInt() const
+{
+	return this->GenericLocalPropGet<int>(this->GetSourceObject());
+}
+
+void UGenericPropertyBinding::SetInt(int Value)
+{
+	this->GenericLocalPropSet<int>(this->GetSourceObject(), Value);
+}
+
+float UGenericPropertyBinding::GetFloat() const
+{
+	return this->GenericLocalPropGet<float>(this->GetSourceObject());
+}
+
+void UGenericPropertyBinding::SetFloat(float Value)
+{
+	this->GenericLocalPropSet<float>(this->GetSourceObject(), Value);
+}
+
+double UGenericPropertyBinding::GetDouble() const
+{
+	return this->GenericLocalPropGet<double>(this->GetSourceObject());
+}
+
+void UGenericPropertyBinding::SetDouble(double Value)
+{
+	this->GenericLocalPropSet<double>(this->GetSourceObject(), Value);
+}
+
+void* UGenericPropertyBinding::GetStruct(bool& bFound) const
+{
+	void* Container = this->GetContainer_Local(this->GetSourceObject());
+	
+	bFound = Container != nullptr;
+	return Container;
+}
+
+void UGenericPropertyBinding::CallFunction()
+{
+	this->CallFunction_Local(this->GetSourceObject());
+}
+
+void UGenericPropertyBinding::CallFunction_Local(void* SourceObject)
+{
+	if (this->PropertyType == EGenericPropertyType::DELEGATE_TYPE)
+	{
+		auto& Delegate = CastChecked<FMulticastInlineDelegateProperty>(this->CachedProperty)
+			->GetPropertyValue(SourceObject);
+		Delegate.ProcessMulticastDelegate<UObject>(nullptr);
+	}
+	else
+	{
+		this->CallFunction_Local(this->GetContainer_Local(SourceObject));
+	}
+}
+
+FString UGenericPropertyBinding::GetPropertyPath() const
+{
+	FString Base;
+
+	if (auto Parent = Cast<UGenericPropertyBinding>(this->GetOuter()))
+	{
+		Base = Parent->GetPropertyPath();
+	}
+	else
+	{
+		Base = this->GetOuter()->GetName();
+	}
+
+	Base.Append("/");
+	Base.Append(this->PropertyName.ToString());
+
+	return Base;
 }
 
 #if WITH_EDITOR
@@ -220,47 +440,86 @@ void UGenericPropertyBinding::PostEditChangeProperty(FPropertyChangedEvent& Even
 {
 	Super::PostEditChangeProperty(Event);
 
+	this->ValidateData();
+}
+
+void UGenericPropertyBinding::PostLoad()
+{
+	Super::PostLoad();
+}
+
+void UGenericPropertyBinding::ValidateData()
+{
+	auto Parent = Cast<UGenericPropertyBinding>(this->GetOuter());
+	this->bIsFunctionType = this->IsFunctionProperty();
+
 	if (this->IsObjectProperty() || this->IsFunctionReturnObjectProperty())
 	{
 		this->PropertyType = EGenericPropertyType::OBJECT_TYPE;
+	}
+	else if (this->IsStructProperty())
+	{
+		this->PropertyType = EGenericPropertyType::STRUCT_TYPE;
+	}
+	else if (this->IsDelegateProperty())
+	{
+		this->PropertyType = EGenericPropertyType::DELEGATE_TYPE;
 	}
 	else
 	{
 		this->PropertyType = EGenericPropertyType::UNKNOWN;
 	}
 
-	this->bCanHaveChild = this->IsObjectProperty()
-		|| (this->IsFunctionProperty() && this->IsFunctionReturnObjectProperty());
+	this->bIsRoot = !Parent;
+	this->bCanCacheData = !Parent || Parent->bCacheData;
 
-	this->bIsRoot = !this->GetOuter()->IsA<UGenericPropertyBinding>();
+	switch (this->PropertyType)
+	{
+		case EGenericPropertyType::OBJECT_TYPE:
+			this->bCanHaveChild = true;
+			break;
+		case EGenericPropertyType::STRUCT_TYPE:
+			this->bCanHaveChild = true;
+			this->bCacheData = this->bCanCacheData;
+			break;
+		default:
+			this->bCanHaveChild = false;
+			break;
+	}	
+
+	if (!this->bCanCacheData)
+	{
+		this->bCacheData = false;
+	}
 
 	if (!this->bCanHaveChild)
 	{
 		this->Child = nullptr;
 	}
 
-	if (this->bIsRoot)
+	if (!this->bIsRoot)
 	{
-		this->CastAs = nullptr;
+		this->RootObjectType = nullptr;
+	}
+
+	if (this->CastAs)
+	{
+		if (auto Result = this->GetResultClass())
+		{
+			if (!this->CastAs->IsChildOf(this->GetResultClass()))
+			{
+				this->CastAs = TSubclassOf<UObject>(this->GetResultClass());
+			}
+		}
 	}
 	else
 	{
-		this->RootObject = nullptr;
+		this->CastAs = TSubclassOf<UObject>(this->GetResultClass());
+	}
 
-		if (this->CastAs)
-		{
-			if (auto Result = this->GetResultClass())
-			{
-				if (!this->CastAs->IsChildOf(this->GetResultClass()))
-				{
-					this->CastAs = TSubclassOf<UObject>(this->GetResultClass());
-				}
-			}
-		}
-		else
-		{
-			this->CastAs = TSubclassOf<UObject>(this->GetResultClass());
-		}
+	if (this->Child)
+	{
+		this->Child->ValidateData();
 	}
 }
 
@@ -271,12 +530,11 @@ TArray<FString> UGenericPropertyBinding::GetPropertyOptions() const
 
 	if (auto Parent = Cast<UGenericPropertyBinding>(this->GetOuter()))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Getting parent's result class: %s"), *Parent->GetResultClass()->GetName());
 		this->IterateFields(Parent->GetResultClass(), Names);
 	}
-	else if (this->RootObject)
+	else if (this->RootObjectType)
 	{
-		this->IterateFields(this->RootObject, Names);
+		this->IterateFields(this->RootObjectType, Names);
 	}
 	else
 	{
@@ -334,7 +592,7 @@ void UGenericPropertyBinding::IterateFunctions(UClass* Class, TArray<FString>& N
 			}
 		}
 
-		if (!(bHasReturnField && bHasNoParams))
+		if (!(bHasReturnField && bHasNoParams) || P.GetReturnProperty()->IsA<FStructProperty>())
 		{
 			continue;
 		}
@@ -364,3 +622,27 @@ void UGenericPropertyBinding::PostDuplicate(bool DuplicateForPIE)
 }
 
 #endif
+
+void UGenericPropertyBinding::NotInitializedError() const
+{
+	#if WITH_EDITOR
+		FMessageLog Log("PIE");
+		auto Message = FText::FormatNamed(
+			LOCTEXT("NotInitializedFormatter", "Failed to initialize property binding: {Path}"),
+			TEXT("Path"), FText::FromString(this->GetPropertyPath()));
+		Log.Error(Message);
+	#endif
+}
+
+void UGenericPropertyBinding::NullSourceError() const
+{
+	#if WITH_EDITOR
+		FMessageLog Log("PIE");
+		auto Message = FText::FormatNamed(
+			LOCTEXT("NullSourceError", "Null source object attempted: {Path}"),
+			TEXT("Path"), FText::FromString(this->GetPropertyPath()));
+		Log.Error(Message);
+	#endif
+}
+
+#undef LOCTEXT_NAMESPACE

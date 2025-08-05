@@ -1,6 +1,6 @@
 #pragma once
 
-#include "CoreMinimal.h"
+#include "Properties/GenericPropertyBinding.h"
 #include "StateMachine/StateMachine.h"
 #include "ActorVisibility.generated.h"
 
@@ -13,7 +13,7 @@ class CRABTOOLSUE5_API UActorVisibilityNode : public UStateNode
 	GENERATED_BODY()
 
 	UPROPERTY(VisibleAnywhere, Category = "AI", meta = (ShowInnerProperties))
-	TObjectPtr<UStateMachineProperty> Property;
+	TObjectPtr<UGenericPropertyBinding> Property;
 
 	/* Whether to show or hide the actor on entering this node. */
 	UPROPERTY(EditAnywhere, Category = "StateMachine", meta = (AllowPrivateAccess))

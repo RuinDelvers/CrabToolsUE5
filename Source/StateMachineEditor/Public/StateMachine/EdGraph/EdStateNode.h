@@ -5,6 +5,7 @@
 #include "SGraphNode.h"
 #include "EdGraph/EdGraphNode.h"
 #include "SGraphPin.h"
+#include "StateMachine/StateMachineEnum.h"
 #include "StateMachine/StateMachine.h"
 #include "StateMachine/EdGraph/EdBaseNode.h"
 #include "EdStateNode.generated.h"
@@ -125,7 +126,6 @@ public:
 	#if WITH_EDITOR
 		virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 		virtual void PostLinkerChange() override;
-		virtual TArray<FString> GetPropertiesOptions(const FSMPropertySearch& SearchParam) const override;
 	#endif
 
 	virtual bool IsActive() const;

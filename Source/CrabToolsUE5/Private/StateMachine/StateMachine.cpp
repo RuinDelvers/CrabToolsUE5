@@ -1,15 +1,19 @@
 #include "StateMachine/StateMachine.h"
 
-#include "Logging/StructuredLog.h"
-#include "Algo/Reverse.h"
+//#include "Logging/StructuredLog.h"
 #include "StateMachine/StateMachineBlueprintGeneratedClass.h"
 #include "StateMachine/ArrayNode.h"
-#include "StateMachine/Utils.h"
 #include "StateMachine/Logging.h"
 #include "StateMachine/IStateMachineLike.h"
 #include "StateMachine/DataStructures.h"
 #include "StateMachine/Transitions/BaseTransitions.h"
 #include "Utils/UtilsLibrary.h"
+
+#if WITH_EDITOR
+	#include "Logging/MessageLog.h"
+#endif
+
+#define LOCTEXT_NAMESPACE "StateMachine"
 
 #pragma region StateMachine Code
 
@@ -69,7 +73,10 @@ void UStateMachine::Initialize(UObject* POwner)
 	}
 	else
 	{
-		UE_LOG(LogStateMachine, Error, TEXT("Invalid Owner passed to Initialize in %s"), *this->GetClass()->GetName());
+		FMessageLog Log("PIE");
+		Log.Error(FText::FormatNamed(
+			LOCTEXT("InvalidOwnerError", "Invalid Owner passed to Initialize in {Owner}"),
+			TEXT("Owner"), FText::FromString(this->GetClass()->GetName())));
 	}	
 }
 
@@ -153,8 +160,7 @@ void UStateMachine::UpdateState(FName Name)
 	#if STATEMACHINE_DEBUG_DATA
 		if (!this->bWasInitialized)
 		{
-			UE_LOG(LogStateMachine, Error, TEXT("State Machine %s was not initialized when calling UpdateState"),
-				*this->GetName());
+			this->NotInitializedError();
 			return;
 		}
 	#endif
@@ -222,8 +228,7 @@ void UStateMachine::UpdateStateWithData(FName Name, UObject* Data, bool UsePiped
 	#if STATEMACHINE_DEBUG_DATA
 		if (!this->bWasInitialized)
 		{
-			UE_LOG(LogStateMachine, Error, TEXT("State Machine %s was not initialized when calling UpdateStateWithData"),
-				*this->GetName());
+			this->NotInitializedError();
 			return;
 		}
 	#endif
@@ -313,8 +318,7 @@ void UStateMachine::SendEvent(FName EName)
 	#if STATEMACHINE_DEBUG_DATA
 		if (!this->bWasInitialized)
 		{
-			UE_LOG(LogStateMachine, Error, TEXT("State Machine %s was not initialized when calling SendEvent"),
-				*this->GetName());
+			this->NotInitializedError();
 			return;
 		}
 	#endif
@@ -333,18 +337,16 @@ void UStateMachine::SendEvent(FName EName)
 
 	if (CurrentState)
 	{
-		auto TID = this->GetStateID();
-
 		// First we check if there are any declarative events to handle for this state.
 		if (CurrentState->Transitions.Contains(EName))
 		{
-			auto& TData = CurrentState->Transitions[EName];
+			FDestinationResult Result;
+			CurrentState->GetDestination(EName, Result);
 
-			if (TData.Condition->Check())
-			{
-				this->UpdateState(TData.Destination);
-				TData.Condition->OnTransitionTaken();
-
+			if (!Result.Destination.IsNone())
+			{				
+				this->UpdateState(Result.Destination);
+				Result.Condition->OnTransitionTaken();
 				#if STATEMACHINE_DEBUG_DATA
 					Frame.EndState = this->CurrentStateName;
 					this->DebugData.CurrentStateTime = Frame.Time;
@@ -363,8 +365,7 @@ void UStateMachine::SendEventWithData(FName EName, UObject* Data)
 	#if STATEMACHINE_DEBUG_DATA
 		if (!this->bWasInitialized)
 		{
-			UE_LOG(LogStateMachine, Error, TEXT("State Machine %s was not initialized when calling SendEventWithData"),
-				*this->GetName());
+			this->NotInitializedError();
 			return;
 		}
 	#endif
@@ -382,17 +383,16 @@ void UStateMachine::SendEventWithData(FName EName, UObject* Data)
 
 	if (CurrentState)
 	{
-
 		// First we check if there are any declarative events to handle for this state.
 		if (CurrentState->Transitions.Contains(EName))
 		{
-			auto& TData = CurrentState->Transitions[EName];
+			FDestinationResult Result;
+			CurrentState->GetDataDestination(EName, Data, Result);
 
-			if (TData.DataCondition->Check(Data))
+			if (!Result.Destination.IsNone())
 			{
-				this->UpdateStateWithData(TData.Destination, Data);
-				TData.DataCondition->OnTransitionTaken(Data);
-
+				this->UpdateStateWithData(Result.Destination, Data);
+				Result.Condition->OnTransitionTaken();
 				#if STATEMACHINE_DEBUG_DATA
 					Frame.EndState = this->CurrentStateName;
 					this->DebugData.CurrentStateTime = Frame.Time;
@@ -453,7 +453,21 @@ void UStateMachine::PostLinkerChange()
 	Super::PostLinkerChange();
 }
 
+
+
 #endif // WITH_EDITOR
+
+#if STATEMACHINE_DEBUG_DATA
+void UStateMachine::NotInitializedError()
+{
+	FMessageLog Log("PIE");
+	Log.Error(
+		FText::FormatNamed(
+			LOCTEXT("NotInitializedError", "Failed to Initialize StateMachine before usage in {Owner}"),
+			TEXT("Owner"), FText::FromString(this->GetName())));
+}
+#endif // STATEMACHINE_DEBUG_DATA
+
 
 UState* UStateMachine::GetStateData(FName Name)
 {
@@ -665,33 +679,12 @@ UState* UStateMachine::GetCurrentState()
 			}
 		}
 
-		if (BuiltState)
+		if (!IsValid(BuiltState))
 		{
-			for (auto& tpairs : BuiltState->Transitions)
-			{
-				if (!IsValid(tpairs.Value.Condition))
-				{
-					tpairs.Value.Condition = UTrueTransitionCondition::GetStaticTransition();;
-				}
-
-				if (!IsValid(tpairs.Value.DataCondition))
-				{
-					tpairs.Value.DataCondition = UTrueTransitionDataCondition::GetStaticTransition();
-				}
-
-				tpairs.Value.Condition->Initialize(this);
-				tpairs.Value.DataCondition->Initialize(this);
-			}				
-		}
-		else
-		{
-			BuiltState = NewObject<UState>();			
+			BuiltState = NewObject<UState>();
 		}
 
-		if (IsValid(BuiltState))
-		{
-			BuiltState->Initialize(this);
-		}
+		BuiltState->Initialize(this);
 
 		this->Graph.Add(this->CurrentStateName, BuiltState);
 		return BuiltState;
@@ -748,45 +741,6 @@ IStateMachineLike* UStateMachine::GetSubMachine(FString& Address) const
 		{
 			return nullptr;
 		}
-	}
-}
-
-FSMPropertyReference UStateMachine::GetStateMachineProperty(FString& Address) const
-{
-	FString Base;
-	FString Target;
-	
-	if (Address.Split(TEXT("/"), &Base, &Target))
-	{
-		FName BaseName(Base);
-
-		if (auto SubM = this->SubMachines.Find(BaseName))
-		{
-			return SubM->Get()->GetStateMachineProperty(Address);
-		}
-		else if (Base == "..")
-		{
-			if (this->ParentMachine)
-			{
-				return this->ParentMachine->GetStateMachineProperty(Target);
-			}
-			else
-			{
-				return FSMPropertyReference();
-			}
-		}
-		else
-		{
-			return FSMPropertyReference();
-		}
-	}
-	else
-	{
-		return FSMPropertyReference
-		{
-			this->GetClass()->FindPropertyByName(FName(Address)),
-			(UObject*) this
-		};
 	}
 }
 
@@ -970,39 +924,6 @@ UWorld* UStateMachine::GetWorld() const
 	return nullptr;
 }
 
-#if WITH_EDITOR
-TArray<FString> UStateMachine::GetPropertiesOptions(const FSMPropertySearch& SearchParam) const
-{
-	TArray<FString> Names;
-
-	
-		for (TFieldIterator<FProperty> FIT(this->GetClass(), EFieldIteratorFlags::IncludeSuper); FIT; ++FIT)
-		{
-			FProperty* f = *FIT;
-
-			if (SearchParam.Matches(f))
-			{
-				Names.Add(f->GetName());
-			}
-		}
-
-		for (auto& SubMachine : this->SubMachines)
-		{
-			for (TFieldIterator<FProperty> FIT(SubMachine.Value->GetClass(), EFieldIteratorFlags::IncludeSuper); FIT; ++FIT)
-			{
-				FProperty* f = *FIT;
-
-				if (SearchParam.Matches(f))
-				{
-					FString Formatted = FString::Printf(TEXT("%s/%s"), *SubMachine.Key.ToString(), *f->GetName());
-					Names.Add(Formatted);
-				}
-			}
-		}
-
-	return Names;
-}
-#endif //WITH_EDITOR
 
 #pragma endregion
 
@@ -1013,17 +934,11 @@ UStateNode::UStateNode()
 
 }
 
-void UStateNode::Initialize(UStateMachine* POwner) {
-	if (POwner)
-	{
-		this->Owner = POwner;
-		this->InitNotifies();
-		this->Initialize_Inner();
-	}
-	else
-	{
-		UE_LOG(LogStateMachine, Error, TEXT("Given owner for %s was null"), *this->GetName());
-	}
+void UStateNode::Initialize(UStateMachine* POwner)
+{
+	this->Owner = POwner;
+	this->InitNotifies();
+	this->Initialize_Inner();
 }
 
 void UStateNode::InitNotifies()
@@ -1292,14 +1207,7 @@ bool UStateNode::Verify(FNodeVerificationContext& Context) const
 			}
 			else if (FIT->GetClass() == FObjectProperty::StaticClass())
 			{
-				TObjectPtr<UObject> Value = nullptr;
-				FObjectProperty* f = CastField<FObjectProperty>(*FIT);
-				f->GetValue_InContainer(this, &Value);
 
-				if (auto Prop = Cast<UStateMachineProperty>(Value))
-				{
-					Prop->Verify(Context);
-				}
 			}
 		}
 	}
@@ -1364,24 +1272,6 @@ void UStateNode::EmitEventSlotWithData(const FEventSlot& ESlot, UObject* Data)
 }
 
 #if WITH_EDITOR
-TArray<FString> UStateNode::GetPropertyOptions(const FSMPropertySearch& Params) const
-{
-	TArray<FString> Props;
-
-	if (auto Outer = UtilsFunctions::GetOuterAs<IStateMachineLike>(this))
-	{
-		Props.Append(Outer->GetPropertiesOptions(Params));
-	}
-
-	if (auto Outer = UtilsFunctions::GetOuterAs<IStateLike>(this))
-	{
-		Props.Append(Outer->GetPropertiesOptions(Params));
-	}
-
-	Props.Sort([&](const FString& A, const FString& B) { return A < B; });
-
-	return Props;
-}
 
 void UStateNode::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
@@ -1507,20 +1397,41 @@ void UStateNode::GetEmittedEvents(TSet<FName>& Events) const
 void UState::Append(UState* Data)
 {
 	this->AppendNode(Data->Node);
-	this->Transitions.Append(Data->Transitions);
+
+	for (const auto& Trans : Data->Transitions)
+	{
+		if (!this->Transitions.Contains(Trans.Key))
+		{
+			this->Transitions.Add(Trans.Key, Trans.Value);
+		}
+		else
+		{
+			this->Transitions[Trans.Key].Destinations.Append(Trans.Value.Destinations);
+		}
+	}
 }
 
 void UState::AppendCopy(UState* Data)
 {
 	this->AppendNodeCopy(Data->Node);
-	this->Transitions.Append(Data->Transitions);
+
+	for (const auto& Trans : Data->Transitions)
+	{
+		if (!this->Transitions.Contains(Trans.Key))
+		{
+			this->Transitions.Add(Trans.Key, Trans.Value);
+		}
+		else
+		{
+			this->Transitions[Trans.Key].Destinations.Append(Trans.Value.Destinations);
+		}
+	}
 }
 
 void UState::AppendNode(UStateNode* ANode)
 {
 	if (IsValid(ANode))
 	{
-
 		if (ANode->GetOuter() != this)
 		{
 			ANode = DuplicateObject(ANode, this);
@@ -1559,27 +1470,33 @@ void UState::AppendNodeCopy(UStateNode* ANode)
 	}
 }
 
-UObject* UTransitionCondition::GetOwner() const { return this->OwnerMachine->GetOwner(); }
-AActor*  UTransitionCondition::GetActorOwner() const { return this->OwnerMachine->GetActorOwner(); }
-UObject* UTransitionDataCondition::GetOwner() const { return this->OwnerMachine->GetOwner(); }
-AActor* UTransitionDataCondition::GetActorOwner() const { return this->OwnerMachine->GetActorOwner(); }
+UObject* UAbstractCondition::GetOwner() const { return this->OwnerMachine->GetOwner(); }
+AActor*  UAbstractCondition::GetActorOwner() const { return this->OwnerMachine->GetActorOwner(); }
 
-void UTransitionCondition::Initialize(UStateMachine* NewOwner)
+void UAbstractCondition::Initialize(UStateMachine* NewOwner)
 {
 	this->OwnerMachine = NewOwner;
 	this->Initialize_Inner();
 }
 
-void UTransitionDataCondition::Initialize(UStateMachine* NewOwner)
+void UState::AddTransition(FName EventName, FTransitionData Data)
 {
-	this->OwnerMachine = NewOwner;
-	this->Initialize_Inner();
-}
+	if (!this->Transitions.Contains(EventName))
+	{
+		this->Transitions.Add(EventName, FTransitionDataSet());
+	}
 
+	this->Transitions[EventName].Destinations.Add(Data.Destination, Data);
+}
 
 void UState::Initialize(UStateMachine* POwner)
 {
 	this->OwnerMachine = POwner;
+
+	for (auto& Dest : this->Transitions)
+	{	
+		Dest.Value.Initialize(POwner);		
+	}
 
 	if (IsValid(this->Node))
 	{
@@ -1638,35 +1555,6 @@ AActor* UState::GetActorOwner() const
 	return this->OwnerMachine->GetActorOwner();
 }
 
-FSMPropertyReference UState::GetStateMachineProperty(FString& Address) const
-{
-	return FSMPropertyReference
-	{
-		this->GetClass()->FindPropertyByName(FName(Address)),
-		(UObject*)this
-	};
-}
-
-#if WITH_EDITOR
-TArray<FString> UState::GetPropertiesOptions(const FSMPropertySearch& SearchParam) const
-{
-	TArray<FString> Names;
-
-
-	for (TFieldIterator<FProperty> FIT(this->GetClass(), EFieldIteratorFlags::IncludeSuper); FIT; ++FIT)
-	{
-		FProperty* f = *FIT;
-
-		if (SearchParam.Matches(f))
-		{
-			Names.Add(FString::Printf(TEXT("::State::%s"), *f->GetName()));
-		}
-	}
-
-	return Names;
-}
-#endif
-
 #if STATEMACHINE_DEBUG_DATA
 bool FStateMachineDebugDataFrame::DidTransition()
 {
@@ -1674,41 +1562,67 @@ bool FStateMachineDebugDataFrame::DidTransition()
 }
 #endif
 
-UStateNode* UStateMachineProperty::GetNode() const
+void UState::GetDestination(FName EName, FDestinationResult& Result)
 {
-	return UtilsFunctions::GetOuterAs<UStateNode>(this);
-}
+	Result.Destination = NAME_None;
 
-TArray<FString> UStateMachineProperty::DoPropertySearch() const
-{
-	#if WITH_EDITOR
-		return this->GetNode()->GetPropertyOptions(this->Params);
-	#else
-		return {};
-	#endif
-}
-
-const FSMPropertyReference& UStateMachineProperty::GetProperty()
-{
-	if (!this->bDidInit)
+	if (auto Destination = this->Transitions.Find(EName))
 	{
-		FString Address = this->Name.ToString();
-		this->Ref = this->Params.GetProperty<UStateNode>(this->GetNode(), Address);
-	}
-
-	return this->Ref;
-}
-
-void UStateMachineProperty::Verify(FNodeVerificationContext& Context)
-{
-	auto Props = this->DoPropertySearch();
-
-	if (!Props.Contains(this->Name))
-	{
-		//FString Msg = FString::Printf(
-		//	TEXT("Failed to find property %s in Node %s"),
-		//	*this->Name.ToString(),
-		//	*this->GetNode()->GetName());
-		//Context.Error(Msg, this);
+		for (const auto& Dest : Destination->Destinations)
+		{
+			if (Dest.Value.Condition->Check())
+			{
+				Result.Destination = Dest.Key;
+				Result.Condition = Dest.Value.Condition;
+			}
+		}
 	}
 }
+
+void UState::GetDataDestination(FName EName, UObject* Data, FDestinationResult& Result)
+{
+	Result.Destination = NAME_None;
+
+	if (auto Destination = this->Transitions.Find(EName))
+	{
+		for (const auto& Dest : Destination->Destinations)
+		{
+			if (Dest.Value.DataCondition->Check(Data))
+			{
+				Result.Destination = Dest.Value.Destination;
+				Result.Condition = Dest.Value.DataCondition;
+			}
+		}
+	}
+}
+
+void FTransitionData::Initialize(UStateMachine* Owner)
+{
+	this->Validate();
+
+	this->Condition->Initialize(Owner);
+	this->DataCondition->Initialize(Owner);
+}
+
+void FTransitionData::Validate()
+{
+	if (!this->Condition)
+	{
+		this->Condition = UTrueTransitionCondition::GetStaticTransition();
+	}
+
+	if (!this->DataCondition)
+	{
+		this->DataCondition = UTrueTransitionDataCondition::GetStaticTransition();
+	}
+}
+
+void FTransitionDataSet::Initialize(UStateMachine* Owner)
+{
+	for (auto& Dest : this->Destinations)
+	{
+		Dest.Value.Initialize(Owner);
+	}
+}
+
+#undef LOCTEXT_NAMESPACE

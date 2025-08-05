@@ -11,13 +11,14 @@ UAISimpleMoveToNode::UAISimpleMoveToNode(): MovementResult(EPathFollowingResult:
 	this->AddEmittedEvent(Events::AI::ARRIVE);
 	this->AddEmittedEvent(Events::AI::LOST);
 
-	this->Property = CreateDefaultSubobject<UStateMachineProperty>(TEXT("MoveToTarget"));
-	this->Property->Params = FSMPropertySearch::StructProperty(FMoveToData::StaticStruct());
+	this->Property = CreateDefaultSubobject<UGenericPropertyBinding>(TEXT("MoveToTarget"));
 }
 
 void UAISimpleMoveToNode::Initialize_Inner_Implementation()
 {
 	Super::Initialize_Inner_Implementation();
+
+	this->Property->Initialize();
 
 	check(this->GetAIController());
 }
@@ -49,7 +50,10 @@ void UAISimpleMoveToNode::PostTransition_Inner_Implementation()
 	}
 	else
 	{
-		if (auto Value = this->GetMovementData())
+		bool bFoundData = false;
+		auto& Value = this->Property->GetStruct<FMoveToData>(bFoundData);
+
+		if (bFoundData)
 		{
 			auto Ctrl = this->GetAIController();
 
@@ -59,13 +63,13 @@ void UAISimpleMoveToNode::PostTransition_Inner_Implementation()
 			}
 			else
 			{
-				if (Value->DestinationActor)
+				if (Value.DestinationActor)
 				{
-					Ctrl->MoveToActor(Value->DestinationActor, 0.0f);
+					Ctrl->MoveToActor(Value.DestinationActor, 0.0f);
 				}
 				else
 				{
-					Ctrl->MoveToLocation(Value->DestinationLocation, 0.0f);
+					Ctrl->MoveToLocation(Value.DestinationLocation, 0.0f);
 				}
 			}
 		}
@@ -101,11 +105,6 @@ void UAISimpleMoveToNode::SetOverrideLocation(FVector Location)
 {
 	this->OverrideLocation = Location;
 	this->bUseOverrideLocation = true;
-}
-
-FMoveToData* UAISimpleMoveToNode::GetMovementData() const
-{
-	return this->Property->GetProperty().GetValue<FMoveToData>();
 }
 
 void UAISimpleMoveToNode::StopMovement()
