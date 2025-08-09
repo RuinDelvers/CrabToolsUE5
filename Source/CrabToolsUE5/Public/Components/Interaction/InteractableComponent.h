@@ -58,6 +58,8 @@ protected:
 private:
 
 #if WITH_EDITOR
+	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+
 	UFUNCTION()
 	TArray<FString> GetDefaultOptions() const;
 
@@ -66,5 +68,6 @@ private:
 
 	UFUNCTION()
 	void ExampleInteraction(AActor* Interactor, UObject* Data) {}
+
 #endif
 };

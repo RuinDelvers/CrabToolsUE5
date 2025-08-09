@@ -522,6 +522,11 @@ private:
 	/* Whether or not a transition is happening. */
 	bool bIsTransitioning = false;
 
+	/*
+	 * Current Event that is being processed for Exit/Enter/Event calls. 
+	 */
+	FName CurrentEvent;
+
 	/* Simple cached value for retrieving start state data. Do not read from this directly. Use GetStartState. */
 	mutable FName CachedStartState;
 
@@ -605,6 +610,12 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "StateMachine")
 	void Reset();
+
+	/*
+	 * Current Event that is being processed for Exit/Enter/Event calls.
+	 */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "StateMachine")
+	FName GetCurrentEvent() const { return this->CurrentEvent; }
 
 	UFUNCTION(BlueprintCallable, Category = "StateMachine")
 	void SendEvent(FName EName);

@@ -2,7 +2,6 @@
 
 #include "Components/ActorComponent.h"
 #include "UObject/WeakObjectPtrTemplates.h"
-#include "Components/Interaction/Interactable.h"
 #include "InteractionSystem.generated.h"
 
 class UInteractableComponent;

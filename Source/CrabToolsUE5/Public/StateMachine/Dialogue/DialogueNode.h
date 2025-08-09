@@ -58,6 +58,12 @@ private:
 	void HandleDialogueStarted();
 };
 
+/*
+ * This node is designed to coordinate another acting initiating dialogie with the owner of
+ * this node. While you can technically directly attempt a handshake directly with a component,
+ * you may not always want that to be possible, and this node can be placed in subgraphs to handle
+ * it when it is possible.
+ */
 UCLASS(Blueprintable, Category = "StateMachine|Dialogue")
 class CRABTOOLSUE5_API UAttemptDialogueNode : public UStateNode
 {

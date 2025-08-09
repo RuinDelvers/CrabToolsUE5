@@ -1,6 +1,6 @@
 #pragma once
 
-#include "CoreMinimal.h"
+#include "StateMachine/StateMachineInterface.h"
 #include "StateMachine/StateMachine.h"
 #include "StateMachine/DataStructures.h"
 #include "HierarchyNode.generated.h"
@@ -23,11 +23,11 @@ struct FHierarchyEventValue
 	UPROPERTY(EditDefaultsOnly, Category = "StateMachine")
 	EHierarchyInputType EventType = EHierarchyInputType::INLINED;
 
-	UPROPERTY(EditDefaultsOnly, Category="StateMachine|Events",
+	UPROPERTY(EditDefaultsOnly, Category="Events",
 		meta=(EditCondition="EventType == EHierarchyInputType::INLINED", EditConditionHides))
 	FName InlinedEvent;
 
-	UPROPERTY(EditDefaultsOnly, Category = "StateMachine|Events",
+	UPROPERTY(EditDefaultsOnly, Category = "Events",
 		meta = (EditCondition = "EventType == EHierarchyInputType::DEFINED", EditConditionHides,
 			GetOptions="GetStateEventOptions"))
 	FName DefinedEvent;
@@ -70,6 +70,10 @@ class CRABTOOLSUE5_API UHierarchyNode : public UStateNode
 	/* Whether or not the submachine should be reset when this node is exited. */
 	UPROPERTY(EditAnywhere, Category = "StateMachine", meta = (AllowPrivateAccess = "true"))
 	bool ResetOnExit = true;
+
+	/* Whether or not to pass the event which activated this state to the submachine. */
+	UPROPERTY(EditAnywhere, Category = "StateMachine", meta = (AllowPrivateAccess = "true"))
+	bool bPropagateEnterEvent = false;
 
 	/*
 	 * The event to pass to the submachine when entering. Useful for when ResetOnEnter is false, but

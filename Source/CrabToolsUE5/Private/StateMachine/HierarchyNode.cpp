@@ -76,8 +76,10 @@ void UHierarchyNode::PostTransition_Inner_Implementation()
 
 void UHierarchyNode::Enter_Inner_Implementation()
 {
-	if (this->SubMachine) {
+	if (this->SubMachine)
+	{
 		this->SubMachine->SetActive(true);
+
 		if (this->ResetOnEnter)
 		{
 			this->SubMachine->Reset();
@@ -85,6 +87,11 @@ void UHierarchyNode::Enter_Inner_Implementation()
 		else
 		{
 			this->SubMachine->SendEvent(this->EnterEventName);
+		}
+
+		if (this->bPropagateEnterEvent)
+		{
+			this->SubMachine->SendEvent(this->GetMachine()->GetCurrentEvent());
 		}
 	}
 }

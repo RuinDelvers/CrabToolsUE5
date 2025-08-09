@@ -210,6 +210,7 @@ void UStateMachine::UpdateState(FName Name)
 			this->OnStateChanged.Broadcast(StateChangedData);
 
 			this->bIsTransitioning = false;
+			this->CurrentEvent = NAME_None;
 
 			if (CurrentState)
 			{
@@ -275,7 +276,9 @@ void UStateMachine::UpdateStateWithData(FName Name, UObject* Data, bool UsePiped
 
 		this->StateChanged(StateChangedData);
 		this->OnStateChanged.Broadcast(StateChangedData);
+
 		this->bIsTransitioning = false;
+		this->CurrentEvent = NAME_None;
 
 		if (CurrentState)
 		{
@@ -325,6 +328,8 @@ void UStateMachine::SendEvent(FName EName)
 
 	if (this->bIsTransitioning) { return; }
 
+	this->CurrentEvent = EName;
+
 	#if STATEMACHINE_DEBUG_DATA
 		FStateMachineDebugDataFrame Frame;
 
@@ -351,13 +356,15 @@ void UStateMachine::SendEvent(FName EName)
 					Frame.EndState = this->CurrentStateName;
 					this->DebugData.CurrentStateTime = Frame.Time;
 				#endif
-
+				
 				return;
 			}
 		}
 		
 		if (CurrentState->Node) CurrentState->Node->Event(EName);
 	}
+
+	this->CurrentEvent = NAME_None;
 }
 
 void UStateMachine::SendEventWithData(FName EName, UObject* Data)
@@ -369,7 +376,10 @@ void UStateMachine::SendEventWithData(FName EName, UObject* Data)
 			return;
 		}
 	#endif
+
 	if (this->bIsTransitioning) { return; }
+
+	this->CurrentEvent = EName;
 
 	#if STATEMACHINE_DEBUG_DATA
 		FStateMachineDebugDataFrame Frame;
@@ -404,6 +414,8 @@ void UStateMachine::SendEventWithData(FName EName, UObject* Data)
 
 		if (CurrentState->Node) CurrentState->Node->EventWithData(EName, Data);
 	}
+
+	this->CurrentEvent = NAME_None;
 }
 
 void UStateMachine::UpdateTickRequirements(bool NeedsTick)

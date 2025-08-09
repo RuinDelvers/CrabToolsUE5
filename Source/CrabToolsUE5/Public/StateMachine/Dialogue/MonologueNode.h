@@ -7,7 +7,7 @@ class CRABTOOLSUE5_API UMonologueNode : public UStateNode
 	GENERATED_BODY()
 
 	/* The map of choices text to the next state. */
-	UPROPERTY(VisibleAnywhere, Category = "DialogueNode", meta = (AllowPrivateAccess = "true", ShowInnerProperties))
+	UPROPERTY(VisibleAnywhere, Category = "DialogueNode", meta = (ShowInnerProperties))
 	TObjectPtr<class UMonologueData> Data;
 
 	UPROPERTY()
@@ -20,7 +20,6 @@ public:
 protected:
 
 	#if WITH_EDITOR
-		//virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 		virtual void GetEmittedEvents(TSet<FName>& Events) const override;
 	#endif
 

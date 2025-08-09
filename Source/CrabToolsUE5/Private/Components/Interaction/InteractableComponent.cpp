@@ -7,13 +7,25 @@ void UInteractableComponent::BeginPlay()
 
 	for (const auto& Names : this->Interactions)
 	{
-		FInteraction Callback;
-		FScriptDelegate Single;
+		if (this->GetOwner()->FindFunction(Names))
+		{
+			FInteraction Callback;
+			FScriptDelegate Single;
 
-		Single.BindUFunction(this->GetOwner(), Names);
-		Callback.Add(Single);
-		
-		this->InteractionCallbacks.Add(Names, Callback);
+			Single.BindUFunction(this->GetOwner(), Names);
+			Callback.Add(Single);
+
+			this->InteractionCallbacks.Add(Names, Callback);
+		}
+		else
+		{
+			FMessageLog Log("PIE");
+			Log.Error(
+				FText::FormatNamed(
+					NSLOCTEXT("InteractableComponent", "MissingFunctionError", "Function {FnName} does not exist on actor {Owner}"),
+					TEXT("FnName"), FText::FromName(Names),
+					TEXT("Owner"), FText::FromString(this->GetOwner()->GetName())));
+		}
 	}
 
 	this->GetOwner()->OnActorBeginOverlap.AddDynamic(this, &UInteractableComponent::OnBeginActorOverlap);
@@ -66,6 +78,17 @@ void UInteractableComponent::OnEndActorOverlap(AActor* OverlappedActor, AActor* 
 }
 
 #if WITH_EDITOR
+
+void UInteractableComponent::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
+{
+	Super::PostEditChangeProperty(PropertyChangedEvent);
+
+	if (!this->Interactions.Contains(this->DefaultInteraction))
+	{
+		this->DefaultInteraction = NAME_None;
+	}
+}
+
 TArray<FString> UInteractableComponent::GetDefaultOptions() const
 {
 	TArray<FString> Names;
@@ -95,9 +118,9 @@ TArray<FString> UInteractableComponent::GetInteractionOptions() const
 
 			bool SignCompat = f->IsSignatureCompatibleWith(FnSign);
 			bool IsPublic = !f->HasAnyFunctionFlags(EFunctionFlags::FUNC_Private | EFunctionFlags::FUNC_Protected);
-			bool Category = f->GetMetaData("Category").StartsWith("Interaction") || f->GetName().StartsWith("Interaction_");
+			//bool Category = f->GetMetaData("Category").StartsWith("Interaction") || f->GetName().StartsWith("Interaction_");
 
-			if (SignCompat && IsPublic && Category)
+			if (SignCompat && IsPublic)
 			{
 				OwnerInteractions.Add(f->GetName());
 			}
@@ -106,4 +129,6 @@ TArray<FString> UInteractableComponent::GetInteractionOptions() const
 
 	return OwnerInteractions;
 }
+
+
 #endif

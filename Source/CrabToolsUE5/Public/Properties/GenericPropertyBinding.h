@@ -223,10 +223,6 @@ private:
 				return Helpers::DefaultValue<Return>;
 			}
 		#endif
-		if (this->bCachedValues)
-		{
-			return this->GetCachedValue<Return>();
-		}
 
 		if (this->IsContainerType())
 		{
@@ -244,6 +240,11 @@ private:
 			}
 			else
 			{
+				if (this->bCachedValues)
+				{
+					return this->GetCachedValue<Return>();
+				}
+
 				Return Output = *this->GetProperty<MappedType<Return>>()->ContainerPtrToValuePtr<Return>(SourceObject);
 				
 				this->SetCachedValue<Return>(Output);
