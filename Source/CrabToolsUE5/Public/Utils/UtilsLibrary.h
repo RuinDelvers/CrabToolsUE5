@@ -58,7 +58,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Utility", meta = (ExpandEnumAsExecs = "Result", DeterminesOutputType = "SClass"))
 	static UObject* GetOwnerAs(UActorComponent* Component, TSubclassOf<AActor> SClass, ESearchResult& Result);
 
-	UFUNCTION(BlueprintCallable, Category = "Utility", meta = (ExpandEnumAsExecs = "Result", DeterminesOutputType = "SClass"))
+	UFUNCTION(BlueprintCallable, Category = "Utility", meta = (ExpandEnumAsExecs = "Result", DeterminesOutputType = "SClass", DefaultToSelf="Obj"))
 	static UObject* GetOuterAs(UObject* Obj, TSubclassOf<UObject> SClass, ESearchResult& Result);
 
 	UFUNCTION(BlueprintCallable, Category = "UtilityStructures", 

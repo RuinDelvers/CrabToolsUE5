@@ -31,6 +31,7 @@ public class CrabToolsUE5 : ModuleRules
 				"InputCore",
 				"GameplayTags",
 				"AIModule",
+				"DeveloperSettings",
 				// ... add other public dependencies that you statically link with here ...
 			});
 			
