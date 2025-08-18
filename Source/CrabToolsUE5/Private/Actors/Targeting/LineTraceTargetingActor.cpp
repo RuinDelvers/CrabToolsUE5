@@ -32,12 +32,18 @@ void ALineTraceTargetingActor::Tick(float DeltaTime)
 
 	if (FoundTarget)
 	{
-		auto CheckActor = Result.GetActor();		
+		auto CheckActor = Result.GetActor();
+		FTargetingData InData;
 
-		this->UpdateTraces(CheckActor, Result.ImpactPoint);
+		InData.TargetActor = CheckActor;
+		InData.TargetLocation = Result.ImpactPoint;
+		InData.TargetNormal = Result.ImpactNormal;
+
+		this->UpdateTraces(InData);
 	}
 	else
 	{
-		this->UpdateTraces(nullptr, Base);
+		FTargetingData InData;
+		this->UpdateTraces(InData);
 	}
 }

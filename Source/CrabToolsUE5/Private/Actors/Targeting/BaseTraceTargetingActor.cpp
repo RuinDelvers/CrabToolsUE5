@@ -15,51 +15,41 @@ void ABaseTraceTargetingActor::Tick(float DeltaTime)
 
 void ABaseTraceTargetingActor::InvalidateTargetData()
 {
-	this->TracedActor = nullptr;
-	this->TracedLocation = this->GetActorLocation();
+	this->TracedTarget = FTargetingData();
 }
 
 void ABaseTraceTargetingActor::PushTarget_Implementation()
 {
-	if (IsValid(this->TracedActor.Get()))
+	if (IsValid(this->TracedTarget.TargetActor))
 	{
-		this->AddedActors.Add(this->TracedActor.Get());
-		this->AddedPoints.Add(this->TracedLocation);
+		this->PushTargetData(this->TracedTarget);
 	}
 }
 
-void ABaseTraceTargetingActor::UpdateTraces(AActor* CheckedActor, FVector Location)
+void ABaseTraceTargetingActor::UpdateTraces(const FTargetingData& InData)
 {
-	this->TracedActor = CheckedActor;
-	this->TracedLocation = Location;
+	this->TracedTarget = InData;
 
 	FText Reason;
 	bool IsValid = ITargetingControllerInterface::Execute_Validate(this, Reason);
 
 	if (!IsValid)
 	{
-		this->TracedActor = nullptr;
-		this->TracedLocation = FVector::Zero();
+		this->InvalidateTargetData();
 	}
 
 	this->OnUpdateTraces();
 	this->OnValidateTargeting.Broadcast(IsValid, Reason);
 }
 
-void ABaseTraceTargetingActor::PopTarget_Implementation()
-{
-	this->AddedActors.Pop();
-	this->AddedPoints.Pop();
-}
-
 bool ABaseTraceTargetingActor::IsTooFar() const
 {
-	return (this->TracedLocation - this->GetActorLocation()).Length() > this->Range;
+	return (this->TracedTarget.TargetLocation - this->GetActorLocation()).Length() > this->Range;
 }
 
 bool ABaseTraceTargetingActor::IsValidTarget_Implementation() const
 {
-	return IsValid(this->TracedActor);
+	return IsValid(this->TracedTarget.TargetActor);
 }
 
 bool ABaseTraceTargetingActor::IsValidPoint_Implementation() const

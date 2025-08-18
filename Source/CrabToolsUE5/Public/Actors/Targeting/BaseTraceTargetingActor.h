@@ -31,16 +31,8 @@ protected:
 		meta = (AllowPrivateAccess))
 	bool bIgnoreSelf = true;
 
-	TArray<AActor*> AddedActors;
-	TArray<FVector> AddedPoints;
-
-	/* The actor traced for targeting. */
 	UPROPERTY(BlueprintreadOnly, Category = "Targeting|Trace")
-	TObjectPtr<AActor> TracedActor;
-
-	/* The impact point that was traced by this targeting actor. */
-	UPROPERTY(BlueprintreadOnly, Category = "Targeting|Trace")
-	FVector TracedLocation;
+	FTargetingData TracedTarget;
 
 	/* The point received via the GetEndPoint interface call. */
 	UPROPERTY(BlueprintreadOnly, Category = "Targeting|Trace")
@@ -56,16 +48,16 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category="Targeting|Trace", meta=(HideSelfPin))
-	FVector GetEndPoint() const { return this->TracedLocation; }
+	FVector GetEndPoint() const { return this->TracedTarget.TargetLocation; }
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Targeting|Trace", meta = (HideSelfPin))
-	AActor* GetEndPointActor() const { return this->TracedActor.Get(); }
+	AActor* GetEndPointActor() const { return this->TracedTarget.TargetActor; }
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, meta=(HideSelfPin))
-	int GetTargetCount() const { return this->AddedActors.Num(); }
+	int GetTargetCount() const { return this->Data.Num(); }
 
 	UFUNCTION(BlueprintCallable, Category = "Targeting|Trace")
-	void UpdateTraces(AActor* CheckedActor, FVector Location);
+	void UpdateTraces(const FTargetingData& Data);
 
 	UFUNCTION(BlueprintNativeEvent, Category = "Targeting|Trace")
 	void OnUpdateTraces();
@@ -74,18 +66,11 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Targeting|Trace")
 	bool IsTooFar() const;
 
-	//UFUNCTION(BlueprintNativeEvent, Category = "Targeting|Trace")
-	//void OnInvalidTarget();
-	//virtual void OnInvalidTarget_Implementation() {}
-
 	UFUNCTION(BlueprintNativeEvent, Category = "Targeting|Trace")
 	void IgnoreActors(TArray<AActor*>& IgnoredActors);
 	virtual void IgnoreActors_Implementation(TArray<AActor*>& IgnoredActors);
 
 	virtual void PushTarget_Implementation() override;
-	virtual void PopTarget_Implementation() override;
-	virtual void GetTargets_Implementation(TArray<AActor*>& Actors) const { Actors.Append(this->AddedActors); };
-	virtual void GetTargetPoints_Implementation(TArray<FVector>& Points) const override { Points.Append(this->AddedPoints); }
 	virtual bool Validate_Implementation(FText& Reason) const override;
 
 	UFUNCTION(BlueprintNativeEvent, Category="Target|Trace")

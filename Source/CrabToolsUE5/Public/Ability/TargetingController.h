@@ -12,6 +12,21 @@ class UTargetingControllerInterface : public UInterface
     GENERATED_BODY()
 };
 
+USTRUCT(BlueprintType)
+struct FTargetingData
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadOnly, Category="Targeting")
+	TObjectPtr<AActor> TargetActor;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Targeting")
+	FVector TargetLocation = FVector::ZeroVector;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Targeting")
+	FVector TargetNormal = FVector::UpVector;
+};
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FConfirmTargetsMulti, TScriptInterface<ITargetingControllerInterface>, Targeter);
 DECLARE_DYNAMIC_DELEGATE_OneParam(FConfirmTargetsSingle, TScriptInterface<ITargetingControllerInterface>, Targeter);
 
@@ -82,12 +97,8 @@ public:
 	virtual void AddDisabledListener_Implementation(const FTargetingUpdated& Callback) {}
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Targeting")
-	void GetTargets(TArray<AActor*>& Actors) const;
-	virtual void GetTargets_Implementation(TArray<AActor*>& Actors) const {};
-
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Targeting")
-	void GetTargetPoints(TArray<FVector>& Points) const;
-	virtual void GetTargetPoints_Implementation(TArray<FVector>& Points) const {};
+	void GetTargetData(TArray<FTargetingData>& OutData) const;
+	virtual void GetTargetData_Implementation(TArray<FTargetingData>& OutData) const { }
 
 	/* Called by implementing targeters to validate the state for confirmation or pushing. */
 	UFUNCTION(BlueprintNativeEvent, Category = "Targeting")

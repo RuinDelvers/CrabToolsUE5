@@ -8,5 +8,10 @@ void APassThroughTargetingActor::Tick(float DeltaTime)
 	auto Target = ITargeterInterface::Execute_GetTracedActor(this->GetUsingActorNative());
 	auto EndPoint = ITargeterInterface::Execute_GetEndPoint(this->GetUsingActorNative());
 
-	this->UpdateTraces(Target, EndPoint);
+	FTargetingData InData;
+
+	InData.TargetActor = Target;
+	InData.TargetLocation = EndPoint;
+
+	this->UpdateTraces(InData);
 }

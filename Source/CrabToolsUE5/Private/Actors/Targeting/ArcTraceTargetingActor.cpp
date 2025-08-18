@@ -73,7 +73,12 @@ void AArcTraceTargetingActor::Tick(float DeltaTime)
 		{
 			auto CheckActor = Result.GetActor();
 
-			this->UpdateTraces(CheckActor, Result.ImpactPoint);
+			FTargetingData InData;
+			InData.TargetActor = CheckActor;
+			InData.TargetLocation = Result.ImpactPoint;
+			InData.TargetNormal = Result.ImpactNormal;
+
+			this->UpdateTraces(InData);
 
 			bFoundTarget = true;
 
@@ -83,13 +88,14 @@ void AArcTraceTargetingActor::Tick(float DeltaTime)
 
 	if (!bFoundTarget)
 	{
-		this->UpdateTraces(nullptr, Base);
+		FTargetingData InData;
+		this->UpdateTraces(InData);
 	}
 }
 
 bool AArcTraceTargetingActor::IsTooHigh() const
 {
-	return this->TracedLocation.Z - this->GetActorLocation().Z > this->MaxHeight;
+	return this->TracedTarget.TargetLocation.Z - this->GetActorLocation().Z > this->MaxHeight;
 }
 
 void AArcTraceTargetingActor::OnUpdateTraces_Implementation()

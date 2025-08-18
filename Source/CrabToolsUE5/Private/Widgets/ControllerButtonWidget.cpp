@@ -12,6 +12,7 @@ UControllerButtonWidget::UControllerButtonWidget(const FObjectInitializer& Objec
 void UControllerButtonWidget::OnWidgetRebuilt()
 {
 	this->AddChild(this->KeybindText);
+	this->UpdateInputType(this->CurrentType);
 	Super::OnWidgetRebuilt();
 
 	auto System = UInputDeviceSubsystem::Get();	
@@ -73,10 +74,7 @@ void UControllerButtonWidget::PostEditChangeProperty(FPropertyChangedEvent& Even
 {
 	Super::PostEditChangeProperty(Event);
 
-	if (Event.GetPropertyName() == GET_MEMBER_NAME_CHECKED(UControllerButtonWidget, CurrentType))
-	{
-		this->UpdateInputType(this->CurrentType);
-	}
+	this->UpdateInputType(this->CurrentType);
 }
 
 void UControllerButtonWidget::PostLinkerChange()

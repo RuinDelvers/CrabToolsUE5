@@ -48,3 +48,18 @@ void ABaseTargetingActor::Confirm_Implementation()
 	TScriptInterface<ITargetingControllerInterface> Targeter(this);
 	this->OnConfirmTargets.Broadcast(Targeter);
 }
+
+void ABaseTargetingActor::GetTargetData_Implementation(TArray<FTargetingData>& OutData) const
+{
+	OutData.Append(this->Data);
+}
+
+void ABaseTargetingActor::PushTargetData(const FTargetingData& InData)
+{
+	this->Data.Add(InData);
+}
+
+void ABaseTargetingActor::PopTarget_Implementation()
+{
+	this->Data.Pop();
+}
