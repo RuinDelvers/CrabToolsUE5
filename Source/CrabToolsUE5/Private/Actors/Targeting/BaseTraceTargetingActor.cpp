@@ -22,7 +22,7 @@ void ABaseTraceTargetingActor::PushTarget_Implementation()
 {
 	if (IsValid(this->TracedTarget.TargetActor))
 	{
-		this->PushTargetData(this->TracedTarget);
+		ITargetingControllerInterface::Execute_AddTarget(this, this->TracedTarget);
 	}
 }
 

@@ -17,13 +17,13 @@ struct FTargetingData
 {
 	GENERATED_BODY()
 
-	UPROPERTY(BlueprintReadOnly, Category="Targeting")
+	UPROPERTY(BlueprintReadWrite, Category="Targeting")
 	TObjectPtr<AActor> TargetActor;
 
-	UPROPERTY(BlueprintReadOnly, Category = "Targeting")
+	UPROPERTY(BlueprintReadWrite, Category = "Targeting")
 	FVector TargetLocation = FVector::ZeroVector;
 
-	UPROPERTY(BlueprintReadOnly, Category = "Targeting")
+	UPROPERTY(BlueprintReadWrite, Category = "Targeting")
 	FVector TargetNormal = FVector::UpVector;
 };
 
@@ -52,8 +52,8 @@ public:
 
 	/* Manually add a target to this controller. */
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Targeting")
-	void AddTarget(AActor* Target);
-	virtual void AddTarget_Implementation(AActor* Target) {}
+	void AddTarget(const FTargetingData& TargetData);
+	virtual void AddTarget_Implementation(const FTargetingData& TargetData) {}
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Targeting")
 	void SetEnabled(bool bNewEnabled);
@@ -75,6 +75,11 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Targeting")
 	void RemoveTarget(int Index);
 	virtual void RemoveTarget_Implementation(int Index) {}
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Targeting")
+	int GetTargetCount() const;
+	virtual int GetTargetCount_Implementation() const { return 0; }
+
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Targeting")
 	void Confirm();

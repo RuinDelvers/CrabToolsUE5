@@ -53,9 +53,6 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Targeting|Trace", meta = (HideSelfPin))
 	AActor* GetEndPointActor() const { return this->TracedTarget.TargetActor; }
 
-	UFUNCTION(BlueprintCallable, BlueprintPure, meta=(HideSelfPin))
-	int GetTargetCount() const { return this->Data.Num(); }
-
 	UFUNCTION(BlueprintCallable, Category = "Targeting|Trace")
 	void UpdateTraces(const FTargetingData& Data);
 

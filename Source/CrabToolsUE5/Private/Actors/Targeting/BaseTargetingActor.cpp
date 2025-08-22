@@ -27,6 +27,13 @@ void ABaseTargetingActor::AddDestroyedListener_Implementation(const FTargetingUp
 	this->OnDestroyed.Add(Callback);
 }
 
+
+void ABaseTargetingActor::AddTarget_Implementation(const FTargetingData& TargetData)
+{
+	this->Data.Add(TargetData);
+	this->PerformTargetCountCheck();
+}
+
 void ABaseTargetingActor::AddDisabledListener_Implementation(const FTargetingUpdated& Callback)
 {
 	this->OnEnabledUpdated.Add(Callback);
@@ -54,12 +61,18 @@ void ABaseTargetingActor::GetTargetData_Implementation(TArray<FTargetingData>& O
 	OutData.Append(this->Data);
 }
 
-void ABaseTargetingActor::PushTargetData(const FTargetingData& InData)
-{
-	this->Data.Add(InData);
-}
-
 void ABaseTargetingActor::PopTarget_Implementation()
 {
 	this->Data.Pop();
+}
+
+void ABaseTargetingActor::PerformTargetCountCheck()
+{
+	if (this->MaxTargetCount > 0)
+	{
+		if (this->Data.Num() >= this->MaxTargetCount)
+		{
+			ITargetingControllerInterface::Execute_Confirm(this);
+		}
+	}
 }

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Ability/TargetingController.h"
 #include "BaseTargetingActor.generated.h"
@@ -23,6 +22,9 @@ public:
 
 	FConfirmTargetsMulti OnConfirmTargets;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Targeting", meta=(ExposeOnSpawn=true))
+	int MaxTargetCount = 0;
+
 	TArray<FTargetingData> Data;
 
 	bool bEnabled = true;
@@ -43,16 +45,19 @@ public:
 	virtual void AddDisabledListener_Implementation(const FTargetingUpdated& Callback) override;
 	virtual void GetTargetData_Implementation(TArray<FTargetingData>& OutData) const override;
 	virtual void PopTarget_Implementation() override;
+	virtual void AddTarget_Implementation(const FTargetingData& TargetData) override;
+	virtual int GetTargetCount_Implementation() const override { return this->Data.Num(); }
 
 	virtual void SetEnabled_Implementation(bool bNewEnabled) override;
 	virtual bool GetEnabled_Implementation() const override { return this->bEnabled; }
 	/* END ITargetControllerInterface functions */
 
-	UFUNCTION(BlueprintCallable, Category="Targeting")
-	void PushTargetData(const FTargetingData& InData);
-
 protected:
 
 	/* Shortcut without needing to use the interface calls. */
 	FORCEINLINE AActor* GetUsingActorNative() const { return this->UsingActor; }
+
+	UFUNCTION(BlueprintCallable, Category="Targeting")
+	void PerformTargetCountCheck();
+
 };
