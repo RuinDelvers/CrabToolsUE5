@@ -44,3 +44,31 @@ protected:
 	virtual FText GetDisplayText_Implementation() const;
 	virtual void Initialize_Inner_Implementation();
 };
+
+/*
+ * Base class for resource types. Resources generally have a minimum and a maximum,
+ * and will be kept within those bounds.
+ */
+UCLASS(Abstract, NotBlueprintType, Blueprintable, DefaultToInstanced, EditInlineNew)
+class URPGResource : public URPGProperty
+{
+	GENERATED_BODY()
+
+protected:
+
+	UPROPERTY(EditAnywhere, Category = "RPGProperty",
+		meta = (GetOptions = "GetAttributeOptions"))
+	FName MinimumRef;
+
+	UPROPERTY(EditAnywhere, Category = "RPGProperty",
+		meta = (GetOptions = "GetAttributeOptions"))
+	FName MaximumRef;
+
+public:
+
+	void SetMinRef(FName Ref) { this->MinimumRef = Ref; }
+	void SetMaxRef(FName Ref) { this->MaximumRef = Ref; }
+
+	virtual void SetMinProp(URPGProperty* Prop) {}
+	virtual void SetMaxProp(URPGProperty* Prop) {}
+};

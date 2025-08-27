@@ -198,6 +198,35 @@ public:
 
 protected:
 
+	template <class T>
+	T* CreateDefaultResource(FName PropName, FName Min = NAME_None, FName Max = NAME_None)
+	{
+		T* Prop = this->CreateDefaultSubobject<T>(PropName);
+
+		Prop->SetMinRef(Min);
+		Prop->SetMaxRef(Max);
+
+		return Prop;
+	}
+
+	/* Leaves minimum to be zero. */
+	template <class T>
+	T* CreateDefaultResource(FName PropName, FName Max) 
+	{
+		return this->CreateDefaultResource(PropName, NAME_None, Max);
+	}
+
+	template <class T>
+	T* CreateDefaultResource(FName PropName, URPGProperty* MinProp, URPGProperty* MaxProp)
+	{
+		T* Prop = this->CreateDefaultSubobject<T>(PropName);
+
+		Prop->SetMinProp(MinProp);
+		Prop->SetMaxProp(MaxProp);
+
+		return Prop;
+	}
+
 	virtual void BeginPlay() override;
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 };

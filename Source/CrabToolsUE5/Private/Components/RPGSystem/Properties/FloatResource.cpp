@@ -68,6 +68,16 @@ float UFloatResource::GetPercent() const
 	}
 }
 
+void UFloatResource::SetMinProp(URPGProperty* Prop)
+{
+	this->Minimum = CastChecked<UBaseFloatAttribute>(Prop);
+}
+
+void UFloatResource::SetMaxProp(URPGProperty* Prop)
+{
+	this->Maximum = CastChecked<UBaseFloatAttribute>(Prop);
+}
+
 void UFloatResource::Refresh()
 {
 	auto NewValue = FMath::Clamp(this->Value, this->GetMin(), this->GetMax());

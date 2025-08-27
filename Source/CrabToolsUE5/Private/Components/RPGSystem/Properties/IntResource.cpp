@@ -56,6 +56,26 @@ void UIntResource::SetValue(int UValue)
 	}
 }
 
+void UIntResource::Increment()
+{
+	this->SetValue(this->GetValue() + 1);
+}
+
+void UIntResource::Decrement()
+{
+	this->SetValue(this->GetValue() - 1);
+}
+
+void UIntResource::SetMinProp(URPGProperty* Prop)
+{
+	this->Minimum = CastChecked<UBaseIntAttribute>(Prop);
+}
+
+void UIntResource::SetMaxProp(URPGProperty* Prop)
+{
+	this->Maximum = CastChecked<UBaseIntAttribute>(Prop);
+}
+
 float UIntResource::GetPercent() const
 {
 	int Min = this->GetMin();

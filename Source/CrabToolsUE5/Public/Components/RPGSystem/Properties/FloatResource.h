@@ -6,7 +6,7 @@
 
 
 UCLASS(Blueprintable, BlueprintType)
-class CRABTOOLSUE5_API UFloatResource : public URPGProperty
+class CRABTOOLSUE5_API UFloatResource : public URPGResource
 {
 	GENERATED_BODY()
 
@@ -15,16 +15,8 @@ private:
 	UPROPERTY(EditAnywhere, Instanced, Category = "RPGProperty")
 	TObjectPtr<UBaseFloatAttribute> Minimum;
 
-	UPROPERTY(EditAnywhere, Category = "RPGProperty",
-		meta = (GetOptions = "GetAttributeOptions"))
-	FName MinimumRef;
-
 	UPROPERTY(EditAnywhere, Instanced, Category = "RPGProperty")
 	TObjectPtr<UBaseFloatAttribute> Maximum;
-
-	UPROPERTY(EditAnywhere, Category = "RPGProperty",
-		meta = (GetOptions = "GetAttributeOptions"))
-	FName MaximumRef;
 
 	UPROPERTY(EditAnywhere, Category = "RPGProperty")
 	float Value = 0;
@@ -58,6 +50,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "RPGProperty")
 	void Refresh();
+
+	virtual void SetMinProp(URPGProperty* Prop) override;
+	virtual void SetMaxProp(URPGProperty* Prop) override;
 
 protected:
 
