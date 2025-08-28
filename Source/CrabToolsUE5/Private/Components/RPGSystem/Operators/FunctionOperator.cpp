@@ -1,4 +1,5 @@
 #include "Components/RPGSystem/Operators/FunctionOperator.h"
+#include "Components/RPGSystem/RPGComponent.h"
 
 int UIntFunctionOperator::Operate_Implementation(int Value) {
 	if (this->Callback.IsBound()) {

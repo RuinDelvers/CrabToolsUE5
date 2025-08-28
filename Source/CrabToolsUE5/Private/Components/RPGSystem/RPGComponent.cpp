@@ -1,5 +1,6 @@
 #include "Components/RPGSystem/RPGComponent.h"
 #include "Components/RPGSystem/RPGProperty.h"
+#include "Settings/CrabTools_Settings.h"
 
 #pragma region Component Code
 URPGComponent::URPGComponent(const FObjectInitializer& ObjectInitializer): Super(ObjectInitializer) {
@@ -26,19 +27,6 @@ void URPGComponent::BeginPlay()
 		}
 	}
 
-	/* For all default statuses, apply them immediately. */
-	for (auto& Status : this->Statuses)
-	{
-		if (Status)
-		{
-			Status->Apply(this);
-			if (Status->RequiresTick())
-			{
-				this->TickedStatuses.Add(Status);
-			}
-		}
-	}
-
 	Super::BeginPlay();
 }
 
@@ -53,11 +41,18 @@ void URPGComponent::TickComponent(float DeltaTime, enum ELevelTick TickType, FAc
 	}
 }
 
+UStatus* URPGComponent::MakeStatus(TSubclassOf<UStatus> StatusClass, FGameplayTag StatusID)
+{
+	auto Status = NewObject<UStatus>(this, StatusClass);
+	Status->StatusID = StatusID;
+	return Status;
+}
+
 void URPGComponent::TurnStart()
 {
-	for (auto& Status : this->Statuses)
+	for (auto& StatusData : this->Statuses)
 	{
-		if (IsValid(Status))
+		for (auto& Status : StatusData.Value.Instances)
 		{
 			Status->TurnStart();
 		}
@@ -66,9 +61,9 @@ void URPGComponent::TurnStart()
 
 void URPGComponent::TurnEnd()
 {
-	for (auto& Status : this->Statuses)
+	for (auto& StatusData : this->Statuses)
 	{
-		if (IsValid(Status))
+		for (auto& Status : StatusData.Value.Instances)
 		{
 			Status->TurnEnd();
 		}
@@ -95,13 +90,59 @@ TArray<FString> URPGComponent::GetRPGPropertyNames(TSubclassOf<URPGProperty> Pro
 	
 }
 
-void URPGComponent::ApplyStatus(UStatus* Status)
+void URPGComponent::ApplyStatus(UStatus* Status, int Stacks)
 {
-	if (IsValid(Status) && !Status->IsOwned())
+	if (!IsValid(Status) || Status->GetOwner() != this)
 	{
-		this->Statuses.Add(Status);
-		Status->Apply(this);
+		return;
+	}
 
+	bool bAddedStatus = false;
+	auto StackType = Status->GetStackType();
+
+	bAddedStatus = true;
+
+	if (auto Data = this->Statuses.Find(Status->StatusID))
+	{
+		switch (StackType)
+		{
+		case EStatusStackType::ADD:
+			for (int i = 0; i < Stacks; ++i)
+			{
+				Status->Stack(1);
+				Data->Instances.Add(Status);
+				this->ObjTagMap.Add(Status, Status->StatusID);
+				Status->OnExpired.AddDynamic(this, &URPGComponent::OnStatusExpired);
+				Status->Apply();
+			}
+			break;
+		case EStatusStackType::REFRESH:
+			Data->Instances[0]->Refresh();
+			break;
+		case EStatusStackType::REFRESH_SUM:
+			Data->Instances[0]->RefreshSum();
+			break;
+		case EStatusStackType::STACK:
+			Data->Instances[0]->Stack(Stacks);
+			break;
+		case EStatusStackType::UNIQUE:
+			break;
+		}
+	}
+	else
+	{
+		Status->Stack(Stacks);
+		FStatusData NewData;
+		NewData.Instances.Add(Status);
+		this->ObjTagMap.Add(Status, Status->StatusID);
+		Status->OnExpired.AddDynamic(this, &URPGComponent::OnStatusExpired);
+		Status->Apply();
+
+		this->Statuses.Add(Status->StatusID, NewData);
+	}
+
+	if (Status)
+	{
 		if (Status->RequiresTick())
 		{
 			this->TickedStatuses.Add(Status);
@@ -109,33 +150,61 @@ void URPGComponent::ApplyStatus(UStatus* Status)
 	}
 }
 
-void URPGComponent::RemoveStatus(UStatus* Status)
+void URPGComponent::OnStatusExpired(UStatus* Status)
 {
-	this->Statuses.Remove(Status);
-	this->TickedStatuses.Remove(Status);
-	Status->Remove();
+	this->RemoveStatusInstance(Status);
 }
 
-void URPGComponent::StackStatus(TSubclassOf<UStatus> StatusType, int Quantity)
+void URPGComponent::RemoveStatusInstance(UStatus* Status)
 {
-	for (auto& Status : this->Statuses)
+	if (auto Tag = this->ObjTagMap.Find(Status))
 	{
-		Status->Stack(Quantity);
-		return;
-	}
-}
+		this->ObjTagMap.Remove(Status);
 
-UStatus* URPGComponent::GetStatus(TSubclassOf<UStatus> SClass, ESearchResult& Result)
-{
-	for (auto& Status : this->Statuses) {
-		if (Status->IsA(SClass.Get())) {
-			Result = ESearchResult::Found;
-			return Status;
+		if (auto Data = this->Statuses.Find(*Tag))
+		{
+			if (Data->Instances.Contains(Status))
+			{
+				Data->Instances.Remove(Status);
+				Status->Remove();
+
+				if (Data->Instances.Num() == 0)
+				{
+					this->Statuses.Remove(*Tag);
+				}
+			}
 		}
 	}
+}
 
-	Result = ESearchResult::NotFound;
-	return nullptr;
+void URPGComponent::RemoveStatus(FGameplayTag StatusID, bool bAllInstances)
+{
+	if (auto Data = this->Statuses.Find(StatusID))
+	{
+		if (bAllInstances)
+		{
+			for (const auto& Instance : Data->Instances)
+			{
+				this->TickedStatuses.Remove(Instance);
+				Instance->Remove();
+			}
+			this->Statuses.Remove(StatusID);
+
+		}
+		else
+		{			
+			auto Removed = Data->Instances.Pop();
+
+		}
+	}	
+}
+
+void URPGComponent::GetStatus(FGameplayTag StatusID, TArray<UStatus*>& Found)
+{
+	if (auto Data = this->Statuses.Find(StatusID))
+	{
+		Found.Append(Data->Instances);
+	}
 }
 
 URPGProperty* URPGComponent::FindRPGPropertyByName(FName Ref) const
@@ -159,89 +228,119 @@ URPGProperty* URPGComponent::FindRPGPropertyByName(FName Ref) const
 	return nullptr;
 }
 
+void URPGComponent::PauseStatus()
+{
+	for (const auto& Data : this->ObjTagMap)
+	{
+		Data.Key->PauseTimer();
+		this->SetComponentTickEnabled(false);
+	}
+}
+
+void URPGComponent::UnpauseStatus()
+{
+	for (const auto& Data : this->ObjTagMap)
+	{
+		Data.Key->UnpauseTimer();
+		this->SetComponentTickEnabled(true);
+	}
+}
+
 #pragma region Statuses
 
-void UStatus::Apply(URPGComponent* Comp) {
-	
-	if (IsValid(Comp))
-	{
-		this->Owner = Comp;
-		this->Stacks = 1;
-		this->SetTimer();
-		this->Apply_Inner();
-	}
+URPGComponent* UStatus::GetOwner() const
+{
+	return CastChecked<URPGComponent>(this->GetOuter());
+}
+
+float UStatus::GetRemainingTime() const
+{
+	return this->GetWorld()->GetTimerManager().GetTimerRemaining(this->Timer);
+}
+
+void UStatus::Refresh()
+{
+	this->SetTimer();
+}
+
+void UStatus::RefreshSum()
+{
+	this->AddTimer(this->GetDuration());
+}
+
+void UStatus::PauseTimer()
+{
+	this->GetWorld()->GetTimerManager().PauseTimer(this->Timer);
+}
+
+void UStatus::UnpauseTimer()
+{
+	this->GetWorld()->GetTimerManager().UnPauseTimer(this->Timer);
 }
 
 void UStatus::SetTimer()
 {
-	if (!this->IsPermanent())
-	{
-		this->Timer.Invalidate();
-		this->GetWorld()->GetTimerManager().SetTimer(
-			this->Timer,
-			this,
-			&UStatus::OnDurationExpired,
-			this->Duration,
-			false);
-	}
+	this->Timer.Invalidate();
+	this->GetWorld()->GetTimerManager().SetTimer(
+		this->Timer,
+		this,
+		&UStatus::OnDurationExpired,
+		this->GetDuration(),
+		false);
+}
+
+void UStatus::AddTimer(float Amount)
+{
+	this->GetWorld()->GetTimerManager().SetTimer(
+		this->Timer,
+		this,
+		&UStatus::OnDurationExpired,
+		this->GetRemainingTime() + Amount,
+		false);
 }
 
 void UStatus::OnDurationExpired()
 {
-	this->Owner.Get()->RemoveStatus(this);
+	this->OnExpired.Broadcast(this);
 }
 
 void UStatus::Stack(int Quantity)
 {
 	this->Stacks += Quantity;
-
-	if (this->bRefreshOnStack)
-	{
-		this->SetTimer();
-	}
-
 	this->Stack_Inner(Quantity);
 }
 
-void UStatus::Remove() {	
-	this->Remove_Inner();
-	this->Owner = nullptr;
-
-	this->Timer.Invalidate();
+void UStatus::Attach(int InitStacks)
+{
+	if (!this->bAttached)
+	{
+		this->bAttached = true;
+		this->GetOwner()->ApplyStatus(this, InitStacks);
+	}
 }
 
 void UStatus::Detach()
 {
-	if (this->Owner.IsValid())
-	{
-		this->Owner.Get()->RemoveStatus(this);
-	}
+	this->GetOwner()->RemoveStatusInstance(this);
 }
 
-URPGComponent* UStatus::GetOwner() const
+void UStatus::Apply()
 {
-	if (this->Owner.IsValid())
-	{
-		return this->Owner.Get();
-	}
-	else
-	{
-		return nullptr;
-	}
+	this->Apply_Inner();
+	this->SetTimer();
+}
+
+void UStatus::Remove()
+{
+	this->Timer.Invalidate();
+	this->Remove_Inner();
 }
 
 UWorld* UStatus::GetWorld() const
 {
-	if (this->Owner.IsValid())
+	if (auto Owner = this->GetOwner())
 	{
-		if (auto Actor = this->Owner.Get()->GetOwner())
-		{
-			return Actor->GetWorld();
-		}
-		else
-		{
-			return nullptr;
-		}
+		return Owner->GetWorld();
 	}
 	else
 	{

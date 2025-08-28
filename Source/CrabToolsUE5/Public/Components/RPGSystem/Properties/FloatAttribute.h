@@ -112,3 +112,32 @@ public:
 
 	virtual float GetBaseValue_Implementation() const override { return this->BaseValue; }
 };
+
+UCLASS(Blueprintable, DefaultToInstanced, CollapseCategories, EditInlineNew)
+class CRABTOOLSUE5_API UFloatOperator : public UObject
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
+	int Priority;
+
+	URPGComponent* Owner;
+
+public:
+
+	UFUNCTION(BlueprintNativeEvent, Category = "RPG|Operators")
+	float Operate(float Value);
+	virtual float Operate_Implementation(float Value) { return Value; }
+
+	UFUNCTION(BlueprintNativeEvent, Category = "RPG|Operators")
+	void Initialize();
+	virtual void Initialize_Implementation() {}
+
+
+	int GetPriority() const { return this->Priority; }
+
+	void SetOwner(URPGComponent* UOwner) { this->Owner = UOwner; }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "RPG|Operators")
+	URPGComponent* GetOwner() const { return this->Owner; }
+};

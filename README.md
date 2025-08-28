@@ -13,7 +13,7 @@ efficient and optimized design. The following systems are currently available:
 
 ## State Machine Usage
 
-![alt text](https://raw.githubusercontent.com/RuinDelvers/CrabToolsUE5/refs/heads/main/SampleImages/StateMachineSample.PNG)
+![Sample State Machine](https://raw.githubusercontent.com/RuinDelvers/CrabToolsUE5/refs/heads/main/SampleImages/StateMachineSample.PNG)
 
 Our State Machines are a generalized blueprint that can be used for a variety of tasks: From AI control, to player state 
 management, to dialogue. Each state machine is event based; Meaning that state changes will only occur upon an event being
@@ -24,3 +24,25 @@ arriving at their destination.
 
 Events also act as a sort of interface for state machines; You can create a State Machine Interfaces that contain events and 
 other data that defines how your state machine can be interacted with. These are also used with some custom nodes to safely send events to state machines without having the save random Name variables everywhere.
+
+
+## RPG System Usage
+
+Our RPG System handles the complex relationships between RPG attributes and resources. Attributes, such
+as strength or intelligence, are objects which can be an integer or float and are characterized by
+a base value, and operators on them. These operators can be simple additions to the attribute (e.g. from 
+statuses), or can be programmatically complex. Resources are objects that can be either an int or float,
+and are characterized by a maximal and minimal value. These maximal & minimal values can be other
+attributes.
+
+The valuable part of this system is the ease of simply placing variables into a blueprint, and the system
+automatically finds them to initialize them. This also enables blueprint/c++ type checking for accessing
+things, which removes error-prone key lookups. This system also enables powerful event handling for
+RPG elements. Since each RPGProperty (attributes, resources, or custom) are objects, they have
+easy to bind to events for their updates. This makes binding to them for UI or other necessities extremely
+simple.
+
+To use this system, simply extend the RPGComponent (either blueprint or c++), create a variable
+and set the variable to the object you want. In BP they are instanced, but in c++ you use CreateDefaultSubobject
+to handle this, and with some useful tools for resources to easily setup the relationships between
+Min/Max attributes.

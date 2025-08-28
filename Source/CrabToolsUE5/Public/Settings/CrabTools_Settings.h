@@ -4,6 +4,8 @@
 #include "Types/SlateEnums.h"
 #include "CrabTools_Settings.generated.h"
 
+class UStatusDataRepo;
+
 /**
  * 
  */
@@ -28,7 +30,7 @@ public:
 			EditCondition="bUseCustomUINavigationRules", EditConditionHides,
 			ReadOnlyKeys))
 	TMap<FKey, EUINavigationAction> NavActions;
-	
+
 public:
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category="Settings")

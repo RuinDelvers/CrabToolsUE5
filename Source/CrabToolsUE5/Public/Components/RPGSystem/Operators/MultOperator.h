@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Components/RPGSystem/RPGComponent.h"
+#include "Components/RPGSystem/Properties/IntAttribute.h"
 #include "MultOperator.generated.h"
 
 UCLASS(Blueprintable)
