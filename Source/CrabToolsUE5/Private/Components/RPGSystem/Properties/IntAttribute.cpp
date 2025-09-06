@@ -21,7 +21,8 @@ void UBaseIntAttribute::Operate(UIntOperator* Op)
 	if (IsValid(Op))
 	{
 		this->Operators.Add(Op);
-		this->Refresh();
+		Op->AddApplied(this);
+		this->Refresh();		
 	}
 }
 
@@ -29,7 +30,8 @@ void UBaseIntAttribute::UnOperate(UIntOperator* Op)
 {
 	if (IsValid(Op))
 	{
-		this->Operators.Remove(Op);
+		int Amt = this->Operators.Remove(Op);
+		Op->RemoveApplied(this);
 		this->Refresh();
 	}
 }
@@ -53,4 +55,36 @@ void UIntAttribute::SetBaseValue(int UValue)
 {
 	this->BaseValue = UValue;
 	this->Refresh();
+}
+
+void UIntOperator::AddApplied(UBaseIntAttribute* Attr)
+{
+	if (IsValid(Attr))
+	{
+		this->Applied.Add(Attr);
+	}
+}
+
+void UIntOperator::RemoveApplied(UBaseIntAttribute* Attr)
+{
+	if (IsValid(Attr))
+	{
+		this->Applied.Remove(Attr);
+	}
+}
+
+void UIntOperator::Refresh()
+{
+	for (const auto& App : this->Applied)
+	{
+		App->Refresh();
+	}
+}
+
+void UIntOperator::Remove()
+{
+	for (const auto& App : this->Applied)
+	{
+		App->UnOperate(this);
+	}
 }

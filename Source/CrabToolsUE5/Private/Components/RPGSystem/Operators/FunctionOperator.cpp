@@ -1,7 +1,8 @@
 #include "Components/RPGSystem/Operators/FunctionOperator.h"
 #include "Components/RPGSystem/RPGComponent.h"
 
-int UIntFunctionOperator::Operate_Implementation(int Value) {
+int UIntFunctionOperator::Operate_Implementation(int Value)
+{
 	if (this->Callback.IsBound()) {
 		return this->Callback.Execute(Value);
 	} else {
@@ -11,13 +12,15 @@ int UIntFunctionOperator::Operate_Implementation(int Value) {
 
 void UIntFunctionOperator::Initialize_Implementation()
 {
-	this->Callback.BindUFunction(this->GetOwner(), this->FunctionName);
+	//this->Callback.BindUFunction(this->GetOwner(), this->FunctionName);
 }
 
-TArray<FString> UIntFunctionOperator::GetIntOperatorFunctions() const {
+TArray<FString> UIntFunctionOperator::GetIntOperatorFunctions() const
+{
 	
 	TArray<FString> Names;
 
+	/*
 	if (this->GetOwner()) {
 		auto System = this->GetOwner();
 
@@ -32,6 +35,7 @@ TArray<FString> UIntFunctionOperator::GetIntOperatorFunctions() const {
 			}
 		}
 	}
+	*/
 
 	return Names;
 }

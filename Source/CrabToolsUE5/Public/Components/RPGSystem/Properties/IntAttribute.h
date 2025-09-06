@@ -19,7 +19,7 @@ protected:
 	TArray<TObjectPtr<UIntOperator>> Operators;
 
 	UPROPERTY()
-	int CompValue;
+	int CompValue = 0;
 
 public:
 
@@ -123,13 +123,17 @@ class CRABTOOLSUE5_API UIntOperator : public UObject
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
 	int Priority;
 
-	URPGComponent* Owner;
+	UPROPERTY()
+	TArray<TObjectPtr<UBaseIntAttribute>> Applied;
 
 public:
 
 	UFUNCTION(BlueprintNativeEvent, Category = "RPG|Operators")
 	int Operate(int Value);
 	virtual int Operate_Implementation(int Value) { return Value; }
+
+	UFUNCTION(BlueprintCallable, Category="RPG|Operators")
+	void Remove();
 
 	UFUNCTION(BlueprintNativeEvent, Category = "RPG|Operators")
 	void Initialize();
@@ -138,8 +142,9 @@ public:
 
 	int GetPriority() const { return this->Priority; }
 
-	void SetOwner(URPGComponent* UOwner) { this->Owner = UOwner; }
+	void AddApplied(UBaseIntAttribute* Attr);
+	void RemoveApplied(UBaseIntAttribute* Attr);
 
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "RPG|Operators")
-	URPGComponent* GetOwner() const { return this->Owner; }
+	UFUNCTION(BlueprintCallable, Category="RPG|Operators")
+	void Refresh();
 };
