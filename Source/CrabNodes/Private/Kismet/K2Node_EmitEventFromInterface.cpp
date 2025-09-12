@@ -46,7 +46,7 @@ void UK2Node_EmitEventFromInterface::AllocateDefaultPins()
 	UEdGraphPin* RowFoundPin = CreatePin(EGPD_Output, UEdGraphSchema_K2::PC_Exec, UEdGraphSchema_K2::PN_Then);
 
 	// Add State Machine Pin
-	UEdGraphPin* StateMachinePin = CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_Object, UEventListenerInterface::StaticClass(), EmitEventFromInterfaceHelper::StateMachinePinName);
+	UEdGraphPin* StateMachinePin = CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_Object, UObject::StaticClass(), EmitEventFromInterfaceHelper::StateMachinePinName);
 	SetPinToolTip(*StateMachinePin, LOCTEXT("StateMachinePinDescription", "The EventListener to want to send an event to"));
 
 	// Add Interface pin
@@ -95,7 +95,7 @@ void UK2Node_EmitEventFromInterface::OnInterfaceRowListChanged(const UStateMachi
 		UEdGraphPin* EventPin = GetEventPin();
 		const bool TryRefresh = EventPin && !EventPin->LinkedTo.Num();
 		const FName CurrentName = EventPin ? FName(*EventPin->GetDefaultAsString()) : NAME_None;
-		if (TryRefresh && EventPin && !Interface->GetEvents().Contains(CurrentName))
+		if (TryRefresh && EventPin && !Interface->GetCallEvents().Contains(CurrentName))
 		{
 			if (UBlueprint* BP = GetBlueprint())
 			{
@@ -314,7 +314,7 @@ void UK2Node_EmitEventFromInterface::EarlyValidation(class FCompilerResultsLog& 
 		if (!EventPin->LinkedTo.Num())
 		{
 			const FName CurrentName = FName(*EventPin->GetDefaultAsString());
-			if (!Interface->GetEvents().Contains(CurrentName))
+			if (!Interface->GetCallEvents().Contains(CurrentName))
 			{
 				const FString Msg = FText::Format(
 					LOCTEXT("WrongEventFmt", "'{0}' row name is not stored in '{1}'. @@"),
@@ -359,7 +359,7 @@ TSet<FName> UK2Node_EmitEventFromInterface::GetEventSet() const
 {
 	if (auto SMI = Cast<UStateMachineInterface>(this->GetInterfacePin()->DefaultObject))
 	{
-		return SMI->GetEvents();
+		return SMI->GetCallEvents();
 	}
 
 	return {};

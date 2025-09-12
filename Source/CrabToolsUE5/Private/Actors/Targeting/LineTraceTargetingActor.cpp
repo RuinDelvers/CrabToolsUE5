@@ -43,7 +43,6 @@ void ALineTraceTargetingActor::Tick(float DeltaTime)
 	}
 	else
 	{
-		FTargetingData InData;
-		this->UpdateTraces(InData);
+		this->InvalidateTargetData();
 	}
 }

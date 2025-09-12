@@ -38,9 +38,6 @@ protected:
 	UPROPERTY(BlueprintreadOnly, Category = "Targeting|Trace")
 	FVector TargetLocation;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess, ExposeOnSpawn = true));
-	float Range;
-
 public:
 
 	ABaseTraceTargetingActor();
@@ -57,18 +54,10 @@ public:
 	void UpdateTraces(const FTargetingData& Data);
 
 	UFUNCTION(BlueprintNativeEvent, Category = "Targeting|Trace")
-	void OnUpdateTraces();
-	virtual void OnUpdateTraces_Implementation() {}
-
-	UFUNCTION(BlueprintCallable, Category="Targeting|Trace")
-	bool IsTooFar() const;
-
-	UFUNCTION(BlueprintNativeEvent, Category = "Targeting|Trace")
 	void IgnoreActors(TArray<AActor*>& IgnoredActors);
 	virtual void IgnoreActors_Implementation(TArray<AActor*>& IgnoredActors);
 
 	virtual void PushTarget_Implementation() override;
-	virtual bool Validate_Implementation(FText& Reason) const override;
 
 	UFUNCTION(BlueprintNativeEvent, Category="Target|Trace")
 	FVector GetTraceBase() const;
@@ -77,23 +66,7 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	FVector GetTargetEndPoint() const { return this->TargetLocation; }
 
-	UFUNCTION(BlueprintNativeEvent, Category = "Targeting|Trace")
-	bool IsValidTarget() const;
-	virtual bool IsValidTarget_Implementation() const;
-
-	UFUNCTION(BlueprintNativeEvent, Category = "Targeting|Trace")
-	bool IsValidPoint() const;
-	virtual bool IsValidPoint_Implementation() const;
-
 protected:
 
-	
-
-	//UFUNCTION(BlueprintNativeEvent, Category = "Targeting|Trace")
-	//void OnTooFar() const;
-	//virtual void OnTooFar_Implementation() const {}
-
-private:
-
-	FORCEINLINE void InvalidateTargetData();
+	void InvalidateTargetData();
 };

@@ -41,9 +41,6 @@ bool UAbilityNode::RequiresTick_Implementation() const
 	{
 		return this->Selected->RequiresTick();
 	}
-	else
-	{
-	}
 	
 	return false;
 }

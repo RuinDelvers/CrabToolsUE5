@@ -184,11 +184,6 @@ void UArrayNodeData::FindAllDataOfType_Implementation(TSubclassOf<UObject> Type,
 {
 	for (auto& Child : this->Data)
 	{
-		if (Child->IsA(Type))
-		{
-			ReturnValue.Add(Child);
-		}
-		
 		UStateMachineDataHelpers::FindAllDataOfType(Type, Child, ReturnValue);
 	}
 }

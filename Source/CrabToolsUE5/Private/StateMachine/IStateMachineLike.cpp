@@ -1,97 +1,5 @@
 #include "StateMachine/IStateMachineLike.h"
 
-#if WITH_EDITOR
-/*
-bool FSMPropertySearch::Matches(FProperty* F) const
-{
-	if (F->HasMetaData("IgnorePropertySearch")) { return false; }
-
-	// If the variable isn't public, then do not expose it yourself.
-	if (!(F->GetFlags() & EObjectFlags::RF_Public)) { return false; }
-
-	if (F->GetClass() == this->FClass)
-	{
-		if (F->GetClass() == FStructProperty::StaticClass())
-		{
-			FStructProperty* Sf = CastField<FStructProperty>(F);
-
-			if (Sf->Struct == this->Struct)
-			{
-				return true;
-			}
-		}
-		else if (F->GetClass() == FObjectProperty::StaticClass())
-		{
-			FObjectProperty* Of = CastField<FObjectProperty>(F);
-
-			if (Of->PropertyClass == this->Class)
-			{
-				return true;
-			}
-		}
-		else if (auto DProp = CastField<FMulticastInlineDelegateProperty>(F))
-		{
-			return DProp->SignatureFunction->IsSignatureCompatibleWith(this->FunctionSignature);
-		}
-		else
-		{
-			return true;
-		}
-	}
-
-	return false;
-}
-*/
-#endif //WITH_EDITOR
-/*
-FSMPropertySearch FSMPropertySearch::ObjectProperty(UClass* Class)
-{
-	check(Class);
-
-	FSMPropertySearch Params;
-
-	Params.FClass = FObjectProperty::StaticClass();
-	Params.Class = Class;
-
-	return Params;
-}
-
-FSMPropertySearch FSMPropertySearch::StructProperty(UScriptStruct* Struct)
-{
-	check(Struct);
-
-	FSMPropertySearch Params;
-
-	Params.FClass = FStructProperty::StaticClass();
-	Params.Struct = Struct;
-
-	return Params;
-}
-
-FSMPropertySearch FSMPropertySearch::Property(FFieldClass* FieldClass)
-{
-	check(FieldClass);
-
-	FSMPropertySearch Params;
-
-	Params.FClass = FieldClass;
-
-	return Params;
-}
-
-FSMPropertySearch FSMPropertySearch::InlineDelegate(UFunction* Signature)
-{
-	check(Signature);
-
-	FSMPropertySearch Params;
-
-	Params.FClass = FMulticastInlineDelegateProperty::StaticClass();
-	Params.FunctionSignature = Signature;
-
-	return Params;
-}
-*/
-
 UObject* UStateMachineDataHelpers::FindDataOfType(TSubclassOf<UObject> Type, UObject* Data, bool& Found)
 {
 	auto Value = FindDataOfType(Type, Data);
@@ -145,12 +53,14 @@ void UStateMachineDataHelpers::FindAllDataOfType(TSubclassOf<UObject> Type, UObj
 
 TScriptInterface<UInterface> UStateMachineDataHelpers::FindDataImplementing(TSubclassOf<UInterface> Type, UObject* Data, bool& Found)
 {
-	if (auto Value = FindDataImplementing(Type, Data))
+	auto Value = FindDataImplementing(Type, Data);
+	if (IsValid(Value.GetObject()))
 	{
 		Found = true;
 		return Value;
 	}
 
+	Found = false;
 	return nullptr;
 }
 

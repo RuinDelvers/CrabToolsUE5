@@ -1,7 +1,6 @@
 #pragma once
 
-#include "CoreMinimal.h"
-#include "Delegates/DelegateSignatureImpl.inl"
+#include "Utils/Enums.h"
 #include "Ability/Ability.h"
 #include "AbilityChain.generated.h"
 
@@ -19,6 +18,13 @@ class CRABTOOLSUE5_API UAbilityChain : public UAbility
 	TArray<TObjectPtr<UAbility>> AbilityChain;
 
 	int ActiveIndex = 0;
+
+
+public:
+
+	UFUNCTION(BlueprintCallable, BlueprintPure=false, Category="Ability",
+		meta=(DeterminesOutputType="Type", ExpandEnumAsExecs="Result"))
+	UAbility* GetChild(TSubclassOf<UAbility> Type, int Index, ESearchResult& Result) const;
 
 protected:
 

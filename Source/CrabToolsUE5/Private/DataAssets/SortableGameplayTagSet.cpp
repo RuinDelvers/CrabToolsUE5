@@ -1,4 +1,4 @@
-#include "Utils/SortableGameplayTagSet.h"
+#include "DataAssets/SortableGameplayTagSet.h"
 
 void USortableGameplayTagSet::Sort()
 {	

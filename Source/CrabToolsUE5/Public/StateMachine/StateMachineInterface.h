@@ -2,6 +2,8 @@
 
 #include "StateMachineInterface.generated.h"
 
+class UStateNode;
+
 USTRUCT(BlueprintType)
 struct FSMIData
 {
@@ -21,6 +23,7 @@ class CRABTOOLSUE5_API UStateMachineInterface : public UObject
 
 private:
 
+	/* Used for Pre and Post edit changes. */
 	TSoftObjectPtr<UStateMachineInterface> ParentBackup;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "StateMachine",
@@ -40,10 +43,15 @@ private:
 		meta=(AllowPrivateAccess))
 	TMap<FName, FSMIData> SubMachines;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "StateMachine",
+		meta = (AllowPrivateAccess))
+	TSet<TSoftClassPtr<UStateNode>> NodeEvents;
+
 public:
 
 	
 	bool HasEvent(FName EName) const;
+	TSet<FName> GetCallEvents() const;
 	TSet<FName> GetEvents() const;
 	TSet<FName> GetStates() const;
 	TSet<FName> GetSubMachines() const;

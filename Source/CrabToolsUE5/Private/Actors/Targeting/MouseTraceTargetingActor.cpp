@@ -48,7 +48,7 @@ void AMouseTraceTargetingActor::Tick(float DeltaTime)
 		}
 		else
 		{
-			this->UpdateTraces(FTargetingData());
+			this->InvalidateTargetData();
 		}
 	}	
 }

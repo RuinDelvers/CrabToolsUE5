@@ -2,6 +2,11 @@
 
 DEFINE_LOG_CATEGORY(LogAbility);
 
+UAbility::UAbility()
+{
+	this->AbilityData = CreateDefaultSubobject<UInlineAbilityData>(TEXT("AbilityData"));
+}
+
 void UAbility::Initialize(AActor* POwner)
 {
 	if (POwner)
@@ -18,7 +23,19 @@ void UAbility::Initialize(AActor* POwner)
 			this->Owner = this->GetOwner();
 		}
 	}
+
+	this->AbilityData->Initialize();
+
 	this->Initialize_Inner();
+}
+
+UAbilityData* UAbility::SetAbilityData(TSubclassOf<UAbilityData> DataClass)
+{
+	this->AbilityData->OnDataChanged.Clear();
+
+	this->AbilityData = NewObject<UAbilityData>(this, DataClass);
+
+	return this->AbilityData;
 }
 
 void UAbility::Start()
@@ -106,4 +123,15 @@ void UAbility::Cancel()
 {
 	this->Cancel_Inner();
 	this->OnAbilityCanceled.Broadcast(this);
+}
+
+UInlineAbilityData::UInlineAbilityData()
+: AbilityRange(std::numeric_limits<float>::infinity())
+{
+
+}
+
+void UAbilityData::Update()
+{
+	this->OnDataChanged.Broadcast(this);
 }

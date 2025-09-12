@@ -83,7 +83,9 @@ void UIntOperator::Refresh()
 
 void UIntOperator::Remove()
 {
-	for (const auto& App : this->Applied)
+	TArray<TObjectPtr<UBaseIntAttribute>> Cached = this->Applied;
+
+	for (const auto& App : Cached)
 	{
 		App->UnOperate(this);
 	}

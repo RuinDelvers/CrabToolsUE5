@@ -75,3 +75,19 @@ void UAbilityChain::HandleFinish(UAbility* _Abi)
 		this->Finish();
 	}
 }
+
+UAbility* UAbilityChain::GetChild(TSubclassOf<UAbility> Type, int Index, ESearchResult& Result) const
+{
+	if (Index < this->AbilityChain.Num())
+	{
+		auto& Child = this->AbilityChain[Index];
+		if (Child && Child->IsA(Type))
+		{
+			Result = ESearchResult::Found;
+			return Child;
+		}
+	}
+
+	Result = ESearchResult::NotFound;
+	return nullptr;
+}

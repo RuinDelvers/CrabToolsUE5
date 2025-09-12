@@ -7,6 +7,7 @@ UK2Node_EmitEventBase::UK2Node_EmitEventBase(const FObjectInitializer& ObjectIni
 
 bool UK2Node_EmitEventBase::IsActionFilteredOut(FBlueprintActionFilter const& Filter)
 {
+	/*
 	bool bAllBlueprintSupported = true;
 
 	for (const auto& BP : Filter.Context.Blueprints)
@@ -22,4 +23,7 @@ bool UK2Node_EmitEventBase::IsActionFilteredOut(FBlueprintActionFilter const& Fi
 	}
 
 	return !bAllBlueprintSupported;
+	*/
+
+	return false;
 }

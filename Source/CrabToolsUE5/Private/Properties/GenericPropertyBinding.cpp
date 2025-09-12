@@ -416,6 +416,11 @@ void UGenericPropertyBinding::CallFunction_Local(void* SourceObject)
 	}
 }
 
+bool UGenericPropertyBinding::IsBound() const
+{
+	return !this->PropertyName.IsNone();
+}
+
 FString UGenericPropertyBinding::GetPropertyPath() const
 {
 	FString Base;

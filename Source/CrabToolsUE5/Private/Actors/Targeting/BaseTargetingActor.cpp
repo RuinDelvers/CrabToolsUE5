@@ -1,4 +1,5 @@
 #include "Actors/Targeting/BaseTargetingActor.h"
+#include "Ability/Ability.h"
 
 ABaseTargetingActor::ABaseTargetingActor()
 {
@@ -13,8 +14,42 @@ void ABaseTargetingActor::BeginPlay()
 
 void ABaseTargetingActor::Initialize_Implementation()
 {
-	FAttachmentTransformRules;
-	this->AttachToActor(this->UsingActor, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+	bool bDoDefaultAttachment = true;
+
+	if (this->bInitUsingAbility)
+	{
+		if (auto& Ability = this->AbilityOwner)
+		{
+			if (auto AbiData = Ability->GetData())
+			{
+				bDoDefaultAttachment = false;
+				this->InitFromAbility(AbiData);
+
+				if (AbiData->IsDynamic())
+				{
+					AbiData->OnDataChanged.AddDynamic(this, &ABaseTargetingActor::InitFromAbility);
+				}
+			}
+		}
+	}
+
+	if (bDoDefaultAttachment)
+	{
+		this->AttachToActor(this->UsingActor, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+	}
+}
+
+void ABaseTargetingActor::InitFromAbility(UAbilityData* AbiData)
+{
+	this->MaxTargetCount = AbiData->TargetCount();
+
+	if (auto Comp = AbiData->TargetAttachComponent())
+	{
+		this->AttachToComponent(
+			AbiData->TargetAttachComponent(),
+			FAttachmentTransformRules::SnapToTargetNotIncludingScale,
+			AbiData->TargetAttachPoint());
+	}
 }
 
 void ABaseTargetingActor::AddListener_Implementation(const FConfirmTargetsSingle& Callback)
@@ -64,6 +99,43 @@ void ABaseTargetingActor::GetTargetData_Implementation(TArray<FTargetingData>& O
 void ABaseTargetingActor::PopTarget_Implementation()
 {
 	this->Data.Pop();
+}
+
+const TArray<UTargetFilterComponent*>& ABaseTargetingActor::GetFilters() const
+{
+	if (!this->bFoundFilters)
+	{
+		for (const auto& Comps : this->GetComponents())
+		{
+			if (auto Filter = Cast<UTargetFilterComponent>(Comps))
+			{
+				this->Filters.Add(Filter);
+			}
+		}
+
+		this->Filters.Sort([](
+			const TObjectPtr<UTargetFilterComponent>& A, const TObjectPtr<UTargetFilterComponent>& B)
+			{
+				return A->GetPriority() > B->GetPriority();
+			});
+
+		this->bFoundFilters = true;
+	}
+
+	return this->Filters;
+}
+
+bool ABaseTargetingActor::ApplyFilters(const FTargetingData& InData, FText& FailureReason) const
+{
+	for (const auto Filter : this->GetFilters())
+	{
+		if (!Filter->Filter(InData, FailureReason))
+		{
+			return false;
+		}
+	}
+
+	return true;
 }
 
 void ABaseTargetingActor::PerformTargetCountCheck()

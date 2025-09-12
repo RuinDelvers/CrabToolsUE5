@@ -124,6 +124,9 @@ public:
 	void ClearCache();
 
 	UFUNCTION(BlueprintCallable, Category = "Properties")
+	bool IsBound() const;
+
+	UFUNCTION(BlueprintCallable, Category = "Properties")
 	void SetSource(UObject* NewSource);
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Properties")

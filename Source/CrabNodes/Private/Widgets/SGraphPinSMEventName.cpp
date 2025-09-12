@@ -18,7 +18,10 @@ void SGraphPinSMEventName::RefreshNameList(const TSet<FName>& Names)
 {
 	NameList.Empty();
 
-	for (auto& Name : Names)
+	auto Sorted = Names.Array();
+	Sorted.Sort([](const FName& A, const FName& B) { return A.ToString() < B.ToString(); });
+
+	for (auto& Name : Sorted)
 	{
 		TSharedPtr<FName> RowNameItem = MakeShareable(new FName(Name));
 		NameList.Add(RowNameItem);

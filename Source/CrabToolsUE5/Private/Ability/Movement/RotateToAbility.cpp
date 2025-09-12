@@ -30,7 +30,7 @@ void URotateToAbility::Tick_Inner_Implementation(float DeltaTime)
 		this->RotateSpeed*DeltaTime,
 		Complete);
 
-	FQuat Rot(FRotator(0, DeltaYaw, 0));	
+	FQuat Rot(FRotator(0, DeltaYaw, 0));
 
 	this->GetOwner()->AddActorLocalRotation(Rot);
 

@@ -965,7 +965,7 @@ void UStateNode::InitNotifies()
 
 		if (FnName.StartsWith("EventNotify_"))
 		{
-			FName EventName(f->GetName().RightChop(11));
+			FName EventName(f->GetName().RightChop(12));
 
 			if (f->IsSignatureCompatibleWith(NotifySign))
 			{
@@ -1031,8 +1031,10 @@ AActor* UStateNode::GetActorOwner() const
 	return this->Owner->GetActorOwner();
 }
 
-void UStateNode::Event(FName EName) {
-	if (this->bActive) {
+void UStateNode::Event(FName EName)
+{
+	if (this->bActive)
+	{
 		if (auto Notify = this->EventNotifies.Find(EName))
 		{
 			Notify->Broadcast(EName);
@@ -1327,7 +1329,7 @@ void UStateNode::GetNotifies(TSet<FName>& Events) const
 
 		if (FnName.StartsWith("EventNotify_"))
 		{
-			FName EventName(f->GetName().RightChop(11));
+			FName EventName(f->GetName().RightChop(12));
 
 			if (f->IsSignatureCompatibleWith(NotifySign))
 			{

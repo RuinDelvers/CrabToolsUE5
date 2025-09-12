@@ -20,20 +20,12 @@ class AArcTraceTargetingActor : public ABaseTraceTargetingActor
 		meta = (AllowPrivateAccess))
 	int SampleSize = 10;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess, ExposeOnSpawn = true));
-	float MaxHeight;
-
 public:
 
 	AArcTraceTargetingActor();
 
 	virtual void Tick(float DeltaTime) override;
 
-	UFUNCTION(BlueprintNativeEvent, Category = "Targeting|ArcTrace")
-	void OnTooHigh();
-	virtual void OnTooHigh_Implementation() {}
-
-	virtual void OnUpdateTraces_Implementation() override;
-
-	bool IsTooHigh() const;
+	UFUNCTION(BlueprintCallable, Category="Targeting|ArcTrace")
+	void SetSplineEndPoint(FVector Target);
 };

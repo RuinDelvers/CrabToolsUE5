@@ -1,4 +1,5 @@
 #include "StateMachine/StateMachineInterface.h"
+#include "StateMachine/StateMachine.h"
 
 bool UStateMachineInterface::VerifyNoCycles() const
 {
@@ -52,6 +53,23 @@ TSet<FName> UStateMachineInterface::GetEvents() const
 	if (auto CheckParent = this->Parent.LoadSynchronous())
 	{
 		Collect.Append(CheckParent->GetEvents());
+	}
+
+	return Collect;
+}
+
+TSet<FName> UStateMachineInterface::GetCallEvents() const
+{
+	TSet<FName> Collect = this->GetEvents();
+
+	for (const auto& NodeClass : this->NodeEvents)
+	{
+		NodeClass.LoadSynchronous();
+
+		if (NodeClass.IsValid())
+		{
+			CastChecked<UStateNode>(NodeClass->GetDefaultObject())->GetNotifies(Collect);
+		}
 	}
 
 	return Collect;

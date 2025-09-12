@@ -3,9 +3,8 @@
 #include "Properties/GenericPropertyBinding.h"
 #include "StateMachine/AI/BaseNode.h"
 #include "Navigation/PathFollowingComponent.h"
+#include "StateMachine/AI/AIStructs.h"
 #include "SimpleMoveTo.generated.h"
-
-struct FMoveToData;
 
 /**
  * Simple node for making an entity move to a given actor.
@@ -22,14 +21,13 @@ private:
 
 	EPathFollowingResult::Type MovementResult;
 
-	/* Overriden location for extended nodes to use. This is used on a per Enter basis.*/
-	FVector OverrideLocation;
-	bool bUseOverrideLocation = false;
-
 protected:
 
-	UPROPERTY(VisibleAnywhere, Transient, Category="AI")
-	TObjectPtr<AActor> GoalActor;
+	UPROPERTY(EditDefaultsOnly, Category="AI", meta=(AllowPrivateAccess,
+		ShowOnlyInnerProperties))
+	FMoveToData MoveData;
+
+	FPathFollowingRequestResult Result;
 
 public:
 
@@ -51,10 +49,16 @@ protected:
 	void StopMovement();
 	void SetOverrideLocation(FVector Location);
 
+	UFUNCTION()
+	void EventNotify_PauseMovement(FName EName);
+
+	UFUNCTION()
+	void EventNotify_ResumeMovement(FName EName);
+
 private:
 
 	UFUNCTION()
-	void OnMoveCompleted(FAIRequestID RequestID, EPathFollowingResult::Type Result);
+	void OnMoveCompleted(FAIRequestID RequestID, EPathFollowingResult::Type MoveResult);
 
 	void BindCallback();
 	void UnbindCallback();

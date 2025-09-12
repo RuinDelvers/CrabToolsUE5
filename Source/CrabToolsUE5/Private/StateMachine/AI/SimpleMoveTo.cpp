@@ -1,7 +1,6 @@
 #include "StateMachine/AI/SimpleMoveTo.h"
 #include "AIController.h"
 #include "Navigation/PathFollowingComponent.h"
-#include "StateMachine/IStateMachineLike.h"
 #include "StateMachine/Events.h"
 #include "StateMachine/AI/AIStructs.h"
 
@@ -29,72 +28,54 @@ void UAISimpleMoveToNode::Exit_Inner_Implementation()
 
 	this->StopMovement();
 
-	this->OverrideLocation = FVector::Zero();
-	this->bUseOverrideLocation = false;
+	this->MoveData.ResetGoal();
 }
 
 void UAISimpleMoveToNode::PostTransition_Inner_Implementation()
 {
 	this->BindCallback();
 
-	if (this->GoalActor)
+	if (this->MoveData.bResumePreviousPath)
 	{
-		if (this->bUseOverrideLocation)
+		auto ResumeResult = this->GetAIController()->ResumeMove(this->Result.MoveId);
+
+		if (Result.Code == EPathFollowingRequestResult::RequestSuccessful)
 		{
-			this->GetAIController()->MoveToLocation(this->OverrideLocation);
-		}
-		else
-		{
-			this->MoveTo();
+			return;
 		}
 	}
-	else
+
+	if (this->Property->IsBound())
 	{
 		bool bFoundData = false;
 		auto& Value = this->Property->GetStruct<FMoveToData>(bFoundData);
 
 		if (bFoundData)
 		{
-			auto Ctrl = this->GetAIController();
+			this->Result = Value.MakeRequest(this->GetAIController());
 
-			if (this->bUseOverrideLocation)
+			if (this->Result.Code == EPathFollowingRequestResult::Failed)
 			{
-				Ctrl->MoveToLocation(this->OverrideLocation);
-			}
-			else
-			{
-				if (Value.DestinationActor)
-				{
-					Ctrl->MoveToActor(Value.DestinationActor, 0.0f);
-				}
-				else
-				{
-					Ctrl->MoveToLocation(Value.DestinationLocation, 0.0f);
-				}
+				this->EmitEvent(Events::AI::LOST);
 			}
 		}
+	}	
+	else
+	{
+		this->MoveTo();
 	}
 }
 
 void UAISimpleMoveToNode::EnterWithData_Inner_Implementation(UObject* Data)
 {
-	this->GoalActor = Cast<AActor>(Data);	
+	this->MoveData.DestinationActor = Cast<AActor>(Data);	
 }
 
 void UAISimpleMoveToNode::MoveTo()
 {
-	if (this->GoalActor)
-	{
-		auto Ctrl = this->GetAIController();
+	this->Result = this->MoveData.MakeRequest(this->GetAIController());
 
-		if (Ctrl->IsFollowingAPath())
-		{
-			Ctrl->StopMovement();
-		}
-
-		Ctrl->MoveToActor(this->GoalActor, 0.0f);
-	}
-	else
+	if (this->Result.Code == EPathFollowingRequestResult::Failed)
 	{
 		this->EmitEvent(Events::AI::LOST);
 	}
@@ -103,8 +84,8 @@ void UAISimpleMoveToNode::MoveTo()
 
 void UAISimpleMoveToNode::SetOverrideLocation(FVector Location)
 {
-	this->OverrideLocation = Location;
-	this->bUseOverrideLocation = true;
+	this->MoveData.DestinationLocation = Location;
+	this->MoveData.bUseOverrideLocation = true;
 }
 
 void UAISimpleMoveToNode::StopMovement()
@@ -112,11 +93,11 @@ void UAISimpleMoveToNode::StopMovement()
 	this->GetAIController()->StopMovement();
 }
 
-void UAISimpleMoveToNode::OnMoveCompleted(FAIRequestID RequestID, EPathFollowingResult::Type Result)
+void UAISimpleMoveToNode::OnMoveCompleted(FAIRequestID RequestID, EPathFollowingResult::Type MoveResult)
 {
-	this->MovementResult = Result;
+	this->MovementResult = MoveResult;
 
-	switch (Result)
+	switch (MoveResult)
 	{
 		case EPathFollowingResult::Success: this->EmitEvent(Events::AI::ARRIVE); break;
 		case EPathFollowingResult::Aborted: this->EmitEvent(Events::AI::ARRIVE); break;
@@ -134,6 +115,16 @@ void UAISimpleMoveToNode::UnbindCallback()
 {
 	auto CtrlQ = this->GetAIController();
 	CtrlQ->ReceiveMoveCompleted.RemoveAll(this);
+}
+
+void UAISimpleMoveToNode::EventNotify_PauseMovement(FName EName)
+{
+	this->GetAIController()->PauseMove(this->Result.MoveId);
+}
+
+void UAISimpleMoveToNode::EventNotify_ResumeMovement(FName EName)
+{
+	this->GetAIController()->ResumeMove(this->Result.MoveId);
 }
 
 #if WITH_EDITOR

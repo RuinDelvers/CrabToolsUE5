@@ -118,8 +118,8 @@ bool UAIMoveToInteractNode::HasInteractable() const
 
 void UAIMoveToInteractNode::ComputeTarget()
 {
-	if (IsValid(this->GoalActor))
-	{
+	if (IsValid(this->CurrentData))
+	{		
 		if (auto Interactable = this->GetInteractable())
 		{
 			TArray<FVector> Locations;
@@ -134,18 +134,18 @@ void UAIMoveToInteractNode::ComputeTarget()
 		}
 		else
 		{
-			this->GoalActor = nullptr;
+			this->MoveData.DestinationActor = this->CurrentData->Interactable;
 		}
 	}
 }
 
 void UAIMoveToInteractNode::PostTransition_Inner_Implementation()
 {
-	if (!IsValid(this->GoalActor))
+	if (!IsValid(this->MoveData.DestinationActor))
 	{
 		this->EmitEvent(Events::AI::CANNOT_INTERACT);
 	}
-	else if (!this->GoalActor->GetComponentByClass<UInteractableComponent>())
+	else if (!this->MoveData.DestinationActor->GetComponentByClass<UInteractableComponent>())
 	{
 		this->EmitEvent(Events::AI::CANNOT_INTERACT);
 	} 
