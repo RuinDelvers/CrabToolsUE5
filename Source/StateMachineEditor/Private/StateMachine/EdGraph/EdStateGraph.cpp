@@ -1043,20 +1043,6 @@ FName UEdStateGraph::GetCategoryName() const
 	}
 }
 
-/*
-void UEdStateGraph::CollectExtendibleStates(TSet<FString>& StateNames) const
-{
-	if (this->IsMainGraph())
-	{
-		this->GetBlueprintOwner()->GetStateMachineGeneratedClass()->CollectExtendibleStates(StateNames);
-	}
-	else
-	{
-
-		this->MachineArchetype->CollectExtendibleStates(StateNames);
-	}
-}
-*/
 
 FName UEdStateGraph::GetGraphName() const
 {

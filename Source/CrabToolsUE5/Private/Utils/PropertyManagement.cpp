@@ -57,6 +57,7 @@ bool UPropertyManagementLibrary::UpdateObjectInheritanceProperties(
 			FProperty* f = *FIT;
 
 			if (f->HasMetaData("IgnorePropertySearch")) { continue; }
+			if (f->HasAnyPropertyFlags(EPropertyFlags::CPF_DuplicateTransient)) { continue; }
 
 			if (ValidInheritablePropertyTypes().Contains(f->GetClass()))
 			{
@@ -64,6 +65,7 @@ bool UPropertyManagementLibrary::UpdateObjectInheritanceProperties(
 				// to inspect the CurrentObject to see if we need to update it's values.
 				if (!f->Identical_InContainer(CopiedArchetype, Parent))
 				{
+					UE_LOG(LogTemp, Warning, TEXT("- Property problem between %s?"), *f->GetName());
 					bChangedProperty = true;
 
 					if (f->Identical_InContainer(CopiedArchetype, CurrentObject))

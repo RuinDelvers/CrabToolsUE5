@@ -2,13 +2,18 @@
 
 #include "K2Node.h"
 #include "UObject/ObjectMacros.h"
-
+#include "GameplayTagContainer.h"
 #include "K2Node_EmitEventBase.generated.h"
 
 UCLASS(Abstract)
 class CRABNODES_API UK2Node_EmitEventBase : public UK2Node
 {
 	GENERATED_BODY()
+
+private:
+
+	UPROPERTY(EditAnywhere, Category="Events", meta=(Categories="StateMachine.Event"))
+	FGameplayTag EventName;
 
 protected:
 
@@ -26,4 +31,5 @@ public:
 
 	virtual TSet<FName> GetEventSet() const { return {}; }
 	virtual bool IsActionFilteredOut(FBlueprintActionFilter const& Filter) override;
+	virtual bool ShouldShowNodeProperties() const override { return true; }
 };

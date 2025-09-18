@@ -9,7 +9,8 @@ TSharedPtr<class SGraphPin> FStateMachineGraphPanelPinFactory::CreatePin(class U
 		UObject* Outer = InPin->GetOuter();
 		if (auto Node = Cast<UK2Node_EmitEventBase>(Outer))
 		{
-			return SNew(SGraphPinSMEventName, InPin, Node);
+			auto Pin = SNew(SGraphPinSMEventName, InPin, Node);
+			return Pin;
 		}
 	}
 

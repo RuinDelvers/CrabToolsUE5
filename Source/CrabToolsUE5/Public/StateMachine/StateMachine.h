@@ -741,6 +741,12 @@ public:
 		const FStateMachineDebugDataStack& GetDebugData() const { return this->DebugData; }
 	#endif
 
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "StateMachine", meta=(DeterminesOutputType="MachineClass"))
+	UStateMachine* FindMachineByClass(TSubclassOf<UStateMachine> MachineClass);
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "StateMachine", meta = (DeterminesOutputType = "MachineClass"))
+	UStateMachine* FindMachineByInterface(TSubclassOf<UInterface> MachineClass);
+
 	virtual UWorld* GetWorld() const override;
 
 	void AddEventEmitter(UEventEmitter* Emitter) { this->EventEmitters.Add(Emitter); }

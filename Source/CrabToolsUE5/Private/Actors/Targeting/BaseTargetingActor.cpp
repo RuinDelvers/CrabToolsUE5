@@ -46,7 +46,7 @@ void ABaseTargetingActor::InitFromAbility(UAbilityData* AbiData)
 	if (auto Comp = AbiData->TargetAttachComponent())
 	{
 		this->AttachToComponent(
-			AbiData->TargetAttachComponent(),
+			Comp,
 			FAttachmentTransformRules::SnapToTargetNotIncludingScale,
 			AbiData->TargetAttachPoint());
 	}

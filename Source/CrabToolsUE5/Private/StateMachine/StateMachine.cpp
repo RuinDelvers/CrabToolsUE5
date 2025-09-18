@@ -607,6 +607,47 @@ void UStateMachine::AddStateData(FName StateName, UState* Data)
 	}
 }
 
+UStateMachine* UStateMachine::FindMachineByClass(TSubclassOf<UStateMachine> MachineClass)
+{
+	if (this->IsA(MachineClass))
+	{
+		return this;
+	}
+	else
+	{
+		for (const auto& SubMachine : this->SubMachines)
+		{
+			if (auto Found = SubMachine.Value->FindMachineByClass(MachineClass))
+			{
+				return Found;
+			}
+		}
+	}
+
+	return nullptr;
+}
+
+
+UStateMachine* UStateMachine::FindMachineByInterface(TSubclassOf<UInterface> MachineClass)
+{
+	if (this->GetClass()->ImplementsInterface(MachineClass))
+	{
+		return this;
+	}
+	else
+	{
+		for (const auto& SubMachine : this->SubMachines)
+		{
+			if (auto Found = SubMachine.Value->FindMachineByInterface(MachineClass))
+			{
+				return Found;
+			}
+		}
+	}
+
+	return nullptr;
+}
+
 UState* UStateMachine::MakeStateWithNode(FName StateName, UStateNode* Node)
 {
 	UState* Data = NewObject<UState>(this);

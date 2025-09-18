@@ -2,12 +2,8 @@
 
 void UContextMenuEntry::PerformActions()
 {
-	if (!this->bHasBeenBound)
-	{
-
-	}
-
 	this->OnAction.Broadcast();
+	this->OnActionNative.Broadcast();
 }
 
 TArray<FString> UContextMenuEntry::GetFunctionOptions() const

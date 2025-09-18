@@ -307,6 +307,7 @@ bool UEdStateNode::UpdateStateArchetypeOverride()
 					{
 						auto Data = Class->GetStateArchetypeData(this->StateExtension, this->GetStateGraph()->GetFName());
 						check(Data);
+						
 						bOverrideWasModified = UPropertyManagementLibrary::UpdateObjectInheritanceProperties<UState>(
 							Data->GetArchetype(),
 							this->StateClassOverride.DefaultObject,

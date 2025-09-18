@@ -3,39 +3,7 @@
 #include "StateMachine/AI/SimpleMoveTo.h"
 #include "MoveToInteract.generated.h"
 
-/**
- * Base interaction class; Contains the interactor only. Extend this to hold data for
- * specific interactions for interactables.
- */
-UCLASS(Blueprintable, Category = "Interaction")
-class CRABTOOLSUE5_API UAIInteractionData : public UObject
-{
-	GENERATED_BODY()
-
-public:
-
-	/* Convenience function for quickly makine of these object in a pure manner. */
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category="Interaction")
-	static UAIInteractionData* MakeInteractionData(
-		FName InitInteraction,
-		AActor* InitInteractable,
-		UObject* InitData);
-
-public:
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Interaction", meta = (ExposeOnSpawn = true))
-	FName Interaction;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Interaction", meta = (ExposeOnSpawn = true))
-	TObjectPtr<AActor> Interactable;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Interaction", meta = (ExposeOnSpawn = true))
-	TObjectPtr<UObject> Data;
-
-public:
-
-	bool IsValidData() const;
-};
+class UAIInteractionData;
 
 /**
  * Simple node for making an entity move to a given actor.

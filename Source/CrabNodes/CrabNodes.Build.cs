@@ -27,6 +27,7 @@ public class CrabNodes : ModuleRules
 				"Core",
 				"UnrealEd",
 				"DeveloperSettings",
+				"GameplayTags",
 				// ... add other public dependencies that you statically link with here ...
 			});
 			

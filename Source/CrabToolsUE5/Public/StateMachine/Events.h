@@ -71,6 +71,9 @@ namespace Events::AI
 
 	// Generic event for when something is done, but is a non-specific task.
 	constexpr char DONE[] = "AI_DONE";
+
+	// Event used by Interactables to automate move to and interact logic.
+	constexpr char MOVE_AND_INTERACT[] = "MOVE_AND_INTERACT";
 }
 
 namespace Events::Animation

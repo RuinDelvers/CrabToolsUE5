@@ -5,33 +5,6 @@
 #include "Components/Interaction/InteractableComponent.h"
 #include "Utils/PathFindingUtils.h"
 
-UAIInteractionData* UAIInteractionData::MakeInteractionData(
-	FName InitInteraction,
-	AActor* InitInteractable,
-	UObject* InitData)
-{
-	auto Obj = NewObject<UAIInteractionData>(InitInteractable);
-
-	Obj->Interaction = InitInteraction;
-	Obj->Interactable = InitInteractable;
-	Obj->Data = InitData;
-
-	return Obj;
-}
-
-bool UAIInteractionData::IsValidData() const
-{
-	bool BaseValid = IsValid(this->Interactable);
-
-	if (BaseValid)
-	{
-		return IsValid(this->Interactable->GetComponentByClass<UInteractableComponent>());
-	}
-	else
-	{
-		return false;
-	}
-}
 
 UAIMoveToInteractNode::UAIMoveToInteractNode()
 {
