@@ -149,7 +149,7 @@ TArray<UContextMenuEntry*> UInteractableComponent::GatherEntries_Implementation(
 void UInteractableComponent::MoveToInteract(FName Interaction, AActor* Interactor, UObject* Data)
 {
 	auto AIData = UAIInteractionData::MakeInteractionData(Interaction, this->GetOwner(), Data);
-	IEventListenerInterface::Execute_EventWithData(Interactor, Events::AI::MOVE_AND_INTERACT, AIData);
+	IEventListenerInterface::Execute_EventWithData(Interactor, this->MoveLogicEvent, AIData);
 }
 
 TArray<FString> UInteractableComponent::GetActorInteractions(UClass* Class)
@@ -221,6 +221,25 @@ TArray<FString> UInteractableComponent::GetInteractionOptions() const
 	{
 		return {};
 	}
+}
+
+TArray<FString> UInteractableComponent::GetEventOptions() const
+{
+	TArray<FString> Names;
+
+	this->Interface.LoadSynchronous();
+
+	if (auto IFace = this->Interface.Get())
+	{
+		for (const auto& Name : IFace->GetCallEvents())
+		{
+			Names.Add(Name.ToString());
+		}
+	}
+
+	Names.Sort([](const FString& A, const FString& B) { return A < B; });
+
+	return Names;
 }
 
 #endif

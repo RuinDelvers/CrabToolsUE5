@@ -3,6 +3,7 @@
 #include "Components/SceneComponent.h"
 #include "Components/PrimitiveComponent.h"
 #include "Widgets/ContextMenuInterface.h"
+#include "StateMachine/StateMachineInterface.h"
 #include "InteractableComponent.generated.h"
 
 
@@ -50,6 +51,14 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "Interaction", meta = (GetKeyOptions = "GetInteractionOptions"))
 	TMap<FName, FActorInteractionData> Interactions;
 	TArray<TObjectPtr<UPrimitiveComponent>> InteractionPoints;
+
+	#if WITH_EDITORONLY_DATA
+		UPROPERTY(EditDefaultsOnly, Category = "Interaction")
+		TSoftObjectPtr<UStateMachineInterface> Interface;
+	#endif
+
+	UPROPERTY(EditDefaultsOnly, Category = "Interaction", meta = (GetOptions = "GetEventOptions"))
+	FName MoveLogicEvent;
 
 	UPROPERTY()
 	TSet<TObjectPtr<AActor>> ValidActors;
@@ -111,6 +120,10 @@ private:
 
 	UFUNCTION()
 	TArray<FString> GetInteractionOptions() const;
+
+	UFUNCTION()
+	TArray<FString> GetEventOptions() const;
+
 
 	UFUNCTION()
 	void ExampleInteraction(AActor* Interactor, UObject* Data) {}
