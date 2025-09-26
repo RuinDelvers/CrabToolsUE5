@@ -66,3 +66,17 @@ void UPlayerUIComponent::ToggleBindings()
 		
 	this->bInputBound = !this->bInputBound;
 }
+
+UWidget* UPlayerUIComponent::GetUIAs(TSubclassOf<UWidget> WidgetClass, bool& bFound)
+{
+	if (this->PlayerUIRoot && this->PlayerUIRoot->IsA(WidgetClass))
+	{
+		bFound = true;
+		return this->PlayerUIRoot;
+	}
+	else
+	{
+		bFound = false;
+		return nullptr;
+	}
+}

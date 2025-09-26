@@ -27,7 +27,6 @@ void UReturnToNavMeshNode::PostTransition_Inner_Implementation()
 
 		this->GetAIController()->MoveToLocation(NavLoc.Location, -1, true, false);		
 	}
-	
 }
 
 void UReturnToNavMeshNode::OnMoveCompleted(FAIRequestID RequestID, EPathFollowingResult::Type Result)

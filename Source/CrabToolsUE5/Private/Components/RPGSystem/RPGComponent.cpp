@@ -1,9 +1,16 @@
 #include "Components/RPGSystem/RPGComponent.h"
 #include "Components/RPGSystem/RPGProperty.h"
-#include "Settings/CrabTools_Settings.h"
+#include "Engine/SimpleConstructionScript.h"
+#include "Engine/SCS_Node.h"
+
+
+
+#define LOCTEXT_NAMESPACE "RPGComponent"
 
 #pragma region Component Code
-URPGComponent::URPGComponent(const FObjectInitializer& ObjectInitializer): Super(ObjectInitializer) {
+
+URPGComponent::URPGComponent(const FObjectInitializer& ObjectInitializer): Super(ObjectInitializer)
+{
 	this->bWantsInitializeComponent = true;
 	this->bAutoActivate = true;
 	PrimaryComponentTick.bCanEverTick = true;
@@ -24,13 +31,21 @@ void URPGComponent::BeginPlay()
 			{
 				Prop->Initialize(this);
 			}
+			else
+			{
+				FMessageLog Log("RPGSystem");
+				Log.Error(FText::FormatNamed(
+					LOCTEXT("NullPropertyError", "RPGProperty {Prop} was null for actor {Actor}."),
+					TEXT("Prop"), FText::FromString(f->GetName()),
+					TEXT(""), FText::FromString(this->GetOwner()->GetName())));
+			}
 		}
 	}
 
 	Super::BeginPlay();
 }
 
-void URPGComponent::TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+void URPGComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 		
@@ -69,7 +84,7 @@ void URPGComponent::TurnEnd()
 	}
 }
 
-TArray<FString> URPGComponent::GetRPGPropertyNames(TSubclassOf<URPGProperty> Props) const
+TArray<FString> URPGComponent::GetRPGPropertyNames(TSubclassOf<URPGProperty> Props, bool bRecurse) const
 {
 	TArray<FString> Names;
 
@@ -80,6 +95,69 @@ TArray<FString> URPGComponent::GetRPGPropertyNames(TSubclassOf<URPGProperty> Pro
 		if (f->PropertyClass->IsChildOf(Props))
 		{
 			Names.Add(f->GetName());
+		}
+	}
+	
+	if (bRecurse)
+	{
+		// Search actor owners for properties. This is for native classes.
+		if (auto ActorOuter = Cast<AActor>(this->GetOuter()))
+		{
+			for (TFieldIterator<FObjectProperty> FIT(ActorOuter->GetClass(), EFieldIteratorFlags::IncludeSuper); FIT; ++FIT)
+			{
+				FObjectProperty* f = *FIT;
+				TObjectPtr<UObject> Value;
+
+				if (f->PropertyClass->IsChildOf<URPGComponent>())
+				{
+					f->GetValue_InContainer(this, &Value);
+
+					if (auto Prop = Cast<URPGComponent>(Value))
+					{
+						if (Prop != this)
+						{
+							auto OtherNames = Prop->GetRPGPropertyNames(Props, false);
+
+							for (int i = 0; i < OtherNames.Num(); ++i)
+							{
+								FString Base = f->GetName();
+								Base.PathAppend(*OtherNames[i], OtherNames.Num());
+								OtherNames[i] = Base;
+								Names.Add(Base);
+							}
+						}
+					}
+				}
+			}
+		}
+
+		// Search blueprint classes for other components. This is for blueprint classes.
+		if (auto BPClass = Cast<UBlueprintGeneratedClass>(this->GetOuter()))
+		{
+			if (BPClass->SimpleConstructionScript)
+			{
+				for (const auto& Node : BPClass->SimpleConstructionScript->GetAllNodes())
+				{
+					if (Node)
+					{
+						if (auto RPGComp = Cast<URPGComponent>(Node->ComponentTemplate))
+						{
+							if (RPGComp != this)
+							{
+								auto OtherNames = RPGComp->GetRPGPropertyNames(Props, false);
+
+								for (int i = 0; i < OtherNames.Num(); ++i)
+								{
+									FString Base = Node->GetVariableName().ToString();
+									Base.Append("/");
+									Base.Append(OtherNames[i]);
+									Names.Add(Base);
+								}
+							}
+						}
+					}
+				}
+			}
 		}
 	}
 
@@ -197,7 +275,7 @@ void URPGComponent::GetStatus(FGameplayTag StatusID, TArray<UStatus*>& Found)
 	}
 }
 
-URPGProperty* URPGComponent::FindRPGPropertyByName(FName Ref) const
+URPGProperty* URPGComponent::FindRPGPropertyByName(FName Ref, bool bRecurse) const
 {
 	auto Prop = this->GetClass()->FindPropertyByName(Ref);
 
@@ -213,6 +291,32 @@ URPGProperty* URPGComponent::FindRPGPropertyByName(FName Ref) const
 				return Cast<URPGProperty>(Value);
 			}
 		}
+	}
+	else if (bRecurse)
+	{
+		FString RefString = Ref.ToString();
+		FString CompName;
+		FString PropName;
+
+		if (RefString.Split("/", &CompName, &PropName))
+		{
+			if (auto Actor = this->GetOwner())
+			{
+				if (auto Property = CastField<FObjectProperty>(Actor->GetClass()->FindPropertyByName(FName(CompName))))
+				{
+					if (Property->PropertyClass->IsChildOf<URPGComponent>())
+					{
+						TObjectPtr<UObject> Value;
+						Property->GetValue_InContainer(this, &Value);
+
+						if (auto Comp = Cast<URPGComponent>(Value))
+						{
+							return Comp->FindRPGPropertyByName(FName(PropName), false);
+						}
+					}
+				}
+			}
+		}		
 	}
 
 	return nullptr;
@@ -351,3 +455,5 @@ UWorld* UStatus::GetWorld() const
 }
 
 #pragma endregion
+
+#undef LOCTEXT_NAMESPACE

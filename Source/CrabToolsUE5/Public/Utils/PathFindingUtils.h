@@ -5,6 +5,7 @@
 #include "PathFindingUtils.generated.h"
 
 class AAIController;
+class ANavLinkProxy;
 
 /**
  * 
@@ -18,4 +19,7 @@ public:
 	
 	UFUNCTION(BlueprintCallable, Category="Utility")
 	static FVector ChooseNearLocation(AAIController* Ctrl, TArray<FVector>& Points);
+
+	UFUNCTION(BlueprintCallable, Category = "Utility")
+	static FVector NearestNavLinkPointToActor(ANavLinkProxy* NLP, AActor* Actor);
 };

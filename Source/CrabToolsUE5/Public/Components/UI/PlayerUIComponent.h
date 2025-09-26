@@ -48,6 +48,10 @@ private:
 
 public:
 
+	UFUNCTION(BlueprintCallable, BlueprintPure=false, Category="UI",
+		meta=(DeterminesOutputType="WidgetClass", ExpandBoolAsExecs="bFound"))
+	UWidget* GetUIAs(TSubclassOf<UWidget> WidgetClass, bool& bFound);
+
 	UFUNCTION(BlueprintCallable, Category="UI")
 	void ToggleBindings();
 

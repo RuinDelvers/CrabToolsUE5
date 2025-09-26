@@ -113,7 +113,6 @@ void UIntResource::OnAttributeChanged(UBaseIntAttribute* Attr)
 
 TArray<FString> UIntResource::GetAttributeOptions() const
 {
-	
 	if (auto Outer = UtilsFunctions::GetOuterAs<URPGComponent>(this))
 	{
 		return Outer->GetRPGPropertyNames(UIntAttribute::StaticClass());

@@ -142,14 +142,16 @@ struct FStatusData
 };
 
 /* Component that handles control, access, and manipualtion of Resources and Attributes in an RPG Setting.*/
-UCLASS(Blueprintable, CollapseCategories, ClassGroup=(Custom),
-	meta=(BlueprintSpawnableComponent))
+UCLASS(Blueprintable, EditInlineNew, DefaultToInstanced, CollapseCategories,
+	ClassGroup=("GameSystems"), meta = (BlueprintSpawnableComponent))
 class CRABTOOLSUE5_API URPGComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
 	UPROPERTY(VisibleAnywhere, Category="RPG|Status")
 	TMap<FGameplayTag, FStatusData> Statuses;
+
+private:
 
 	TArray<TObjectPtr<UStatus>> TickedStatuses;
 
@@ -188,7 +190,7 @@ public:
 	void GetStatus(FGameplayTag StatusID, UPARAM(Ref) TArray<UStatus*>& Found);
 
 	UFUNCTION(BlueprintCallable, Category = "RPG|Status")
-	URPGProperty* FindRPGPropertyByName(FName Ref) const;
+	URPGProperty* FindRPGPropertyByName(FName Ref, bool bRecurse=true) const;
 
 	UFUNCTION(BlueprintCallable, Category = "RPG|Status")
 	void PauseStatus();
@@ -200,7 +202,7 @@ public:
 
 	UStatus* GetStatusInstanceFromGroup(FGameplayTag Group) const;
 
-	TArray<FString> GetRPGPropertyNames(TSubclassOf<URPGProperty> Props) const;
+	TArray<FString> GetRPGPropertyNames(TSubclassOf<URPGProperty> Props, bool bRecurse=true) const;
 
 protected:
 
@@ -243,7 +245,10 @@ protected:
 	void RemoveStatusInstance(UStatus* Status);
 
 	virtual void BeginPlay() override;
-	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+	virtual void TickComponent(
+		float DeltaTime,
+		ELevelTick TickType,
+		FActorComponentTickFunction* ThisTickFunction) override;
 
 private:
 

@@ -1,9 +1,9 @@
 #include "Widgets/SortUniformGridPanel.h"
 #include "Widgets/WidgetCompare.h"
 #include "Components/UniformGridSlot.h"
-#include "Widgets/Layout/SWrapBox.h"
 
-void USortUniformGridPanel::SortChildren() {
+void USortUniformGridPanel::SortChildren()
+{
 	this->Slots.Sort([&](const UPanelSlot& A, const UPanelSlot& B) {
 		if (A.Content && A.Content->GetClass()->ImplementsInterface(UWidgetOrderInterface::StaticClass())) {
 			return IWidgetOrderInterface::Execute_Compare(A.Content, B.Content);
