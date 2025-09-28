@@ -1,9 +1,9 @@
 #include "Actors/Targeting/PassThroughTargetingActor.h"
 #include "Actors/Targeting/ITargeter.h"
 
-void APassThroughTargetingActor::Tick(float DeltaTime)
+void APassThroughTargetingActor::HandleTrace_Implementation()
 {
-	Super::Tick(DeltaTime);
+	Super::HandleTrace_Implementation();
 
 	auto Target = ITargeterInterface::Execute_GetTracedActor(this->GetUsingActorNative());
 	auto EndPoint = ITargeterInterface::Execute_GetEndPoint(this->GetUsingActorNative());

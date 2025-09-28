@@ -342,6 +342,10 @@ void UStateMachine::SendEvent(FName EName)
 
 	if (CurrentState)
 	{
+		#if WITH_EDITORONLY_DATA
+			CurrentState->OnEventReceived.Broadcast(EName);
+		#endif
+
 		// First we check if there are any declarative events to handle for this state.
 		if (CurrentState->Transitions.Contains(EName))
 		{
@@ -393,6 +397,9 @@ void UStateMachine::SendEventWithData(FName EName, UObject* Data)
 
 	if (CurrentState)
 	{
+		#if WITH_EDITORONLY_DATA
+			CurrentState->OnEventWithDataReceived.Broadcast(EName, Data);
+		#endif
 		// First we check if there are any declarative events to handle for this state.
 		if (CurrentState->Transitions.Contains(EName))
 		{

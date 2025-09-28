@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Engine/DataTable.h"
 #include "StateMachineInterface.generated.h"
 
 class UStateNode;
@@ -55,6 +54,9 @@ private:
 		meta = (AllowPrivateAccess, MustImplement="EventUserInterface"))
 	TSet<TSoftClassPtr<UStateNode>> EventUsers;
 
+	/* Do not read from this directly. Use GetEvents_Inner(). */
+	mutable TSet<FName> NamespacedEvents;
+
 public:
 
 	UStateMachineInterface();
@@ -66,8 +68,6 @@ public:
 	TSet<FName> GetStates() const;
 	TSet<FName> GetSubMachines() const;
 
-	FName GenerateGameplayTagFrom(FName EventName, const FSMIData& Data) const;
-
 	void AddEvent(FName EName) { this->Events.Add(EName); }
 	void AddState(FName SName) { this->States.Add(SName); }
 
@@ -76,15 +76,18 @@ public:
 	void SetParent(UStateMachineInterface* NewParent);
 	void SetParent(TSoftObjectPtr<UStateMachineInterface> NewParent);
 
+	FName EventToNamespaced(FName EventName) const;
+
 	#if WITH_EDITOR
 		virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 		virtual void PreEditChange(FProperty* Property) override;
-		virtual void PreSaveRoot(FObjectPreSaveRootContext ObjectSaveContext) override;
-		void AddEventToTable(FName EName, const FSMIData& Data);
 	#endif //WITH_EDITOR
 
 private:
 
 	/* Verifies that reparenting with NewParent won't create a cycle. */
 	bool VerifyNoCycles() const;
+
+	void UpdateNamespacedEvents() const;
+	const TSet<FName>& GetEvents_Inner() const;
 };

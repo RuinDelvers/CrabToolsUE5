@@ -54,7 +54,7 @@ public:
 	/** Get the Data Table input pin */
 	UEdGraphPin* GetInterfacePin(const TArray<UEdGraphPin*>* InPinsToSearch=NULL) const;
 	/** Get the spawn transform input pin */	
-	UEdGraphPin* GetEventPin() const;
+	virtual UEdGraphPin* GetEventPin() const override;
 
 	void OnInterfaceRowListChanged(const UStateMachineInterface* Interface);
 

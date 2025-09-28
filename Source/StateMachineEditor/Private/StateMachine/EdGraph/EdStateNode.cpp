@@ -340,7 +340,106 @@ void UEdStateNode::UpdateStateArchetype(TSubclassOf<UState> NewStateClass)
 
 void UEdStateNode::SetDebugObject(UState* State)
 {
-	this->DebugStateObject = State;
+	if (this->DebugStateObject != State)
+	{
+		if (IsValid(State))
+		{
+			State->OnEventReceived.AddDynamic(this, &UEdStateNode::ReceiveEvent);
+			State->OnEventWithDataReceived.AddDynamic(this, &UEdStateNode::ReceiveEventWithData);
+		}
+
+		if (this->DebugStateObject)
+		{
+			this->DebugStateObject->OnEventReceived.RemoveAll(this);
+			this->DebugStateObject->OnEventWithDataReceived.RemoveAll(this);
+		}
+
+		this->DebugStateObject = State;
+
+		this->FilterDebugData();
+	}
+}
+
+void UEdStateNode::ReceiveEvent(FName EName)
+{
+	FStateNodeEventDebugData Data;
+
+	Data.EventName = EName;
+	Data.TimeReceived = this->DebugStateObject->GetMachine()->GetWorld()->GetTimeSeconds();
+
+	this->EventDebugData.Add(Data);
+}
+
+void UEdStateNode::ReceiveEventWithData(FName EName, UObject* Data)
+{
+	FStateNodeEventDebugData DebugData;
+
+	DebugData.EventName = EName;
+	DebugData.bHadData = true;
+	DebugData.Data = Data;
+	DebugData.TimeReceived = this->DebugStateObject->GetMachine()->GetWorld()->GetTimeSeconds();
+
+	this->EventDebugData.Add(DebugData);
+}
+
+void UEdStateNode::FilterDebugData()
+{
+	if (this->DebugStateObject)
+	{
+		float Lifetime = this->GetStateGraph()->GetBlueprintOwner()->GetEventDebugDataLifetime();
+		float CurrentTime = this->DebugStateObject->GetMachine()->GetWorld()->GetTimeSeconds();
+
+		this->EventDebugData = this->EventDebugData.FilterByPredicate(
+			[Lifetime, CurrentTime](const FStateNodeEventDebugData& Data)
+			{
+				return CurrentTime - Data.TimeReceived <= Lifetime ;
+			});
+	}
+	else
+	{
+		this->EventDebugData.Empty();
+	}
+}
+
+FString UEdStateNode::GetDebugDataString()
+{
+	FString DataString;
+
+	this->FilterDebugData();
+
+	if (this->DebugStateObject)
+	{
+		float CurrentTime = this->DebugStateObject->GetMachine()->GetWorld()->GetTimeSeconds();
+
+		if (this->IsActive())
+		{
+			float ActiveTime = this->DebugStateObject->GetMachine()->GetDebugData().CurrentStateTime;
+			DataString.Append(FString::Printf(TEXT("Active Time: %f"), CurrentTime - ActiveTime));
+		}
+		
+		TArray<FString> Joins;
+
+		for (const auto& Data : this->EventDebugData)
+		{
+			FString Formatted = FString::Printf(
+				TEXT("Event received %f ago. \n- %s"),				
+				CurrentTime - Data.TimeReceived,
+				*Data.EventName.ToString());
+			
+			Joins.Add(Formatted);
+		}
+
+		if (Joins.Num() > 0)
+		{
+			if (DataString.Len() > 0)
+			{
+				DataString.Append("\n");
+			}
+			DataString.Append(FString::Join(Joins, TEXT("\n")));
+		}		
+	}
+
+	return DataString;
 }
 
 #if WITH_EDITOR

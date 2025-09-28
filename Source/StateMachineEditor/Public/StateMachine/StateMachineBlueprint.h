@@ -32,6 +32,9 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "StateMachine")
 	TSubclassOf<UState> DefaultStateClass;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Interface")
+	float EventDebugDataLifetime = 10;
+
 public:
 
 	/* Editor Events when this object is changed. */
@@ -103,9 +106,10 @@ public:
 
 	virtual void SetObjectBeingDebugged(UObject* Obj) override;
 
+	float GetEventDebugDataLifetime() const { return this->EventDebugDataLifetime; }
+
 private:
 
 	void InspectObject(UObject* Obj);
-
 	void UpdateDefaultStateClass();
 };

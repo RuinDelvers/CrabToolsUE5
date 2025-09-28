@@ -26,4 +26,12 @@ public:
 
 	virtual TSet<FName> GetEventSet() const { return {}; }
 	virtual bool IsActionFilteredOut(FBlueprintActionFilter const& Filter) override;
+
+	virtual UEdGraphPin* GetEventPin() const { return nullptr; }
+
+	bool CheckValidEvent(class FCompilerResultsLog& CompilerContext) const;
+
+private:
+
+	void PrintInvalidEventError(class FCompilerResultsLog& CompilerContext, FName EName) const;
 };

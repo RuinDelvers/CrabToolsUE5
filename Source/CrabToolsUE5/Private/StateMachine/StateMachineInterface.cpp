@@ -1,13 +1,9 @@
 #include "StateMachine/StateMachineInterface.h"
 #include "StateMachine/StateMachine.h"
-#include "GameplayTagsManager.h"
-#include "UObject/ObjectSaveContext.h"
-
-
 
 UStateMachineInterface::UStateMachineInterface()
 {
-	//this->RowStruct == FGameplayTagTableRow::StaticStruct();
+
 }
 
 bool UStateMachineInterface::VerifyNoCycles() const
@@ -40,7 +36,7 @@ void UStateMachineInterface::SetParent(TSoftObjectPtr<UStateMachineInterface> Ne
 
 bool UStateMachineInterface::HasEvent(FName EName) const
 {
-	bool bFound = this->Events.Contains(EName);
+	bool bFound = this->GetEvents_Inner().Contains(EName);
 
 	if (auto CheckParent = this->Parent.LoadSynchronous())
 	{
@@ -76,12 +72,7 @@ bool UStateMachineInterface::HasCallEvent(FName EName) const
 
 TSet<FName> UStateMachineInterface::GetEvents() const
 {
-	TSet<FName> Collect;
-
-	for (auto& Name : this->Events)
-	{
-		Collect.Add(Name.Key);
-	}
+	TSet<FName> Collect = this->GetEvents_Inner();
 
 	if (auto CheckParent = this->Parent.LoadSynchronous())
 	{
@@ -142,23 +133,41 @@ TSet<FName> UStateMachineInterface::GetSubMachines() const
 	return Collect;
 }
 
-FName UStateMachineInterface::GenerateGameplayTagFrom(FName EventName, const FSMIData& Data) const
+FName UStateMachineInterface::EventToNamespaced(FName EventName) const
 {
 	FString AssetName = this->GetName();
 
 	if (AssetName.StartsWith("SMI_"))
 	{
-		AssetName = AssetName.RightChop(4);
+		AssetName.LeftChopInline(4);
 	}
 	else if (AssetName.EndsWith("_SMI"))
 	{
-		AssetName = AssetName.LeftChop(AssetName.Len() - 4);
+		AssetName.LeftChopInline(4);
 	}
 
 	AssetName.Append(".");
 	AssetName.Append(EventName.ToString());
 
 	return FName(AssetName);
+}
+
+void UStateMachineInterface::UpdateNamespacedEvents() const
+{
+	if (this->NamespacedEvents.Num() == 0)
+	{
+		for (const auto& EName : this->Events)
+		{
+			this->NamespacedEvents.Add(this->EventToNamespaced(EName.Key));
+		}
+	}
+}
+
+const TSet<FName>& UStateMachineInterface::GetEvents_Inner() const
+{
+	this->UpdateNamespacedEvents();
+
+	return this->NamespacedEvents;
 }
 
 #if WITH_EDITOR
@@ -186,57 +195,10 @@ void UStateMachineInterface::PostEditChangeProperty(FPropertyChangedEvent& Prope
 	}
 
 	this->Events.KeySort([&](const FName& A, const FName& B) { return A.FastLess(B); });
+
+	this->NamespacedEvents.Empty();
+	this->UpdateNamespacedEvents();	
 }
 
-void UStateMachineInterface::PreSaveRoot(FObjectPreSaveRootContext ObjectSaveContext)
-{
-	/*
-	for (const auto& RowName : this->GetRowNames())
-	{
-		if (!this->HasEvent(RowName))
-		{
-			this->RemoveRow(RowName);
-		}
-	}
-
-	for (const auto& Event : this->Events)
-	{
-		if (!this->FindRowUnchecked(Event.Key))
-		{
-			this->AddEventToTable(Event.Key, Event.Value);
-		}
-	}
-
-	for (const auto& NodeClas : this->NodeEvents)
-	{
-		for (const auto& NodeClass : this->NodeEvents)
-		{
-			NodeClass.LoadSynchronous();
-
-			if (NodeClass.IsValid())
-			{
-				//TSet<FName> NodeEventNames;
-				//CastChecked<UStateNode>(NodeClass->GetDefaultObject())->GetNotifies(NodeEventNames);
-
-				// TODO Add these but need to update how nodes define their events.
-			}
-		}
-	}
-	*/
-
-	Super::PreSaveRoot(ObjectSaveContext);
-}
-
-void UStateMachineInterface::AddEventToTable(FName EName, const FSMIData& Data)
-{
-	FName TagName = this->GenerateGameplayTagFrom(EName, Data);
-	FGameplayTagTableRow GPData;
-	FString TagValue = TagName.ToString();
-	TagValue.InsertAt(0, "StateMachine.Events.");
-
-	GPData.Tag = FName(TagValue);
-
-	//this->AddRow(TagName, GPData);
-}
 
 #endif //WITH_EDITOR

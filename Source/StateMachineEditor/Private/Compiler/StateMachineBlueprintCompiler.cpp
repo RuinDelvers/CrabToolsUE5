@@ -35,17 +35,17 @@ public:
 
 	virtual void Error(FString& Msg, const UObject* Obj) override
 	{
-		this->Context.MessageLog.Error(*Msg);
+		this->Context.MessageLog.Error(*Msg, Obj);
 	}
 
 	virtual void Warning(FString& Msg, const UObject* Obj) override
 	{
-		this->Context.MessageLog.Warning(*Msg);
+		this->Context.MessageLog.Warning(*Msg, Obj);
 	}
 	
 	virtual void Note(FString& Msg, const UObject* Obj) override
 	{
-		this->Context.MessageLog.Note(*Msg);
+		this->Context.MessageLog.Note(*Msg, Obj);
 	}
 };
 
@@ -262,9 +262,7 @@ void FStateMachineBlueprintCompilerContext::CopyTermDefaultsToDefaultObject(UObj
 		{
 			if (auto SMBP = this->StateMachineBlueprint())
 			{
-				//FName StartName = SMBP->GetMainGraph()->GetStartStateName();
-				
-				//StateMachine->StartState = StartName;
+
 			}
 		}
 	}	

@@ -213,18 +213,14 @@ void SEdStateNode::GetNodeInfoPopups(FNodeInfoContext* Context, TArray<FGraphInf
 {
 	if (auto StateNode = Cast<UEdStateNode>(this->GraphNode))
 	{
-		if (StateNode->IsActive())
-		{
-			if (auto State = StateNode->GetDebugObject())
-			{
-				float ActiveTime = State->GetMachine()->GetDebugData().CurrentStateTime;
-				float CurrentTime = State->GetMachine()->GetWorld()->GetTimeSeconds();
+		auto DebugString = StateNode->GetDebugDataString();
 
-				Popups.Emplace(
-					nullptr,
-					StateMachineColors::Message::ActiveTimeColor,
-					FString::Printf(TEXT("Active Time: %f"), CurrentTime - ActiveTime));
-			}
+		if (DebugString.Len() > 0)
+		{
+			Popups.Emplace(
+				nullptr,
+				StateMachineColors::Message::ActiveTimeColor,
+				DebugString);
 		}
 	}
 }

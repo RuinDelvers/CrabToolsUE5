@@ -1,9 +1,41 @@
 #include "Actors/Targeting/BaseTraceTargetingActor.h"
 #include "Actors/Targeting/ITargeter.h"
+#include "Components/MouseOverComponent.h"
+#include "Logging/MessageLog.h"
+
+#define LOCTEXT_NAMESPACE "BaseTraceTargetingActor"
 
 ABaseTraceTargetingActor::ABaseTraceTargetingActor()
 {
 	this->PrimaryActorTick.bCanEverTick = true;
+}
+
+void ABaseTraceTargetingActor::Initialize_Implementation()
+{
+	Super::Initialize_Implementation();
+
+	switch (this->PointSource)
+	{
+		case ETraceTargetingPointSource::TARGETER:
+			this->SetActorTickEnabled(true);
+			break;
+		case ETraceTargetingPointSource::MOUSE_OVER:
+			this->SetActorTickEnabled(false);
+			if (auto Comp = ITargeterInterface::Execute_GetMouseOver(this->GetUsingActorNative()))
+			{
+				Comp->OnMouseOverTick.AddDynamic(this, &ABaseTraceTargetingActor::HandleMouseOver);
+			}
+			else
+			{
+				FMessageLog Log("PIE");
+				Log.Error(
+					FText::FormatNamed(
+						LOCTEXT("MissingMouseOverError", "MouseOverComponent could not be found for {Targeting} used by {Actor}"),
+						TEXT("Targeting"), FText::FromString(this->GetName()),
+						TEXT("Actor"), FText::FromString(this->GetUsingActorNative()->GetName())));
+			}
+			break;
+	}
 }
 
 void ABaseTraceTargetingActor::Tick(float DeltaTime)
@@ -11,6 +43,23 @@ void ABaseTraceTargetingActor::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	this->TargetLocation = ITargeterInterface::Execute_GetEndPoint(this->GetUsingActorNative());
+
+	this->HandleTrace();
+}
+
+void ABaseTraceTargetingActor::HandleMouseOver(UMouseOverComponent* Comp)
+{
+	UE_LOG(LogTemp, Warning, TEXT("Waffles"));
+	if (Comp->HasValidLocation())
+	{
+		this->TargetLocation = Comp->GetLocation();
+		this->HandleTrace();
+	}
+	else
+	{
+		this->TargetLocation = this->GetActorLocation();
+		this->InvalidateTargetData();
+	}	
 }
 
 void ABaseTraceTargetingActor::InvalidateTargetData()
@@ -48,3 +97,5 @@ void ABaseTraceTargetingActor::IgnoreActors_Implementation(TArray<AActor*>& Igno
 		IgnoredActors.Add(this->GetUsingActorNative());
 	}
 }
+
+#undef LOCTEXT_NAMESPACE

@@ -24,7 +24,7 @@ public:
 
 	AArcTraceTargetingActor();
 
-	virtual void Tick(float DeltaTime) override;
+	virtual void HandleTrace_Implementation() override;
 
 	UFUNCTION(BlueprintCallable, Category="Targeting|ArcTrace")
 	void SetSplineEndPoint(FVector Target);

@@ -1,9 +1,9 @@
 #include "Actors/Targeting/MouseTraceTargetingActor.h"
 #include "Actors/Targeting/ITargeter.h"
 
-void AMouseTraceTargetingActor::Tick(float DeltaTime)
+void AMouseTraceTargetingActor::HandleTrace_Implementation()
 {
-	Super::Tick(DeltaTime);
+	Super::HandleTrace_Implementation();
 
 	if (auto PlayerController = Cast<APlayerController>(Cast<APawn>(this->GetUsingActor())->GetController())) 
 	{

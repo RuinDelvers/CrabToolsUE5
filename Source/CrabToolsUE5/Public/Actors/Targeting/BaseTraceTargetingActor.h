@@ -1,8 +1,17 @@
 #pragma once
 
-#include "CoreMinimal.h"
 #include "Actors/Targeting/BaseTargetingActor.h"
 #include "BaseTraceTargetingActor.generated.h"
+
+class UMouseOverComponent;
+
+UENUM(BlueprintType)
+enum class ETraceTargetingPointSource: uint8
+{
+	TARGETER   UMETA(DisplayName="Targeter"),
+	MOUSE_OVER UMETA(DisplayName = "Mouse Over"),
+};
+
 
 UCLASS(Abstract, Blueprintable)
 class ABaseTraceTargetingActor : public ABaseTargetingActor
@@ -17,6 +26,9 @@ protected:
 			meta = (AllowPrivateAccess))
 		bool bDrawDebug = false;
 	#endif // WITH_EDITORONLY_DATA
+
+	UPROPERTY(EditDefaultsOnly, Category = "Targeting|Trace")
+	ETraceTargetingPointSource PointSource = ETraceTargetingPointSource::TARGETER;
 
 	/* Scale the direction to the target by the given percentage */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Targeting|Trace",
@@ -43,6 +55,7 @@ public:
 	ABaseTraceTargetingActor();
 
 	virtual void Tick(float DeltaTime) override;
+	virtual void Initialize_Implementation() override;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category="Targeting|Trace", meta=(HideSelfPin))
 	FVector GetEndPoint() const { return this->TracedTarget.TargetLocation; }
@@ -63,10 +76,19 @@ public:
 	FVector GetTraceBase() const;
 	FVector GetTraceBase_Implementation() const { return this->GetActorLocation(); }
 
-	UFUNCTION(BlueprintCallable, BlueprintPure)
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category="Target|Trace")
 	FVector GetTargetEndPoint() const { return this->TargetLocation; }
+
+	UFUNCTION(BlueprintNativeEvent, Category = "Targeting|Trace")
+	void HandleTrace();
+	virtual void HandleTrace_Implementation() {}
 
 protected:
 
 	void InvalidateTargetData();
+
+private:
+
+	UFUNCTION()
+	void HandleMouseOver(UMouseOverComponent* Comp);
 };

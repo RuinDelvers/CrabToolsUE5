@@ -49,7 +49,7 @@ public:
 	UEdGraphPin* GetSelfPin() const;
 	UEdGraphPin* GetThenPin() const;
 	/** Get the spawn transform input pin */	
-	UEdGraphPin* GetEventPin() const;
+	virtual UEdGraphPin* GetEventPin() const override;
 
 	virtual TSet<FName> GetEventSet() const override;
 

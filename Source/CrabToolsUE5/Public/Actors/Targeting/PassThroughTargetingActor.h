@@ -15,5 +15,5 @@ class APassThroughTargetingActor : public ABaseTraceTargetingActor
 
 public:
 
-	virtual void Tick(float DeltaTime) override;
+	virtual void HandleTrace_Implementation() override;
 };

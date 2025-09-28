@@ -158,7 +158,6 @@ TArray<FString> UInteractableComponent::GetActorInteractions(UClass* Class)
 
 	if (Class)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Attempting to get interactions from %s"), *Class->GetName());
 		auto FnSign = UInteractableComponent::StaticClass()->FindFunctionByName(GET_FUNCTION_NAME_CHECKED(UInteractableComponent, ExampleInteraction));
 
 		for (TFieldIterator<UFunction> FIT(Class, EFieldIteratorFlags::IncludeSuper); FIT; ++FIT)

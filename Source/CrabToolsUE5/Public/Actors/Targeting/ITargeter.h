@@ -3,6 +3,8 @@
 #include "CoreMinimal.h"
 #include "ITargeter.generated.h"
 
+class UMouseOverComponent;
+
 UINTERFACE(MinimalAPI, Blueprintable, BlueprintType)
 class UTargeterInterface : public UInterface
 {
@@ -14,6 +16,10 @@ class ITargeterInterface
 	GENERATED_BODY()
 
 public:
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Targeting|Trace")
+	UMouseOverComponent* GetMouseOver() const;
+	virtual UMouseOverComponent* GetMouseOver_Implementation() const { return nullptr; }
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Targeting|Trace")
 	FVector GetEndPoint() const;

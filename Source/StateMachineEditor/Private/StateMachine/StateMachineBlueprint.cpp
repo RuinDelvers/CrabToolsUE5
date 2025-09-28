@@ -168,6 +168,8 @@ void UStateMachineBlueprint::Verify(FNodeVerificationContext& Context) const
 		auto SMOptions = this->GetMachineOptions();
 		auto LoadedIFace = IFace.LoadSynchronous();
 
+		if (!IsValid(LoadedIFace)) { continue; }
+
 		for (auto& SMName : LoadedIFace->GetSubMachines())
 		{
 			if (!SMOptions.Contains(SMName.ToString()))
@@ -361,6 +363,10 @@ bool UStateMachineBlueprint::HasEvent(FName EName) const
 
 	for (auto& Interface : this->Interfaces)
 	{
+		Interface.LoadSynchronous();
+
+		if (Interface.IsNull()) { continue; }
+
 		if (Interface->HasEvent(EName))
 		{
 			bHasEvent = true;

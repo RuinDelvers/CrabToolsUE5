@@ -133,6 +133,7 @@ class CRABTOOLSUE5_API UState : public UObject, public IStateLike
 {
 	GENERATED_BODY()
 
+
 	friend class UStateMachine;
 
 	UPROPERTY(VisibleAnywhere, Transient, DuplicateTransient, Category="StateMachine",
@@ -145,6 +146,18 @@ class CRABTOOLSUE5_API UState : public UObject, public IStateLike
 	// Map from Event Name to StateName
 	UPROPERTY(VisibleAnywhere, DuplicateTransient, Category = "StateMachine", meta = (AllowPrivateAccess))
 	TMap<FName, FTransitionDataSet> Transitions;
+
+public:
+
+	#if WITH_EDITORONLY_DATA
+		DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FEventCallback, FName, EventName);
+
+		FEventCallback OnEventReceived;
+
+		DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FEventWithDataCallback, FName, EventName, UObject*, Data);
+
+		FEventWithDataCallback OnEventWithDataReceived;
+	#endif
 
 public:
 

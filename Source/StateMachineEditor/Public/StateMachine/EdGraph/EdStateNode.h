@@ -39,6 +39,19 @@ struct FStateNodeOverrideContainer
 	TObjectPtr<UState> DefaultObject;
 };
 
+USTRUCT()
+struct FStateNodeEventDebugData
+{
+	GENERATED_BODY()
+
+public:
+
+	FName EventName;
+	TObjectPtr<UObject> Data;
+	bool bHadData = false;
+	float TimeReceived = 0.0;
+};
+
 UCLASS(MinimalAPI)
 class UEdStateNode : public UEdBaseStateNode
 {
@@ -89,6 +102,8 @@ class UEdStateNode : public UEdBaseStateNode
 			ShowOnlyInnerProperties))
 	 FStateNodeOverrideContainer StateClassOverride;
 
+	 TArray<FStateNodeEventDebugData> EventDebugData;
+
 public:
 
 	UEdStateNode();
@@ -131,6 +146,8 @@ public:
 	virtual bool IsActive() const;
 	TSet<FName> GetNotifies() const;
 
+	FString GetDebugDataString();
+
 private:
 
 	void UpdateEmittedEvents();
@@ -140,4 +157,12 @@ private:
 	TArray<FString> GetInheritableStates() const;
 
 	FStateArchetypeData GetBaseCompilationData(UObject* Outer);
+
+	UFUNCTION()
+	void ReceiveEvent(FName EName);
+
+	UFUNCTION()
+	void ReceiveEventWithData(FName EName, UObject* Data);
+
+	void FilterDebugData();
 };

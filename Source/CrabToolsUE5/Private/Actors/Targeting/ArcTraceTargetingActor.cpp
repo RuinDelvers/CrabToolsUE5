@@ -16,9 +16,9 @@ AArcTraceTargetingActor::AArcTraceTargetingActor()
 	this->SetRootComponent(this->PathSpline);
 }
 
-void AArcTraceTargetingActor::Tick(float DeltaTime)
+void AArcTraceTargetingActor::HandleTrace_Implementation()
 {
-	Super::Tick(DeltaTime);
+	Super::HandleTrace_Implementation();
 
 	this->SetSplineEndPoint(this->GetTargetEndPoint());
 

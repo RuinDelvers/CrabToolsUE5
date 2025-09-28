@@ -112,6 +112,8 @@ void UMouseOverComponent::DoTrace()
 	}
 
 	this->UpdateMousePointActors();
+
+	this->OnMouseOverTick.Broadcast(this);
 }
 
 void UMouseOverComponent::SetOverridePosition(const FPointerEvent& Ev, bool bShouldUpdateTraces)

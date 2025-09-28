@@ -1,9 +1,9 @@
 #include "Actors/Targeting/LineTraceTargetingActor.h"
 #include "Actors/Targeting/ITargeter.h"
 
-void ALineTraceTargetingActor::Tick(float DeltaTime)
+void ALineTraceTargetingActor::HandleTrace_Implementation()
 {
-	Super::Tick(DeltaTime);
+	Super::HandleTrace_Implementation();
 
 	FCollisionQueryParams TraceParams = FCollisionQueryParams(FName(TEXT("RV_Trace")), true, this);
 	

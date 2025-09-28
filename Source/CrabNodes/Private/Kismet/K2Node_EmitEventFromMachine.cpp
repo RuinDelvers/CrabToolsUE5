@@ -117,7 +117,7 @@ void UK2Node_EmitEventFromMachine::ReallocatePinsDuringReconstruction(TArray<UEd
 
 TSubclassOf<UStateMachine> UK2Node_EmitEventFromMachine::GetSMClass() const
 {
-	auto Pin = this->GetInterfacePin();
+	auto Pin = this->GetStateMachinePin();
 
 	if (Pin->LinkedTo.Num() == 0)
 	{
@@ -254,6 +254,17 @@ void UK2Node_EmitEventFromMachine::ExpandNode(class FKismetCompilerContext& Comp
 	// Connect the input of our EmitEventFromInterface to the Input of our Function pin
     UEdGraphPin* StateMachineInPin = EmitEventFromInterfaceFunction->FindPinChecked(TEXT("Obj"));
 
+	// This check is omitted currently as the compilation of this node have simultaneously with the
+	// SM it references. This causes the event set to always be empty, and thus this will always fire
+	// at the first compilation upon loading the editor.
+	/*
+	if (!this->CheckValidEvent(CompilerContext.MessageLog))
+	{
+		BreakAllNodeLinks();
+		return;
+	}
+	*/
+
 	if(OriginalStateMachineInPin->LinkedTo.Num() > 0)
 	{
 		// Copy the connection
@@ -261,7 +272,7 @@ void UK2Node_EmitEventFromMachine::ExpandNode(class FKismetCompilerContext& Comp
 	}
 	else
 	{
-		CompilerContext.MessageLog.Error(*LOCTEXT("NoStateMachine_Error", "EmitEventFromMachine must have a StateMachine specified.").ToString(), this);
+		CompilerContext.MessageLog.Error(*LOCTEXT("NoStateMachine_Error", "@@ EmitEventFromMachine must have a StateMachine specified.").ToString(), this);
 		// we break exec links so this is the only error we get
 		BreakAllNodeLinks();
 		return;
@@ -297,6 +308,7 @@ void UK2Node_EmitEventFromMachine::EarlyValidation(class FCompilerResultsLog& Me
 
 	const UEdGraphPin* InterfacePin = GetInterfacePin();
 	const UEdGraphPin* EventPin = GetEventPin();
+
 	if (!InterfacePin || !EventPin)
 	{
 		MessageLog.Error(*LOCTEXT("MissingPins", "Missing pins in @@").ToString(), this);
@@ -330,12 +342,12 @@ void UK2Node_EmitEventFromMachine::EarlyValidation(class FCompilerResultsLog& Me
 				}
 			}
 		}
-	}	
+	}
 }
 
 void UK2Node_EmitEventFromMachine::PreloadRequiredAssets()
 {
-	if (UEdGraphPin* InterfacePin = GetInterfacePin())
+	if (UEdGraphPin* InterfacePin = GetStateMachinePin())
 	{
 		if (auto Interface = this->GetSMClass())
 		{
@@ -365,8 +377,7 @@ TSet<FName> UK2Node_EmitEventFromMachine::GetEventSet() const
 		if (auto BPGC = Cast<UStateMachineBlueprintGeneratedClass>(SMClass))
 		{
 			return BPGC->GetTotalEventSet();
-		}
-		
+		}		
 	}
 
 	return {};

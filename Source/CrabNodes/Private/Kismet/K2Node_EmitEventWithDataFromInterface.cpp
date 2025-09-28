@@ -72,6 +72,12 @@ void UK2Node_EmitEventWithDataFromInterface::ExpandNode(class FKismetCompilerCon
 	UEdGraphPin* OriginalInterfaceInPin = GetInterfacePin();
 	UEdGraphPin* OriginalStateMachineInPin = GetStateMachinePin();
 
+	if (!this->CheckValidEvent(CompilerContext.MessageLog))
+	{
+		BreakAllNodeLinks();
+		return;
+	}	
+
     UStateMachineInterface* Table = (OriginalInterfaceInPin != NULL) ? Cast<UStateMachineInterface>(OriginalInterfaceInPin->DefaultObject) : NULL;
     if((nullptr == OriginalInterfaceInPin) || (0 == OriginalInterfaceInPin->LinkedTo.Num() && nullptr == Table))
     {

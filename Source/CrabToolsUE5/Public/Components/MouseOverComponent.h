@@ -69,9 +69,14 @@ class CRABTOOLSUE5_API UMouseOverComponent : public UActorComponent
 public:
 
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FMouseOverActor, AActor*, Actor);
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FMouseOverTick, UMouseOverComponent*, Component);
 
 	UPROPERTY(BlueprintAssignable, Category="MouseOver")
 	FMouseOverActor OnMouseOverActor;
+
+	UPROPERTY(BlueprintAssignable, Category = "MouseOver")
+	FMouseOverTick OnMouseOverTick;
+
 
 public:
 
@@ -100,7 +105,7 @@ public:
 	void SetMousePointActorsHidden(bool bHidden);
 
 	#if WITH_EDITOR
-		UFUNCTION(BlueprintCallable, Category = "Debug")
+		UFUNCTION(BlueprintCallable, Category="Debug")
 		void DisplayDebug();
 	#endif
 

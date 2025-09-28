@@ -1,8 +1,6 @@
 #pragma once
 
-#include "StateMachine/StateMachineBlueprint.h"
 #include "AssetDefinitionDefault.h"
-
 #include "AssetDefinition_StateMachineBlueprint.generated.h"
 
 UCLASS()

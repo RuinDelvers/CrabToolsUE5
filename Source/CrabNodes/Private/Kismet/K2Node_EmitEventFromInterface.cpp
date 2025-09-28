@@ -237,7 +237,9 @@ void UK2Node_EmitEventFromInterface::ExpandNode(class FKismetCompilerContext& Co
     UStateMachineInterface* Table = (OriginalInterfaceInPin != NULL) ? Cast<UStateMachineInterface>(OriginalInterfaceInPin->DefaultObject) : NULL;
     if((nullptr == OriginalInterfaceInPin) || (0 == OriginalInterfaceInPin->LinkedTo.Num() && nullptr == Table))
     {
-        CompilerContext.MessageLog.Error(*LOCTEXT("NoInterface_Error", "EmitEventFromInterface must have a Interface specified.").ToString(), this);
+        CompilerContext.MessageLog.Error(
+			*LOCTEXT("NoInterface_Error", "EmitEventFromInterface must have a Interface specified.").ToString(),
+			this);
         // we break exec links so this is the only error we get
         BreakAllNodeLinks();
         return;
@@ -325,7 +327,9 @@ void UK2Node_EmitEventFromInterface::EarlyValidation(class FCompilerResultsLog& 
 				return;
 			}
 		}
-	}	
+	}
+
+	this->CheckValidEvent(MessageLog);
 }
 
 void UK2Node_EmitEventFromInterface::PreloadRequiredAssets()
@@ -334,8 +338,6 @@ void UK2Node_EmitEventFromInterface::PreloadRequiredAssets()
 	{
 		if (UStateMachineInterface* Interface = Cast<UStateMachineInterface>(InterfacePin->DefaultObject))
 		{
-			// make sure to properly load the data-table object so that we can 
-			// farm the "RowStruct" property from it (below, in EmitEventFromInterfaceStructType)
 			PreloadObject(Interface);
 		}
 	}

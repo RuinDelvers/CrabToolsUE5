@@ -149,7 +149,18 @@ FText UK2Node_EmitEventFromNodeList::GetNodeTitle(ENodeTitleType::Type TitleType
 void UK2Node_EmitEventFromNodeList::ExpandNode(class FKismetCompilerContext& CompilerContext, UEdGraph* SourceGraph)
 {
     Super::ExpandNode(CompilerContext, SourceGraph);
- 
+
+	// This check is omitted currently as the compilation of this node have simultaneously with the
+	// SM it references. This causes the event set to always be empty, and thus this will always fire
+	// at the first compilation upon loading the editor.
+	/*
+	if (!this->CheckValidEvent(CompilerContext.MessageLog))
+	{
+		BreakAllNodeLinks();
+		return;
+	}
+	*/
+
 	// FUNCTION NODE
 	const FName FunctionName = GET_FUNCTION_NAME_CHECKED(UStateNode, EmitEvent);
 	UK2Node_CallFunction* EmitEventFromNodeListFunction = CompilerContext.SpawnIntermediateNode<UK2Node_CallFunction>(this, SourceGraph);
@@ -227,6 +238,7 @@ void UK2Node_EmitEventFromNodeList::EarlyValidation(class FCompilerResultsLog& M
 
 	//const UEdGraphPin* InterfacePin = GetInterfacePin();
 	const UEdGraphPin* EventPin = GetEventPin();
+
 	if (!EventPin)
 	{
 		MessageLog.Error(*LOCTEXT("MissingPins", "Missing pins in @@").ToString(), this);
@@ -245,7 +257,7 @@ TSet<FName> UK2Node_EmitEventFromNodeList::GetEventSet() const
 
 	if (auto BPGC = this->GetBlueprint()->GeneratedClass.Get())
 	{
-		if (auto Node = Cast<UStateNode>(BPGC->GetDefaultObject()))
+		if (auto Node = Cast<UStateNode>(BPGC->GetDefaultObject(false)))
 		{
 			Node->GetEmittedEvents(Emitted);
 		}
