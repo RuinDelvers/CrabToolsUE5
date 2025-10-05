@@ -46,3 +46,9 @@ To use this system, simply extend the RPGComponent (either blueprint or c++), cr
 and set the variable to the object you want. In BP they are instanced, but in c++ you use CreateDefaultSubobject
 to handle this, and with some useful tools for resources to easily setup the relationships between
 Min/Max attributes.
+
+## Dialogue System
+
+The Dialogue System is designed to work with our state machines, but does have support for custom handlers. To make a dialogue system, you would utilize the "Dialogue" Nodes (Nodes that contain dialogue in their name). Along with the DialogueComponent to handle handshaking and syncing dialogue states between characters. UI elements can hook into the dialogue component to receive dialogue & monologue data to receive. This way control (component), the model implementation (the State Machine or custom), and the view (the UI or other visible effects) are all separate & rely on a simple communication protocol.
+
+The dialogue nodes can also be extended to handle more complex features, such as spawning in Sequencer events or other necessities when dialogue is chosen.
