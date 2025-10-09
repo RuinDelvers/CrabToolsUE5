@@ -46,16 +46,19 @@ protected:
 			Text->SetText(Data->DisplayText);
 		}
 		else
-		{			
-			Text->SetTextStyle(&this->Mapper->Text.Find(RunInfo.Name)->Style);
-			Text->SetText(this->Mapper->Text.Find(RunInfo.Name)->DisplayText);
+		{
+			if (auto Data = this->Mapper->Text.Find(RunInfo.Name))
+			{
+				Text->SetTextStyle(&Data->Style);
+				Text->SetText(Data->DisplayText);
+			}			
 		}
 
-		auto& Font = this->Owner->GetCurrentDefaultTextStyle().Font;
-		Text->SetFont(Font);
+		//auto& Font = this->Owner->GetCurrentDefaultTextStyle().Font;
+		//Text->SetFont(Font);
+		Text->SetFont(TextStyle.Font);
 
 		return Text;
-		//return TSharedPtr<SWidget>();
 	}
 private:
 

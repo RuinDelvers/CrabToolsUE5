@@ -462,21 +462,7 @@ bool UEdStateGraph::IsStateNameAvailable(FName Name) const
 
 void UEdStateGraph::Verify(FNodeVerificationContext& Context, UStateMachineInterface* IFace) const
 {
-	auto PublicStates = this->GetAllPublicStates();
 
-	for (auto& StateName : IFace->GetStates())
-	{
-		if (!PublicStates.Contains(StateName))
-		{
-			FString ErrorMessage = FString::Printf(
-				TEXT("Graph %s does not contain public state %s as needed for interface %s"),
-				*this->GetDisplayName(),
-				*StateName.ToString(),
-				*IFace->GetName());
-
-			Context.Error(ErrorMessage, this);
-		}
-	}
 }
 
 FName UEdStateGraph::RenameEvent(UEdEventObject* EventObj, FName To)

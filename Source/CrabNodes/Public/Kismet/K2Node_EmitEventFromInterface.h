@@ -6,7 +6,7 @@
 #include "Textures/SlateIcon.h"
 #include "UObject/ObjectMacros.h"
 #include "Kismet/K2Node_EmitEventBase.h"
-
+#include "StateMachine/DataStructures.h"
 #include "K2Node_EmitEventFromInterface.generated.h"
 
 class FBlueprintActionDatabaseRegistrar;
@@ -24,6 +24,9 @@ class CRABNODES_API UK2Node_EmitEventFromInterface : public UK2Node_EmitEventBas
 	GENERATED_UCLASS_BODY()
 
 protected:
+
+	UPROPERTY(EditAnywhere, Category=Events)
+	FEventSlot Event;
 
 public:
 
@@ -72,4 +75,6 @@ protected:
 
 	/** Triggers a refresh which will update the node's widget; aimed at updating the dropdown menu for the Event input */
 	void RefreshEventOptions();
+
+	virtual bool ShouldShowNodeProperties() const { return true; }
 };

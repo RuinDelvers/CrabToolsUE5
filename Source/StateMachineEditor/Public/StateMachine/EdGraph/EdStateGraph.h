@@ -247,6 +247,7 @@ public:
 
 private:
 
+	
 	bool UpdateOverrideData();
 
 	/* Checks whether or not an emitter attached to this graph has an event. */

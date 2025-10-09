@@ -66,6 +66,9 @@ private:
 	float ForwardDistance = 10;
 
 	UPROPERTY(EditAnywhere, Category = "LedgeDetection", meta = (AllowPrivateAccess))
+	bool bTraceComplex = false;
+
+	UPROPERTY(EditAnywhere, Category = "LedgeDetection", meta = (AllowPrivateAccess))
 	bool bUseCapsuleRadiusForForward = true;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "LedgeDetection", meta = (AllowPrivateAccess))
@@ -79,6 +82,8 @@ private:
 
 	UPROPERTY(VisibleAnywhere, Category = "LedgeDetection")
 	TSet<TObjectPtr<UObject>> Activators;
+
+	FCollisionQueryParams TraceParams;
 
 public:
 

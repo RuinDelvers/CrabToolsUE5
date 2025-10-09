@@ -33,26 +33,24 @@ private:
 		meta = (AllowPrivateAccess))
 	TSoftObjectPtr<UStateMachineInterface> Parent;
 
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="StateMachine",
 		meta=(AllowPrivateAccess))
 	TMap<FName, FSMIData> Events;
 
+	/*
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="StateMachine",
 		meta=(AllowPrivateAccess))
 	TMap<FName, FSMIData> States;
 
-	/* Set of public submachines implemented */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="StateMachine",
 		meta=(AllowPrivateAccess))
 	TMap<FName, FSMIData> SubMachines;
+	*/
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "StateMachine",
 		meta = (AllowPrivateAccess))
 	TSet<TSoftClassPtr<UStateNode>> NodeEvents;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "StateMachine",
-		meta = (AllowPrivateAccess, MustImplement="EventUserInterface"))
-	TSet<TSoftClassPtr<UStateNode>> EventUsers;
 
 	/* Do not read from this directly. Use GetEvents_Inner(). */
 	mutable TSet<FName> NamespacedEvents;
@@ -65,13 +63,14 @@ public:
 	bool HasCallEvent(FName EName) const;
 	TSet<FName> GetCallEvents() const;
 	TSet<FName> GetEvents() const;
-	TSet<FName> GetStates() const;
-	TSet<FName> GetSubMachines() const;
+	const TMap<FName, FSMIData> GetEventData() const { return this->Events; }
+	//TSet<FName> GetStates() const;
+	//TSet<FName> GetSubMachines() const;
 
 	void AddEvent(FName EName) { this->Events.Add(EName); }
-	void AddState(FName SName) { this->States.Add(SName); }
+	//void AddState(FName SName) { this->States.Add(SName); }
 
-	void AddSubMachine(FName SName) { this->SubMachines.Add(SName);	}
+	//void AddSubMachine(FName SName) { this->SubMachines.Add(SName);	}
 
 	void SetParent(UStateMachineInterface* NewParent);
 	void SetParent(TSoftObjectPtr<UStateMachineInterface> NewParent);

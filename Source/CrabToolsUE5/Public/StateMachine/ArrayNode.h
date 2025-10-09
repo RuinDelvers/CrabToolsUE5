@@ -3,6 +3,8 @@
 #include "StateMachine.h"
 #include "ArrayNode.generated.h"
 
+struct FStateNodeInstanceData;
+
 /* This is used to handle piped data for the nested structure. */
 UCLASS()
 class CRABTOOLSUE5_API UArrayNodeData : public UObject, public IStateMachineDataInterface

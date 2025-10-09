@@ -27,4 +27,6 @@ public:
 private:
 
 	void OnSelectionChanged(UObject* Obj);
+	void OnPostEngineInit();
+	void InitializeCustomization();
 };

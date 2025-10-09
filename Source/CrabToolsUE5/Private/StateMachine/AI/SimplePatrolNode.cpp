@@ -4,23 +4,23 @@
 #include "Utils/UtilsLibrary.h"
 #include "StateMachine/IStateMachineLike.h"
 #include "StateMachine/Events.h"
-#include "StateMachine/Logging.h"
+#include "Components/Pathing/PatrolPathFollowingComponent.h"
 
 #define LOCTEXT_NAMESPACE "AISimplePatrolNode"
+
+FPatrolPathState TempState;
 
 UAISimplePatrolNode::UAISimplePatrolNode()
 {
 	this->AddEmittedEvent(Events::AI::ARRIVE);
 	this->AddEmittedEvent(Events::AI::LOST);
-
-	this->Property = CreateDefaultSubobject<UGenericPropertyBinding>(TEXT("PatrolPathProperty"));
+	
+	this->ComponentPattern = CreateDefaultSubobject<UActorComponentPatternRef>(TEXT("ComponentPattern"));
 }
 
 void UAISimplePatrolNode::Initialize_Inner_Implementation()
 {
 	Super::Initialize_Inner_Implementation();
-
-	this->Property->Initialize();
 
 	check(this->GetAIController());
 }
@@ -40,13 +40,30 @@ void UAISimplePatrolNode::PostTransition_Inner_Implementation()
 	if (bDoReset)
 	{
 		bool bFound = false;
-		auto& State = this->Property->GetStruct<FPatrolPathState>(bFound);
+		auto& State = this->GetState();
 
 		if (bFound) { State.Reset(); }
 	}
 
 	this->BindCallback();	
 	this->MoveToNext();
+}
+
+FPatrolPathState& UAISimplePatrolNode::GetState() const
+{
+	if (this->bCacheComponent)
+	{
+		if (!this->CachedComp)
+		{
+			this->CachedComp = this->ComponentPattern->FindComponentByClass<UPatrolPathFollowingComponent>(this->GetActorOwner());
+		}
+
+		return this->CachedComp->GetPathState(PathKey);
+	}
+	else
+	{
+		return this->ComponentPattern->FindComponentByClass<UPatrolPathFollowingComponent>(this->GetActorOwner())->GetPathState(PathKey);
+	}		
 }
 
 void UAISimplePatrolNode::Exit_Inner_Implementation()
@@ -58,9 +75,8 @@ void UAISimplePatrolNode::Exit_Inner_Implementation()
 
 void UAISimplePatrolNode::OnMoveCompleted(FAIRequestID RequestID, EPathFollowingResult::Type Result)
 {
-	bool bFound = false;
-	auto& State = this->Property->GetStruct<FPatrolPathState>(bFound);
-	if (bFound) { State.Step(); }
+	auto& State = this->GetState();
+	State.Step();
 
 	switch (Result)
 	{
@@ -83,12 +99,9 @@ void UAISimplePatrolNode::OnMoveCompleted(FAIRequestID RequestID, EPathFollowing
 
 void UAISimplePatrolNode::MoveToNext()
 {
-	bool bFound = false;
-	auto& State = this->Property->GetStruct<FPatrolPathState>(bFound);
-
-	if (!bFound) { return; }
-
+	auto& State = this->GetState();
 	auto Ctrl = this->GetAIController();
+
 	FVector Goal = State.Point();
 
 	this->RecurseGuard += 1;

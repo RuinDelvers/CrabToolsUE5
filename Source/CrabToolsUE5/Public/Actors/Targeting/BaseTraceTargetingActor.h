@@ -8,8 +8,9 @@ class UMouseOverComponent;
 UENUM(BlueprintType)
 enum class ETraceTargetingPointSource: uint8
 {
-	TARGETER   UMETA(DisplayName="Targeter"),
+	TARGETER   UMETA(DisplayName = "Targeter"),
 	MOUSE_OVER UMETA(DisplayName = "Mouse Over"),
+	CUSTOM     UMETA(DisplayName = "Custom"),
 };
 
 
@@ -71,6 +72,7 @@ public:
 	virtual void IgnoreActors_Implementation(TArray<AActor*>& IgnoredActors);
 
 	virtual void PushTarget_Implementation() override;
+	virtual void Confirm_Implementation() override;
 
 	UFUNCTION(BlueprintNativeEvent, Category="Target|Trace")
 	FVector GetTraceBase() const;

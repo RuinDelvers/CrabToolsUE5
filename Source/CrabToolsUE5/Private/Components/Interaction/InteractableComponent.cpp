@@ -222,25 +222,6 @@ TArray<FString> UInteractableComponent::GetInteractionOptions() const
 	}
 }
 
-TArray<FString> UInteractableComponent::GetEventOptions() const
-{
-	TArray<FString> Names;
-
-	this->Interface.LoadSynchronous();
-
-	if (auto IFace = this->Interface.Get())
-	{
-		for (const auto& Name : IFace->GetCallEvents())
-		{
-			Names.Add(Name.ToString());
-		}
-	}
-
-	Names.Sort([](const FString& A, const FString& B) { return A < B; });
-
-	return Names;
-}
-
 #endif
 
 UAIInteractionData* UAIInteractionData::MakeInteractionData(

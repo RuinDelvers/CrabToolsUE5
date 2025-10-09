@@ -1,9 +1,7 @@
 #pragma once
 
-#include "CoreMinimal.h"
 #include "Styling/SlateColor.h"
 #include "Widgets/DeclarativeSyntaxSupport.h"
-#include "Widgets/SWidget.h"
 #include "SNodePanel.h"
 #include "SGraphNode.h"
 

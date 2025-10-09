@@ -3,6 +3,8 @@
 #include "StateMachine.h"
 #include "CompositeNode.generated.h"
 
+struct FStateNodeInstanceData;
+
 /* This is used to handle piped data for the nested structure. */
 UCLASS()
 class CRABTOOLSUE5_API UCompositeNodeData : public UObject, public IStateMachineDataInterface

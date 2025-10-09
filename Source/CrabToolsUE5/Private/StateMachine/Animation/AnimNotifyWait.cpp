@@ -3,6 +3,7 @@
 #include "StateMachine/Events.h"
 #include "Utils/UtilsLibrary.h"
 #include "GameFramework/Character.h"
+#include "StateMachine/Logging.h"
 
 UAnimNotifyWaitNode::UAnimNotifyWaitNode()
 {

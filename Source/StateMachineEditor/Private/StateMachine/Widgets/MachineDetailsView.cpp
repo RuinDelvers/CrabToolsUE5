@@ -66,7 +66,6 @@ void SMachineDetailsView::Construct(
 		Inspector = PropertyEditorModule.CreateDetailView(DetailsViewArgs);
 
 		Inspector->SetCustomFilterLabel(LOCTEXT("ShowAllParameters", "Show All Parameters"));
-		//DetailsViewWidget->SetCustomFilterDelegate(FSimpleDelegate::CreateUObject(this, &UDetailsView::ToggleShowingOnlyAllowedProperties));
 		Inspector->SetIsPropertyVisibleDelegate(FIsPropertyVisible::CreateStatic(&SMachineDetailsView::PropertyFilterRule));
 	}
 
@@ -90,6 +89,7 @@ void SMachineDetailsView::BindEvents(TSharedPtr<class FEditor> InEditor)
 void SMachineDetailsView::InspectObject(UObject* Obj)
 {
 	Inspector->SetObject(Obj);
+	
 }
 
 void SMachineDetailsView::AddReferencedObjects(FReferenceCollector& Collector)

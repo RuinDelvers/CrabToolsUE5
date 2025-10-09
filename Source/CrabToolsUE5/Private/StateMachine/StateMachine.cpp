@@ -1,6 +1,6 @@
 #include "StateMachine/StateMachine.h"
 
-//#include "Logging/StructuredLog.h"
+#include "StateMachine/DataStructures.h"
 #include "StateMachine/StateMachineBlueprintGeneratedClass.h"
 #include "StateMachine/ArrayNode.h"
 #include "StateMachine/Logging.h"
@@ -19,7 +19,7 @@
 
 UStateMachine::UStateMachine(const FObjectInitializer& ObjectInitializer)
 {
-	
+
 }
 
 void UStateMachine::InitSubMachines()
@@ -58,7 +58,7 @@ void UStateMachine::Initialize(UObject* POwner)
 
 		this->InitSubMachines();
 	
-		// Shared nodes always exist, and should be initialize from the beginning.
+		// Shared nodes always exist, and should be initializ e from the beginning.
 		for (auto& Node : this->SharedNodes)
 		{
 			Node.Value->Initialize(this);
@@ -471,7 +471,6 @@ void UStateMachine::PostLinkerChange()
 {
 	Super::PostLinkerChange();
 }
-
 
 
 #endif // WITH_EDITOR
@@ -998,6 +997,7 @@ void UStateNode::Initialize(UStateMachine* POwner)
 {
 	this->Owner = POwner;
 	this->InitNotifies();
+
 	this->Initialize_Inner();
 }
 
@@ -1180,41 +1180,6 @@ void UStateNode::EnterWithData_Inner_Implementation(UObject* Data)
 	this->Enter_Inner();
 }
 
-void UStateNode::DeleteEvent_Implementation(FName Event)
-{
-	for (TFieldIterator<FStructProperty> FIT(this->GetClass(), EFieldIteratorFlags::IncludeSuper); FIT; ++FIT)
-	{
-		FStructProperty* f = *FIT;
-
-		if (f->Struct == FEventSlot::StaticStruct())
-		{
-			auto Value = f->ContainerPtrToValuePtr<FEventSlot>(this);
-			if (Value->GetEvent() == Event)
-			{
-				Value->SetEvent(NAME_None);
-			}
-		}
-	}
-}
-
-void UStateNode::RenameEvent_Implementation(FName From, FName To)
-{
-	for (TFieldIterator<FStructProperty> FIT(this->GetClass(), EFieldIteratorFlags::IncludeSuper); FIT; ++FIT)
-	{
-		FStructProperty* f = *FIT;
-
-		if (f->Struct == FEventSlot::StaticStruct())
-		{
-			auto Value = f->ContainerPtrToValuePtr<FEventSlot>(this);
-
-			if (Value->GetEvent() == From)
-			{
-				Value->SetEvent(To);
-			}
-		}
-	}
-}
-
 bool UStateNode::Verify(FNodeVerificationContext& Context) const
 {
 	bool bErrorFree = true;
@@ -1230,26 +1195,7 @@ bool UStateNode::Verify(FNodeVerificationContext& Context) const
 			{
 				FStructProperty* f = CastField<FStructProperty>(*FIT);
 
-				if (f->Struct == FEventSlot::StaticStruct())
-				{
-					FEventSlot Value;
-					f->GetValue_InContainer(this, &Value);
-
-					auto Options = SLike->GetEventOptions();
-
-					if (!(Value.IsNone() || Options.Contains(Value.GetEvent())))
-					{
-						FString Msg = FString::Printf(TEXT("Could not find Event for slot %s: %s. EName = %s"),
-							*f->GetName(),
-							*this->GetName(),
-							*FName(Value).ToString());
-						Context.Error(Msg, this);
-
-						bErrorFree = false;
-					}
-
-				}
-				else if (f->Struct == FSubMachineSlot::StaticStruct())
+				if (f->Struct == FSubMachineSlot::StaticStruct())
 				{
 					FSubMachineSlot Value;
 					f->GetValue_InContainer(this, &Value);
@@ -1319,18 +1265,8 @@ void UStateNode::EmitEvent(FName EName)
 	}
 }
 
-void UStateNode::EmitEventSlot(const FEventSlot& ESlot)
-{ 
-	this->GetMachine()->SendEvent(ESlot);
-}
-
 void UStateNode::EmitEventWithData(FName EName, UObject* Data) {
 	this->GetMachine()->SendEventWithData(EName, Data);
-}
-
-void UStateNode::EmitEventSlotWithData(const FEventSlot& ESlot, UObject* Data)
-{
-	this->GetMachine()->SendEventWithData(ESlot, Data);
 }
 
 #if WITH_EDITOR

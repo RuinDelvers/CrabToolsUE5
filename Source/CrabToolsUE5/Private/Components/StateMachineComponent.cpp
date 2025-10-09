@@ -7,14 +7,10 @@
 // Sets default values for this component's properties
 UStateMachineComponent::UStateMachineComponent()
 {
-	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
-	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
 	PrimaryComponentTick.bStartWithTickEnabled = false;
 }
 
-
-// Called when the game starts
 void UStateMachineComponent::BeginPlay()
 {
 	Super::BeginPlay();
@@ -27,8 +23,6 @@ void UStateMachineComponent::BeginPlay()
 	}
 }
 
-
-// Called every frame
 void UStateMachineComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
@@ -38,24 +32,28 @@ void UStateMachineComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 	}
 }
 
-
-void UStateMachineComponent::Event_Direct(FName EName) {
+void UStateMachineComponent::Event_Direct(FName EName)
+{
 	if (this->HasMachine()) {
 		this->Machine->SendEvent(EName);
 	}
 }
 
-void UStateMachineComponent::EventWithData_Direct(FName EName, UObject* Data) {
+void UStateMachineComponent::EventWithData_Direct(FName EName, UObject* Data)
+{
 	if (this->HasMachine()) {
 		this->Machine->SendEventWithData(EName, Data);
 	}
 }
 
-FName UStateMachineComponent::CurrentStateName() {
+FName UStateMachineComponent::CurrentStateName()
+{
 	return this->Machine->GetCurrentStateName();
 }
 
-bool UStateMachineComponent::HasMachine() {
+
+bool UStateMachineComponent::HasMachine()
+{
 	return this->Machine != nullptr;
 }
 
@@ -63,3 +61,10 @@ void UStateMachineComponent::TickUpdated(bool NeedsTick)
 {
 	this->SetComponentTickEnabled(NeedsTick);
 }
+
+#if WITH_EDITOR
+void UStateMachineComponent::PostEditChangeProperty(FPropertyChangedEvent& Event)
+{
+	Super::PostEditChangeProperty(Event);
+}
+#endif

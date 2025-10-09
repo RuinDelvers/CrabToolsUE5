@@ -2,6 +2,8 @@
 #include "Selection.h"
 #include "Actors/Paths/PatrolPath.h"
 #include "Actors/DynamicActorSpawner.h"
+#include "PropertyCustomization/EventSlot/EventSlotCustomization.h"
+#include "Styles/StyleRoot.h"
 
 #define LOCTEXT_NAMESPACE "FCrabToolsUE5EditorModule"
 
@@ -17,6 +19,9 @@ void FCrabToolsUE5EditorModule::StartupModule()
 	this->SelectionChangedHandle = USelection::SelectionChangedEvent.AddRaw(
 		this,
 		&FCrabToolsUE5EditorModule::OnSelectionChanged);
+
+	FCoreDelegates::OnPostEngineInit.AddRaw(this, &FCrabToolsUE5EditorModule::OnPostEngineInit);
+	StyleRoot::InitializeStyles();
 }
 
 void FCrabToolsUE5EditorModule::ShutdownModule() 
@@ -28,6 +33,18 @@ FString FCrabToolsUE5EditorModule::GetReferencerName() const  {
 	return "CrabToolsUE5EditorModule";
 }
 
+void FCrabToolsUE5EditorModule::OnPostEngineInit()
+{
+	this->InitializeCustomization();
+}
+
+void FCrabToolsUE5EditorModule::InitializeCustomization()
+{
+	FPropertyEditorModule& PropertyModule = FModuleManager::LoadModuleChecked<FPropertyEditorModule>("PropertyEditor");
+	PropertyModule.RegisterCustomPropertyTypeLayout("EventSlot", FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FEventSlotCustomization::MakeInstance));
+
+	PropertyModule.NotifyCustomizationModuleChanged();
+}
 
 void FCrabToolsUE5EditorModule::OnSelectionChanged(UObject* Obj)
 {

@@ -92,8 +92,11 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Trace")
 	FTransform GetPlacementTransform() const;
 
-	UFUNCTION(BlueprintCallable, Category = "Trace", meta=(DeterminesOutputType="ActorType"))
+	UFUNCTION(BlueprintCallable, Category = "Trace", meta=(DeterminesOutputType="ActorType", DisplayName="AddMousePointActorClass"))
 	AActor* AddMousePointActor(TSubclassOf<AActor> ActorType);
+
+	UFUNCTION(BlueprintCallable, Category = "Trace", meta = (DeterminesOutputType = "ActorType", DisplayName = "AddMousePointActor"))
+	void AddMousePointActorInstance(AActor* Actor);
 
 	UFUNCTION(BlueprintCallable, Category = "Trace")
 	void RemoveMousePointActor(AActor* ActorToRemove);

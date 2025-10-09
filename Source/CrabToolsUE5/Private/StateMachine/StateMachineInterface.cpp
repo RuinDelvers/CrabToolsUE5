@@ -99,6 +99,7 @@ TSet<FName> UStateMachineInterface::GetCallEvents() const
 	return Collect;
 }
 
+/*
 TSet<FName> UStateMachineInterface::GetStates() const
 {
 	TSet<FName> Collect;
@@ -132,6 +133,7 @@ TSet<FName> UStateMachineInterface::GetSubMachines() const
 
 	return Collect;
 }
+*/
 
 FName UStateMachineInterface::EventToNamespaced(FName EventName) const
 {
@@ -194,7 +196,7 @@ void UStateMachineInterface::PostEditChangeProperty(FPropertyChangedEvent& Prope
 		}
 	}
 
-	this->Events.KeySort([&](const FName& A, const FName& B) { return A.FastLess(B); });
+	this->Events.KeySort([&](const FName& A, const FName& B) { return A.ToString() < B.ToString(); });
 
 	this->NamespacedEvents.Empty();
 	this->UpdateNamespacedEvents();	

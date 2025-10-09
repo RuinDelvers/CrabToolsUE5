@@ -1,6 +1,7 @@
 #include "StateMachine/StateMachineBlueprintGeneratedClass.h"
 #include "StateMachine/Utils.h"
 #include "StateMachine/StateMachineInterface.h"
+#include "StateMachine/DataStructures.h"
 
 UStateMachine* FStateMachineArchetypeData::CreateStateMachine(UStateMachine* Parent, FName NewParentKey) const
 {
@@ -221,6 +222,7 @@ FName UStateMachineBlueprintGeneratedClass::GetStartState_Inner(FName MachineNam
 		return this->GetStartState_Local(MachineName, CanOverride);
 	}
 }
+
 
 #if WITH_EDITOR
 bool UStateMachineBlueprintGeneratedClass::DoesImplementInterface(UStateMachineInterface* Interface) const

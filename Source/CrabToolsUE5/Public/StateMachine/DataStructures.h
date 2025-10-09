@@ -3,6 +3,8 @@
 #include "CoreMinimal.h"
 #include "DataStructures.generated.h"
 
+class UStateNode;
+
 USTRUCT(BlueprintType)
 struct FEventSetRow : public FTableRowBase
 {
@@ -24,82 +26,37 @@ struct FEventSlot
 
 private:
 
-	UPROPERTY(EditAnywhere, Category = "StateMachine|Events",
-		meta = (GetOptions = "GetEventOptions", EditCondition="!bIsDefined", EditConditionHides, AllowPrivateAccess))
-	FName InlinedEventName;
-
-	UPROPERTY(EditAnywhere, Category = "StateMachine|Events",
-		meta = (GetOptions = "GetEventOptions", EditCondition = "bIsDefined", EditConditionHides, AllowPrivateAccess))
-	FName DefinedEventName;
-
-	UPROPERTY(EditDefaultsOnly, Category = "StateMacine|Events", meta=(AllowPrivateAccess))
-	bool bIsDefined = false;
-
-	#if WITH_EDITORONLY_DATA
-		UPROPERTY(EditDefaultsOnly, Category="StateMacine|Events", meta=(AllowPrivateAccess))
-		bool bIsEmitted = false;
-	#endif
+	UPROPERTY(EditAnywhere, Category = "StateMachine|Events")
+	FName EventName;
 
 public:
 
-	operator const FName&() const
-	{
-		if (this->bIsDefined)
-		{
-			return this->DefinedEventName;
-		}
-		else
-		{
-			return this->InlinedEventName;
-		}
-	}
+	FEventSlot() : EventName(NAME_None) {}
+	FEventSlot(FName InName) : EventName(InName) {}
 
 	bool IsNone() const
 	{
-		if (this->bIsDefined)
-		{
-			return this->DefinedEventName.IsNone();
-		}
-		else
-		{
-			return this->InlinedEventName.IsNone();
-		}
+		return this->EventName.IsNone();
 	}
 
-	const FName& GetEvent() const
+	operator const FName() const
 	{
-		if (this->bIsDefined)
-		{
-			return this->DefinedEventName;
-		}
-		else
-		{
-			return this->InlinedEventName;
-		}
+		return this->EventName;
 	}
 
-	void SetEvent(const FName& NewEvent)
+	bool operator==(FEventSlot const& Other) const
 	{
-		if (this->bIsDefined)
-		{
-			this->DefinedEventName = NewEvent;
-		}
-		else
-		{
-			this->InlinedEventName = NewEvent;
-		}
+		return this->EventName == Other.EventName;
+	}
+
+	bool operator!=(FEventSlot const& Other) const
+	{
+		return this->EventName != Other.EventName;
 	}
 
 	friend uint32 GetTypeHash(const FEventSlot& Value)
 	{
-		if (Value.bIsDefined)
-		{
-			return GetTypeHash(Value.DefinedEventName);
-		}
-		else
-		{
-			return GetTypeHash(Value.InlinedEventName);
-		}		
+		return GetTypeHash(Value.EventName);
 	}
 };
 

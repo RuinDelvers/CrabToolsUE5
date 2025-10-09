@@ -349,11 +349,6 @@ public:
 		meta = (HideSelfPin=true))
 	void EmitEventWithData(FName EName, UObject* Data);
 
-	UFUNCTION(BlueprintCallable, Category = "StateMachine", meta = (HideSelfPin=true))
-	void EmitEventSlot(const FEventSlot& ESlot);
-
-	UFUNCTION(BlueprintCallable, Category = "StateMachine", meta = (HideSelfPin=true))
-	void EmitEventSlotWithData(const FEventSlot& ESlot, UObject* Data);
 
 	UFUNCTION(BlueprintNativeEvent, Category = "StateMachine")
 	bool RequiresTick() const;
@@ -437,14 +432,6 @@ protected:
 	void ExitWithData_Inner(UObject* Data);	
 	virtual void ExitWithData_Inner_Implementation(UObject* Data);
 
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "StateMachine")
-	void RenameEvent(FName Old, FName New);
-	virtual void RenameEvent_Implementation(FName Old, FName New);
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "StateMachine")
-	void DeleteEvent(FName Event);
-	virtual void DeleteEvent_Implementation(FName Event);
-
 	UFUNCTION(BlueprintNativeEvent, Category = "StateMachine", meta = (DisplayName = "OnSetActive"))
 	void SetActive_Inner(bool bNewActive);
 	virtual void SetActive_Inner_Implementation(bool bNewActive) {}
@@ -483,7 +470,7 @@ private:
 	void EventNotifySignatureFunction(FName Name) {}
 
 	UFUNCTION()
-	void EventWithDataNotifySignatureFunction(FName Name) {}
+	void EventWithDataNotifySignatureFunction(FName Name, UObject* Data) {}
 
 	void InitNotifies();
 };
@@ -493,7 +480,7 @@ private:
  * State Machine class. This is the base class for any State Machine, and manages all
  * appropriate state machine behaviour.
  */
-UCLASS(Blueprintable, EditInlineNew, Category = "StateMachine")
+UCLASS(Blueprintable, CollapseCategories, EditInlineNew, Category = "StateMachine")
 class CRABTOOLSUE5_API UStateMachine 
 : public UObject, public IEventListenerInterface, public IStateMachineLike
 {
@@ -571,6 +558,9 @@ private:
 			ClampMin = "2", ClampMax = "1000", UIMin = "2", UIMax = "1000"))
 	int MaxPrevStateStackSize = 5;
 
+	/* Sequence of States that this machine has passed through*/
+	TDoubleLinkedList<FName> StateStack;
+
 	UPROPERTY(Transient, meta=(IgnorePropertySearch))
 	TObjectPtr<UObject> Owner;
 
@@ -582,16 +572,11 @@ private:
 	TObjectPtr<UStateMachine> ParentMachine;
 	/* The key/name of this submachine in the parent. */
 	FName ParentKey;
-	/* Sequence of States that this machine has passed through*/
-	TDoubleLinkedList<FName> StateStack;
-
+	
 public:
 
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FTickRequirementUpdated, bool, NeedsTick);
 	FTickRequirementUpdated OnTickRequirementUpdated;
-
-	//UPROPERTY(VisibleAnywhere, meta=(IgnorePropertySearch))
-	//FName StartState;
 
 	UPROPERTY(BlueprintAssignable, Category="StateMachine", meta = (IgnorePropertySearch))
 	FStateChangedEvent OnStateChanged;

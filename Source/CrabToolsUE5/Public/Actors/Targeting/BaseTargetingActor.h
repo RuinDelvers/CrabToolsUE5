@@ -6,6 +6,7 @@
 #include "BaseTargetingActor.generated.h"
 
 UCLASS(Abstract, Blueprintable, CollapseCategories, ClassGroup = (Custom),
+	Within="BaseTargetingActor",
 	meta = (BlueprintSpawnableComponent))
 class CRABTOOLSUE5_API UTargetFilterComponent : public UActorComponent
 {

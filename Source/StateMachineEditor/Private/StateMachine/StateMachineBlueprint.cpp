@@ -170,19 +170,6 @@ void UStateMachineBlueprint::Verify(FNodeVerificationContext& Context) const
 
 		if (!IsValid(LoadedIFace)) { continue; }
 
-		for (auto& SMName : LoadedIFace->GetSubMachines())
-		{
-			if (!SMOptions.Contains(SMName.ToString()))
-			{
-				FString ErrorMessage = FString::Printf(
-					TEXT("SubMachine %s not implemented for interface %s"),
-					*SMName.ToString(),
-					*IFace->GetName());
-
-				Context.Error(ErrorMessage, this);
-			}
-		}
-
 		this->MainGraph->Verify(Context, IFace.LoadSynchronous());
 	}
 }
@@ -210,8 +197,6 @@ void UStateMachineBlueprint::RenameGraph(UEdStateGraph* Graph, FName Name)
 
 bool UStateMachineBlueprint::Modify(bool bAlwaysMarkDirty)
 {
-	//FBlueprintEditorUtils::MarkBlueprintAsModified(this);
-	this->MarkPackageDirty();
 	bool Modified = Super::Modify(bAlwaysMarkDirty);
 	return Modified;
 }

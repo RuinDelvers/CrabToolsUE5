@@ -23,7 +23,7 @@
 		{
 			"Name": "CrabToolsUE5Editor",
 			"Type": "Editor",
-			"LoadingPhase": "PostEngineInit",
+			"LoadingPhase": "PreDefault",
 			"AdditionalDependencies": [
 				"PlacementMode",
 			]

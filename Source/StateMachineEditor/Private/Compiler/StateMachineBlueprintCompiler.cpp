@@ -19,7 +19,6 @@
 
 extern COREUOBJECT_API bool GMinimalCompileOnLoad;
 
-// TODO: Add in propery addressing objects passed to better help identify where the error is coming from.
 class FStateMachineBlueprintNodeVerificationContext : public FNodeVerificationContext
 {
 private:
@@ -312,8 +311,6 @@ void FStateMachineBlueprintCompilerContext::FinishCompilingClass(UClass* Class)
 			BPGClass->Archetype.AppendEvents(SMBP->GetMainGraph()->DefinedEvents());
 		}
 	}
-
-	
 
 	Super::FinishCompilingClass(Class);
 }

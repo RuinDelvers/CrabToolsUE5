@@ -148,7 +148,7 @@ void UMouseOverComponent::UpdateViewportData()
 FTransform UMouseOverComponent::GetPlacementTransform() const
 {
 	return FTransform(
-		FRotationMatrix::MakeFromZ(this->Result.ImpactNormal).Rotator(),
+		FRotationMatrix::MakeFromZX(this->Result.ImpactNormal, FVector::ForwardVector).Rotator(),
 		this->Result.ImpactPoint);
 }
 
@@ -193,7 +193,7 @@ void UMouseOverComponent::PlaceActorAtLocation(AActor* PlacedActor, bool bUseNor
 	if (IsValid(PlacedActor) && IsValid(this->MouseOverActor))
 	{
 		FTransform Transform(
-			bUseNormal ? this->Result.ImpactNormal.Rotation() : PlacedActor->GetActorRotation(),
+			bUseNormal ? FRotationMatrix::MakeFromZX(this->Result.ImpactNormal, FVector::ForwardVector).Rotator() : PlacedActor->GetActorRotation(),
 			this->Result.ImpactPoint);
 
 		PlacedActor->SetActorTransform(Transform);
@@ -219,7 +219,6 @@ bool UMouseOverComponent::IsWithinDistance(float Distance) const
 {
 	if (this->HasValidLocation())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Distance = %f"), FVector::Dist(this->Result.ImpactPoint, this->GetOwner()->GetActorLocation()));
 		return FVector::DistSquared(this->Result.ImpactPoint, this->GetOwner()->GetActorLocation()) < Distance * Distance;
 	}
 	else
@@ -301,6 +300,8 @@ void UMouseOverComponent::UpdateMousePointActors()
 
 AActor* UMouseOverComponent::AddMousePointActor(TSubclassOf<AActor> ActorClass)
 {
+	if (!ActorClass) { return nullptr; }
+
 	auto ActorLocation = this->GetOwner()->GetActorLocation();
 	auto NewActor = this->GetWorld()->SpawnActor(
 		ActorClass, 
@@ -312,10 +313,23 @@ AActor* UMouseOverComponent::AddMousePointActor(TSubclassOf<AActor> ActorClass)
 	return NewActor;
 }
 
+void UMouseOverComponent::AddMousePointActorInstance(AActor* NewActor)
+{
+	if (!IsValid(NewActor)) { return; }
+
+	NewActor->SetActorLocation(this->HasValidLocation() ? this->Result.ImpactPoint : this->GetOwner()->GetActorLocation());
+	NewActor->SetHidden(!this->HasValidLocation());
+
+	this->MousePointActors.Add(NewActor);
+}
+
 void UMouseOverComponent::RemoveMousePointActor(AActor* ActorToRemove)
 {
-	this->MousePointActors.Remove(ActorToRemove);
-	ActorToRemove->Destroy();
+	if (IsValid(ActorToRemove))
+	{
+		this->MousePointActors.Remove(ActorToRemove);
+		ActorToRemove->Destroy();
+	}
 }
 
 void UMouseOverComponent::ClearMousePointActors()

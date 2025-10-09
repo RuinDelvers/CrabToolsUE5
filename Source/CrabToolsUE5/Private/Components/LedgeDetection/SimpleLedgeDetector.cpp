@@ -20,23 +20,22 @@ void USimpleLedgeDetectorComponent::BeginPlay()
 		auto Component = this->GetOwner()->GetComponentByClass<UCapsuleComponent>();
 		this->ForwardDistance = Component->GetScaledCapsuleRadius() + ForwardDistance;
 	}
+
+	this->TraceParams.TraceTag = FName(FString::Printf(TEXT("LedgeTrace - %s"), *this->GetOwner()->GetName()));
+	this->TraceParams.bTraceComplex = this->bTraceComplex;
+	this->TraceParams.AddIgnoredActor(this->GetOwner());
 }
 
 void USimpleLedgeDetectorComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	this->PerformTrace();
-
-	
+	this->PerformTrace();	
 }
 
 void USimpleLedgeDetectorComponent::PerformTrace()
 {
-	FCollisionQueryParams TraceParams = FCollisionQueryParams(FName(TEXT("RV_Trace")), true, this->GetOwner());
-
-	TArray<AActor*> IgnoredActors = { this->GetOwner() };
-	TraceParams.AddIgnoredActors(IgnoredActors);
+	//FCollisionQueryParams TraceParams = FCollisionQueryParams(FName(TEXT("RV_Trace")), this->bTraceComplex, this->GetOwner());
 
 	auto Height = Collision->GetScaledCapsuleHalfHeight();
 	auto Radius = Collision->GetScaledCapsuleRadius();

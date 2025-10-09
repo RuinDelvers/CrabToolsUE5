@@ -56,6 +56,7 @@ void UK2Node_EmitEventFromInterface::AllocateDefaultPins()
 	// Row Name pin
 	UEdGraphPin* EventPin = CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_Name, EmitEventFromInterfaceHelper::EventPinName);
 	SetPinToolTip(*EventPin, LOCTEXT("EventPinDescription", "The name of the row to retrieve from the Interface"));
+	//EventPin->bHidden = true;
 
 	Super::AllocateDefaultPins();
 }

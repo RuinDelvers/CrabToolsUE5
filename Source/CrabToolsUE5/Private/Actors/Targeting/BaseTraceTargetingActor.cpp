@@ -42,14 +42,15 @@ void ABaseTraceTargetingActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	this->TargetLocation = ITargeterInterface::Execute_GetEndPoint(this->GetUsingActorNative());
-
-	this->HandleTrace();
+	if (this->PointSource == ETraceTargetingPointSource::TARGETER)
+	{
+		this->TargetLocation = ITargeterInterface::Execute_GetEndPoint(this->GetUsingActorNative());
+		this->HandleTrace();
+	}
 }
 
 void ABaseTraceTargetingActor::HandleMouseOver(UMouseOverComponent* Comp)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Waffles"));
 	if (Comp->HasValidLocation())
 	{
 		this->TargetLocation = Comp->GetLocation();
@@ -65,6 +66,18 @@ void ABaseTraceTargetingActor::HandleMouseOver(UMouseOverComponent* Comp)
 void ABaseTraceTargetingActor::InvalidateTargetData()
 {
 	this->TracedTarget = FTargetingData();
+}
+
+void ABaseTraceTargetingActor::Confirm_Implementation()
+{
+	Super::Confirm_Implementation();
+	if (this->PointSource == ETraceTargetingPointSource::MOUSE_OVER)
+	{
+		if (auto Comp = ITargeterInterface::Execute_GetMouseOver(this->GetUsingActorNative()))
+		{
+			Comp->OnMouseOverTick.RemoveAll(this);
+		}
+	}
 }
 
 void ABaseTraceTargetingActor::PushTarget_Implementation()

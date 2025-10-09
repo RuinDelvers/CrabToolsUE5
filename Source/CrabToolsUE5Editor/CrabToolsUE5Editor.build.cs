@@ -23,12 +23,17 @@ public class CrabToolsUE5Editor : ModuleRules
 		PublicDependencyModuleNames.AddRange(
 			new string[]
 			{
-				"CrabToolsUE5",
+				"ApplicationCore",
+                "CrabToolsUE5",
 				"Core",
 				"CoreUObject",
 				"UnrealEd",
 				"DeveloperSettings",
 				"Blutility",
+				"Slate",
+				"SlateCore",
+				"InputCore",
+				"AssetRegistry"
 				// ... add other public dependencies that you statically link with here ...
 			});
 			

@@ -5,6 +5,7 @@
 #include "Actors/Paths/PatrolPath.h"
 #include "Navigation/PathFollowingComponent.h"
 #include "StateMachine/DataStructures.h"
+#include "Utils/ActorComponentPattern.h"
 #include "SimplePatrolNode.generated.h"
 
 /**
@@ -23,7 +24,16 @@ class CRABTOOLSUE5_API UAISimplePatrolNode : public UAIBaseNode
 	int RecurseGuard = 0;
 
 	UPROPERTY(VisibleAnywhere, Category="AI", meta=(ShowInnerProperties))
-	TObjectPtr<UGenericPropertyBinding> Property;
+	TObjectPtr<UActorComponentPatternRef> ComponentPattern;
+
+	UPROPERTY(EditAnywhere, Category = "AI", meta=(AllowPrivateAccess))
+	FName PathKey;
+
+	UPROPERTY()
+	mutable TObjectPtr<UPatrolPathFollowingComponent> CachedComp;
+	
+	UPROPERTY(EditAnywhere, Category = "AI")
+	bool bCacheComponent = true;
 
 	/* Previous states which would not reset the patrolling state. */
 	UPROPERTY(EditDefaultsOnly, Category = "StateMachine|AI", meta=(ShowOnlyInnerProperties))
@@ -47,6 +57,9 @@ public:
 	#endif
 
 private:
+
+
+	FPatrolPathState& GetState() const;
 
 	void MoveToNext();
 	void BindCallback();
