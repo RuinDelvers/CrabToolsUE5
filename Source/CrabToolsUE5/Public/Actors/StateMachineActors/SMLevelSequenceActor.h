@@ -1,26 +1,22 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
-
 #pragma once
 
-#include "CoreMinimal.h"
-#include "GameFramework/Character.h"
+#include "LevelSequenceActor.h"
 #include "Components/StateMachineComponent.h"
-#include "StateMachine/EventListener.h"
-#include "SMCharacter.generated.h"
+#include "SMLevelSequenceActor.generated.h"
 
 
-UCLASS(config=Game)
-class ASMCharacter : public ACharacter, public IEventListenerInterface
+UCLASS(Blueprintable)
+class ASMLevelSequenceActor : public ALevelSequenceActor, public IEventListenerInterface
 {
 	GENERATED_BODY()
 
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "StateMachine",
-		meta=(AllowPrivateAccess=true))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = StateMachine, 
+		meta = (AllowPrivateAccess = "true"))
 	class UStateMachineComponent* StateMachineComponent;
 
 public:
-	ASMCharacter();
+	ASMLevelSequenceActor(const FObjectInitializer& ObjectInit);
+
 
 	virtual void Event_Implementation(FName EName) override final { this->Event_Direct(EName); }
 	void Event_Direct(FName EName)

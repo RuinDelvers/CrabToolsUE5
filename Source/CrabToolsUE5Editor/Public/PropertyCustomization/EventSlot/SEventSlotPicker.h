@@ -34,6 +34,7 @@ public:
 	void ClearSelection();
 	TWeakPtr<FEventSlotNode> GetRoot();
 	TSharedPtr<FEventSlotNode> GetParent() { return this->Parent.Pin(); }
+	const TSharedPtr<FEventSlotNode>& GetSelectedChild() const { return this->SelectedChild; }
 
 	bool FilterByString(const FString& FilterString) const;
 
@@ -62,6 +63,7 @@ public:
 
 	virtual ~FAssetEventSlotNode() {}
 
+	virtual FName GetEventName() const override;
 	FAssetEventSlotNode(UObject* Obj);
 	virtual FName GetNodeName() const override;
 
@@ -129,7 +131,7 @@ class SEventSlotPicker : public SCompoundWidget
 {
 
 	/** Called when a tag status is changed */
-	DECLARE_DELEGATE_OneParam(FOnSlotChanged, const FEventSlot)
+	DECLARE_DELEGATE_OneParam(FOnSlotChanged, FEventSlot)
 
 	/** Called on when tags might need refreshing (e.g. after undo/redo or when tags change). Use SetTagContainers() to set the new tags. */
 	DECLARE_DELEGATE_OneParam(FOnRefreshSlot, SEventSlotPicker&)
@@ -180,7 +182,7 @@ class SEventSlotPicker : public SCompoundWidget
 	//TArray<FGameplayTagContainer> TagContainers;
 
 	/** Called when the Tag list changes*/
-	FOnSlotChanged OnTagChanged;
+	FOnSlotChanged OnSlotChanged;
 
 	/** Called on when tags might need refreshing (e.g. after undo/redo or when tags change). */
 	FOnRefreshSlot OnRefreshTagContainers;
@@ -219,6 +221,8 @@ class SEventSlotPicker : public SCompoundWidget
 		// Optional filter function called when generating the tag list
 		SLATE_EVENT(FOnFilterSlot, OnFilterSlot)
 
+		SLATE_EVENT(FOnSlotChanged, OnSlotChanged)
+
 		// The name that will be used for the settings file
 		SLATE_ARGUMENT(FString, SettingsName)
 
@@ -234,9 +238,6 @@ class SEventSlotPicker : public SCompoundWidget
 		// Tags or tag containers to modify. If MultiSelect is false, the container will container single tags.
 		// If PropertyHandle is set, the tag containers will be ignored.
 		//SLATE_ARGUMENT(TArray<FGameplayTagContainer>, TagContainers)
-
-		// Called when a tag status changes
-		SLATE_EVENT(FOnSlotChanged, OnTagChanged)
 
 		// Determines behavior of the menu based on where it's used
 		//SLATE_ARGUMENT(EGameplayTagPickerMode, GameplayTagPickerMode)

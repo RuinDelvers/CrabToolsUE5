@@ -227,7 +227,7 @@ FName UStateMachineBlueprintGeneratedClass::GetStartState_Inner(FName MachineNam
 #if WITH_EDITOR
 bool UStateMachineBlueprintGeneratedClass::DoesImplementInterface(UStateMachineInterface* Interface) const
 {	
-	return this->Interfaces.Contains(Interface);	
+	return this->Interfaces.Contains(Interface);
 }
 #endif // WITH_EDITOR	
 

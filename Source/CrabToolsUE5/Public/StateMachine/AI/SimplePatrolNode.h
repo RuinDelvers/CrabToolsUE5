@@ -1,9 +1,9 @@
 #pragma once
 
-#include "Properties/GenericPropertyBinding.h"
 #include "StateMachine/AI/BaseNode.h"
 #include "Actors/Paths/PatrolPath.h"
 #include "Navigation/PathFollowingComponent.h"
+#include "Components/Pathing/PatrolPathFollowingComponent.h"
 #include "StateMachine/DataStructures.h"
 #include "Utils/ActorComponentPattern.h"
 #include "SimplePatrolNode.generated.h"

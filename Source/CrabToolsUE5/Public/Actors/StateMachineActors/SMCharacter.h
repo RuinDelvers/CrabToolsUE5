@@ -1,25 +1,24 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
-
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Pawn.h"
+#include "GameFramework/Character.h"
 #include "Components/StateMachineComponent.h"
-#include "SMPawn.generated.h"
+#include "StateMachine/EventListener.h"
+#include "SMCharacter.generated.h"
 
 
-UCLASS(config=Game)
-class ASMPawn : public APawn, public IEventListenerInterface
+UCLASS(Blueprintable)
+class ASMCharacter : public ACharacter, public IEventListenerInterface
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = StateMachine, 
-		meta = (AllowPrivateAccess = "true"))
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "StateMachine",
+		meta=(AllowPrivateAccess=true))
 	class UStateMachineComponent* StateMachineComponent;
 
 public:
-	ASMPawn();
-
+	ASMCharacter();
 
 	virtual void Event_Implementation(FName EName) override final { this->Event_Direct(EName); }
 	void Event_Direct(FName EName)

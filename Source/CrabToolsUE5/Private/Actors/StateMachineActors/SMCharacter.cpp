@@ -1,7 +1,7 @@
-#include "Actors/SMPawn.h"
+#include "Actors/StateMachineActors/SMCharacter.h"
 
-ASMPawn::ASMPawn(): APawn() {
-
+ASMCharacter::ASMCharacter(): ACharacter()
+{
 	StateMachineComponent = CreateDefaultSubobject<UStateMachineComponent>(TEXT("StateMachineComponent"));
 }
 

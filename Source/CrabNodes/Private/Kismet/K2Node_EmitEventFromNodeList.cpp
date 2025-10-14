@@ -150,17 +150,6 @@ void UK2Node_EmitEventFromNodeList::ExpandNode(class FKismetCompilerContext& Com
 {
     Super::ExpandNode(CompilerContext, SourceGraph);
 
-	// This check is omitted currently as the compilation of this node have simultaneously with the
-	// SM it references. This causes the event set to always be empty, and thus this will always fire
-	// at the first compilation upon loading the editor.
-	/*
-	if (!this->CheckValidEvent(CompilerContext.MessageLog))
-	{
-		BreakAllNodeLinks();
-		return;
-	}
-	*/
-
 	// FUNCTION NODE
 	const FName FunctionName = GET_FUNCTION_NAME_CHECKED(UStateNode, EmitEvent);
 	UK2Node_CallFunction* EmitEventFromNodeListFunction = CompilerContext.SpawnIntermediateNode<UK2Node_CallFunction>(this, SourceGraph);

@@ -152,7 +152,7 @@ bool UStateMachineBlueprint::IsEventNameAvailable(FName Name) const
 {
 	for (auto& IFace : this->Interfaces)
 	{
-		if (IFace.LoadSynchronous()->HasEvent(Name))
+		if (IFace && IFace->HasEvent(Name))
 		{
 			return false;
 		}
@@ -165,12 +165,10 @@ void UStateMachineBlueprint::Verify(FNodeVerificationContext& Context) const
 {
 	for (auto& IFace : this->Interfaces)
 	{
-		auto SMOptions = this->GetMachineOptions();
-		auto LoadedIFace = IFace.LoadSynchronous();
-
-		if (!IsValid(LoadedIFace)) { continue; }
-
-		this->MainGraph->Verify(Context, IFace.LoadSynchronous());
+		if (IFace)
+		{
+			this->MainGraph->Verify(Context, IFace);
+		}
 	}
 }
 
@@ -275,9 +273,9 @@ void UStateMachineBlueprint::AppendInterfaceEvents(TArray<FString>& Names) const
 {
 	for (auto& IFacePtr : this->Interfaces)
 	{
-		if (auto IFace = IFacePtr.LoadSynchronous())
+		if (IFacePtr)
 		{
-			for (auto& EName : IFace->GetEvents())
+			for (auto& EName : IFacePtr->GetEvents())
 			{
 				Names.AddUnique(EName.ToString());
 			}
@@ -328,7 +326,7 @@ void UStateMachineBlueprint::AddEventsToDataTable(UDataTable* EventSet, bool bCl
 		TMap<FName, FEventSetRow> EntryMap;
 		this->GetEventEntries(EntryMap);
 
-		for (auto Entry : EntryMap)
+		for (auto& Entry : EntryMap)
 		{
 			if (!EventSet->FindRow<FEventSetRow>(Entry.Key, "", false))
 			{
@@ -348,13 +346,13 @@ bool UStateMachineBlueprint::HasEvent(FName EName) const
 
 	for (auto& Interface : this->Interfaces)
 	{
-		Interface.LoadSynchronous();
-
-		if (Interface.IsNull()) { continue; }
-
-		if (Interface->HasEvent(EName))
+		if (Interface)
 		{
-			bHasEvent = true;
+			if (Interface->HasEvent(EName))
+			{
+				bHasEvent = true;
+				break;
+			}
 		}
 	}
 

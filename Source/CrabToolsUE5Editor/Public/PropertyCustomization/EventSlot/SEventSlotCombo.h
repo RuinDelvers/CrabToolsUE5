@@ -18,9 +18,9 @@ class SEventSlotPicker;
 /**
  * Widget for editing a Gameplay Tag.
  */
-class SEventSlotCombo : public SCompoundWidget
+class CRABTOOLSUE5EDITOR_API SEventSlotCombo : public SCompoundWidget
 {
-	SLATE_DECLARE_WIDGET_API(SEventSlotCombo, SCompoundWidget, CRABTOOLSUE5EDITOR_API)
+	//SLATE_DECLARE_WIDGET_API(SEventSlotCombo, SCompoundWidget, CRABTOOLSUE5EDITOR_API)
 
 public:
 
@@ -28,7 +28,7 @@ public:
 
 private:
 
-	TSlateAttribute<FEventSlot> SlotAttribute;
+	//TSlateAttribute<FEventSlot> SlotAttribute;
 	FString Filter;
 	FString SettingsName;
 	FOnSlotChanged OnSlotChanged;
@@ -36,6 +36,7 @@ private:
 	TSharedPtr<SMenuAnchor> MenuAnchor;
 	TSharedPtr<SEventSlotPicker> SlotPicker;
 	TSharedPtr<IPropertyHandle> PropertyHandle;
+	FEventSlot InlineSlot;
 	bool bIsReadOnly = false;
 	bool bHasMultipleValues = false;
 
@@ -60,7 +61,7 @@ public:
 		SLATE_ARGUMENT(bool, EnableNavigation)
 
 		// Tags to edit
-		SLATE_ATTRIBUTE(FEventSlot, Slot)
+		SLATE_ARGUMENT(FEventSlot, Slot)
 
 		// If set, the tag is read from the property, and the property is changed when tag is edited. 
 		SLATE_ARGUMENT(TSharedPtr<IPropertyHandle>, PropertyHandle)
@@ -92,4 +93,5 @@ private:
 	void OnClearTag();
 	FReply OnEditTag() const;
 	FReply OnTagMenu(const FPointerEvent& MouseEvent);
+	void OnSlotUpdated(FEventSlot Slot);
 };

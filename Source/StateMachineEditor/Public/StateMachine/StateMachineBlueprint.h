@@ -26,7 +26,7 @@ private:
 	TArray<TObjectPtr<class UEdStateGraph>> SubGraphs;
 
 	UPROPERTY(EditDefaultsOnly, Category="Interface")
-	TSet<TSoftObjectPtr<UStateMachineInterface>> Interfaces;
+	TSet<TObjectPtr<UStateMachineInterface>> Interfaces;	
 
 	/* Which class to use for state data. */
 	UPROPERTY(EditDefaultsOnly, Category = "StateMachine")
@@ -92,7 +92,7 @@ public:
 
 	FName GetNewGraphName() const;
 
-	TSet<TSoftObjectPtr<UStateMachineInterface>> GetInterfaces() const { return this->Interfaces; }
+	TSet<TObjectPtr<UStateMachineInterface>> GetInterfaces() const { return this->Interfaces; }
 
 	void Verify(FNodeVerificationContext& Context) const;
 	void AppendInterfaceEvents(TArray<FString>& Names) const;

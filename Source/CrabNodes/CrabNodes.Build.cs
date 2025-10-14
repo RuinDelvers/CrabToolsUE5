@@ -19,12 +19,12 @@ public class CrabNodes : ModuleRules
 
 			});
 			
-		
 		PublicDependencyModuleNames.AddRange(
 			new string[]
 			{
 				"CrabToolsUE5",
-				"Core",
+                "CrabToolsUE5Editor",
+                "Core",
 				"UnrealEd",
 				"DeveloperSettings",
 				"GameplayTags",

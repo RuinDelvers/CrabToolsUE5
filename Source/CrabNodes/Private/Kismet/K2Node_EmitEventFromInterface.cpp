@@ -49,14 +49,10 @@ void UK2Node_EmitEventFromInterface::AllocateDefaultPins()
 	UEdGraphPin* StateMachinePin = CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_Object, UObject::StaticClass(), EmitEventFromInterfaceHelper::StateMachinePinName);
 	SetPinToolTip(*StateMachinePin, LOCTEXT("StateMachinePinDescription", "The EventListener to want to send an event to"));
 
-	// Add Interface pin
-	UEdGraphPin* InterfacePin = CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_Object, UStateMachineInterface::StaticClass(), EmitEventFromInterfaceHelper::InterfacePinName);
-	SetPinToolTip(*InterfacePin, LOCTEXT("InterfacePinDescription", "The Interface you want to retreive a row from"));
-
 	// Row Name pin
-	UEdGraphPin* EventPin = CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_Name, EmitEventFromInterfaceHelper::EventPinName);
+	// = CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_Name, EmitEventFromInterfaceHelper::EventPinName);
+	UEdGraphPin* EventPin = CreatePin(EGPD_Input, UEdGraphSchema_K2::PC_Struct, FEventSlot::StaticStruct(), EmitEventFromInterfaceHelper::EventPinName);
 	SetPinToolTip(*EventPin, LOCTEXT("EventPinDescription", "The name of the row to retrieve from the Interface"));
-	//EventPin->bHidden = true;
 
 	Super::AllocateDefaultPins();
 }
@@ -77,48 +73,11 @@ void UK2Node_EmitEventFromInterface::SetPinToolTip(UEdGraphPin& MutatablePin, co
 
 void UK2Node_EmitEventFromInterface::RefreshEventOptions()
 {
+
 	// When the Interface pin gets a new value assigned, we need to update the Slate UI so that SGraphNodeCallParameterCollectionFunction will update the ParameterName drop down
 	UEdGraph* Graph = GetGraph();
 	Graph->NotifyNodeChanged(this);
-
-	if (auto SMI = Cast<UStateMachineInterface>(this->GetInterfacePin()->DefaultObject))
-	{
-		auto EventSet = this->GetEventSet();
-		this->OnEventSetChanged.Broadcast(EventSet);
-	}
-}
-
-void UK2Node_EmitEventFromInterface::OnInterfaceRowListChanged(const UStateMachineInterface* Interface)
-{
-	UEdGraphPin* InterfacePin = GetInterfacePin();
-	if (Interface && InterfacePin && Interface == InterfacePin->DefaultObject)
-	{
-		UEdGraphPin* EventPin = GetEventPin();
-		const bool TryRefresh = EventPin && !EventPin->LinkedTo.Num();
-		const FName CurrentName = EventPin ? FName(*EventPin->GetDefaultAsString()) : NAME_None;
-		if (TryRefresh && EventPin && !Interface->GetCallEvents().Contains(CurrentName))
-		{
-			if (UBlueprint* BP = GetBlueprint())
-			{
-				FBlueprintEditorUtils::MarkBlueprintAsModified(BP);
-			}
-		}
-	}
-}
-
-void UK2Node_EmitEventFromInterface::ReallocatePinsDuringReconstruction(TArray<UEdGraphPin*>& OldPins) 
-{
-	Super::ReallocatePinsDuringReconstruction(OldPins);
-
-	if (UEdGraphPin* InterfacePin = GetInterfacePin(&OldPins))
-	{
-		if (UStateMachineInterface* Interface = Cast<UStateMachineInterface>(InterfacePin->DefaultObject))
-		{
-			// make sure to properly load the data-table object so that we can 
-			// farm the "RowStruct" property from it (below, in EmitEventFromInterfaceStructType)
-			PreloadObject(Interface);
-		}
-	}
+	//this->OnEventSetChanged.Broadcast({});
 }
 
 void UK2Node_EmitEventFromInterface::GetMenuActions(FBlueprintActionDatabaseRegistrar& ActionRegistrar) const
@@ -146,17 +105,6 @@ FText UK2Node_EmitEventFromInterface::GetMenuCategory() const
 	return LOCTEXT("Category", "State Machine");
 }
 
-bool UK2Node_EmitEventFromInterface::IsConnectionDisallowed(const UEdGraphPin* MyPin, const UEdGraphPin* OtherPin, FString& OutReason) const
-{
-	if (MyPin == this->GetInterfacePin())
-	{
-		OutReason = "Cannot link to this pin: Choose an asset.";
-		return true;
-	}
-
-	return false;
-}
-
 void UK2Node_EmitEventFromInterface::PinDefaultValueChanged(UEdGraphPin* ChangedPin) 
 {
 	if (ChangedPin && ChangedPin->PinName == EmitEventFromInterfaceHelper::InterfacePinName)
@@ -182,23 +130,6 @@ UEdGraphPin* UK2Node_EmitEventFromInterface::GetThenPin()const
 
 	UEdGraphPin* Pin = FindPinChecked(UEdGraphSchema_K2::PN_Then);
 	check(Pin->Direction == EGPD_Output);
-	return Pin;
-}
-
-UEdGraphPin* UK2Node_EmitEventFromInterface::GetInterfacePin(const TArray<UEdGraphPin*>* InPinsToSearch) const
-{
-	const TArray<UEdGraphPin*>* PinsToSearch = InPinsToSearch ? InPinsToSearch : &Pins;
-    
-	UEdGraphPin* Pin = nullptr;
-	for (UEdGraphPin* TestPin : *PinsToSearch)
-	{
-		if (TestPin && TestPin->PinName == EmitEventFromInterfaceHelper::InterfacePinName)
-		{
-			Pin = TestPin;
-			break;
-		}
-	}
-	check(Pin == nullptr || Pin->Direction == EGPD_Input);
 	return Pin;
 }
 
@@ -232,22 +163,18 @@ void UK2Node_EmitEventFromInterface::ExpandNode(class FKismetCompilerContext& Co
 {
     Super::ExpandNode(CompilerContext, SourceGraph);
     
-	UEdGraphPin* OriginalInterfaceInPin = GetInterfacePin();
+	this->RefreshDefaultValue();
+
 	UEdGraphPin* OriginalStateMachineInPin = GetStateMachinePin();
 
-    UStateMachineInterface* Table = (OriginalInterfaceInPin != NULL) ? Cast<UStateMachineInterface>(OriginalInterfaceInPin->DefaultObject) : NULL;
-    if((nullptr == OriginalInterfaceInPin) || (0 == OriginalInterfaceInPin->LinkedTo.Num() && nullptr == Table))
-    {
-        CompilerContext.MessageLog.Error(
-			*LOCTEXT("NoInterface_Error", "EmitEventFromInterface must have a Interface specified.").ToString(),
-			this);
-        // we break exec links so this is the only error we get
-        BreakAllNodeLinks();
-        return;
-    }
+	if (this->Event.IsNone())
+	{
+		CompilerContext.MessageLog.Error(*LOCTEXT("InvalidEventError", "Input event is None.").ToString(), this);
+		return;
+	}
 
 	// FUNCTION NODE
-	const FName FunctionName = GET_FUNCTION_NAME_CHECKED(UStateMachineHelperLibrary, EmitEvent);
+	const FName FunctionName = GET_FUNCTION_NAME_CHECKED(UStateMachineHelperLibrary, EmitEventSlot);
 	UK2Node_CallFunction* EmitEventFromInterfaceFunction = CompilerContext.SpawnIntermediateNode<UK2Node_CallFunction>(this, SourceGraph);
 	EmitEventFromInterfaceFunction->FunctionReference.SetExternalMember(FunctionName, UStateMachineHelperLibrary::StaticClass());
 	EmitEventFromInterfaceFunction->AllocateDefaultPins();
@@ -270,6 +197,7 @@ void UK2Node_EmitEventFromInterface::ExpandNode(class FKismetCompilerContext& Co
 	}
 
 	UEdGraphPin* EventInPin = EmitEventFromInterfaceFunction->FindPinChecked(TEXT("EName"));
+	EventInPin->DefaultValue = this->Event.Name().ToString();
 	CompilerContext.MovePinLinksToIntermediate(*GetEventPin(), *EventInPin);
 
 	// Get some pins to work with
@@ -293,79 +221,32 @@ void UK2Node_EmitEventFromInterface::PostReconstructNode()
 	Super::PostReconstructNode();
 }
 
-void UK2Node_EmitEventFromInterface::EarlyValidation(class FCompilerResultsLog& MessageLog) const
+void UK2Node_EmitEventFromInterface::UpdateSlotExtern(FEventSlot Slot)
 {
-	Super::EarlyValidation(MessageLog);
+	FScopedTransaction Transaction(LOCTEXT("UpdateSlotTransaction", "UpdateSlotTransaction"));
+	this->Event = Slot;
 
-	const UEdGraphPin* InterfacePin = GetInterfacePin();
-	const UEdGraphPin* EventPin = GetEventPin();
-	if (!InterfacePin || !EventPin)
-	{
-		MessageLog.Error(*LOCTEXT("MissingPins", "Missing pins in @@").ToString(), this);
-		return;
-	}
-
-	if (InterfacePin->LinkedTo.Num() == 0)
-	{
-		const UStateMachineInterface* Interface = Cast<UStateMachineInterface>(InterfacePin->DefaultObject);
-		if (!Interface)
-		{
-			MessageLog.Error(*LOCTEXT("NoInterface", "No Interface in @@").ToString(), this);
-			return;
-		}
-
-		if (!EventPin->LinkedTo.Num())
-		{
-			const FName CurrentName = FName(*EventPin->GetDefaultAsString());
-			if (!Interface->GetCallEvents().Contains(CurrentName))
-			{
-				const FString Msg = FText::Format(
-					LOCTEXT("WrongEventFmt", "'{0}' row name is not stored in '{1}'. @@"),
-					FText::FromString(CurrentName.ToString()),
-					FText::FromString(GetFullNameSafe(Interface))
-				).ToString();
-				MessageLog.Error(*Msg, this);
-				return;
-			}
-		}
-	}
-
-	this->CheckValidEvent(MessageLog);
+	this->RefreshDefaultValue();
 }
 
-void UK2Node_EmitEventFromInterface::PreloadRequiredAssets()
+void UK2Node_EmitEventFromInterface::RefreshDefaultValue()
 {
-	if (UEdGraphPin* InterfacePin = GetInterfacePin())
+	if (auto Pin = this->GetEventPin())
 	{
-		if (UStateMachineInterface* Interface = Cast<UStateMachineInterface>(InterfacePin->DefaultObject))
-		{
-			PreloadObject(Interface);
-		}
-	}
-	return Super::PreloadRequiredAssets();
-}
-
-void UK2Node_EmitEventFromInterface::NotifyPinConnectionListChanged(UEdGraphPin* Pin)
-{
-	Super::NotifyPinConnectionListChanged(Pin);
-
-	if (Pin == GetInterfacePin())
-	{
-		if (Pin->LinkedTo.Num() > 0)
-		{
-			RefreshEventOptions();
-		}
+		Pin->DefaultValue =
+			FString::Printf(TEXT("(EventName=\"%s\")"), *this->Event.Name().ToString());
 	}
 }
 
-TSet<FName> UK2Node_EmitEventFromInterface::GetEventSet() const
-{
-	if (auto SMI = Cast<UStateMachineInterface>(this->GetInterfacePin()->DefaultObject))
-	{
-		return SMI->GetCallEvents();
-	}
 
-	return {};
+#if WITH_EDITOR
+void UK2Node_EmitEventFromInterface::PostEditChangeProperty(FPropertyChangedEvent& PropertyEvent)
+{
+	Super::PostEditChangeProperty(PropertyEvent);
+
+	this->RefreshDefaultValue();
+	this->ReconstructNode();
 }
+#endif
 
 #undef LOCTEXT_NAMESPACE

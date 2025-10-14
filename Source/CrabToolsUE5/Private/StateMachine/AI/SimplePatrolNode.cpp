@@ -4,7 +4,7 @@
 #include "Utils/UtilsLibrary.h"
 #include "StateMachine/IStateMachineLike.h"
 #include "StateMachine/Events.h"
-#include "Components/Pathing/PatrolPathFollowingComponent.h"
+
 
 #define LOCTEXT_NAMESPACE "AISimplePatrolNode"
 

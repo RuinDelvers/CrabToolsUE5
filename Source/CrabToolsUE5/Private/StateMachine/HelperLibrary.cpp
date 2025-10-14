@@ -1,5 +1,6 @@
 #include "StateMachine/HelperLibrary.h"
 #include "StateMachine/EventListener.h"
+#include "StateMachine/DataStructures.h"
 
 #if !UE_BUILD_SHIPPING
 	#include "Logging/MessageLog.h"
@@ -24,6 +25,11 @@ void UStateMachineHelperLibrary::EmitEvent(UObject* Obj, FName EName)
 	#endif	
 }
 
+void UStateMachineHelperLibrary::EmitEventSlot(UObject* Obj, FEventSlot EName)
+{
+	EmitEvent(Obj, EName);
+}
+
 void UStateMachineHelperLibrary::EmitEventWithData(UObject* Obj, FName EName, UObject* Data)
 {
 	#if UE_BUILD_SHIPPING
@@ -39,6 +45,11 @@ void UStateMachineHelperLibrary::EmitEventWithData(UObject* Obj, FName EName, UO
 			Log.Error(LOCTEXT("EmitEventError", "Attempt to emit event to null State Machine"));
 		}
 	#endif
+}
+
+void UStateMachineHelperLibrary::EmitEventSlotWithData(UObject* Obj, FEventSlot EName, UObject* Data)
+{
+	EmitEventWithData(Obj, EName, Data);
 }
 
 #undef LOCTEXT_NAMESPACE

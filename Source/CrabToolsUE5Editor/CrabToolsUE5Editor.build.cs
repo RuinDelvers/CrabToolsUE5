@@ -25,7 +25,7 @@ public class CrabToolsUE5Editor : ModuleRules
 			{
 				"ApplicationCore",
                 "CrabToolsUE5",
-				"Core",
+                "Core",
 				"CoreUObject",
 				"UnrealEd",
 				"DeveloperSettings",

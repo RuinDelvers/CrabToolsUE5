@@ -38,16 +38,6 @@ private:
 		meta=(AllowPrivateAccess))
 	TMap<FName, FSMIData> Events;
 
-	/*
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="StateMachine",
-		meta=(AllowPrivateAccess))
-	TMap<FName, FSMIData> States;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="StateMachine",
-		meta=(AllowPrivateAccess))
-	TMap<FName, FSMIData> SubMachines;
-	*/
-
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "StateMachine",
 		meta = (AllowPrivateAccess))
 	TSet<TSoftClassPtr<UStateNode>> NodeEvents;
@@ -64,13 +54,10 @@ public:
 	TSet<FName> GetCallEvents() const;
 	TSet<FName> GetEvents() const;
 	const TMap<FName, FSMIData> GetEventData() const { return this->Events; }
-	//TSet<FName> GetStates() const;
-	//TSet<FName> GetSubMachines() const;
 
 	void AddEvent(FName EName) { this->Events.Add(EName); }
-	//void AddState(FName SName) { this->States.Add(SName); }
 
-	//void AddSubMachine(FName SName) { this->SubMachines.Add(SName);	}
+	TSet<FName> GetNodeEvents() const;
 
 	void SetParent(UStateMachineInterface* NewParent);
 	void SetParent(TSoftObjectPtr<UStateMachineInterface> NewParent);

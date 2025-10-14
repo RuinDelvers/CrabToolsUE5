@@ -34,6 +34,11 @@ public:
 	FEventSlot() : EventName(NAME_None) {}
 	FEventSlot(FName InName) : EventName(InName) {}
 
+	FName Name() const
+	{
+		return this->EventName;
+	}
+
 	bool IsNone() const
 	{
 		return this->EventName.IsNone();

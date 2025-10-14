@@ -42,28 +42,25 @@ public:
 
 	//~ Begin UK2Node Interface
 	virtual bool IsNodeSafeToIgnore() const override { return true; }
-	virtual void ReallocatePinsDuringReconstruction(TArray<UEdGraphPin*>& OldPins) override;
 	virtual void GetMenuActions(FBlueprintActionDatabaseRegistrar& ActionRegistrar) const override;
 	virtual FText GetMenuCategory() const override;
-	virtual bool IsConnectionDisallowed(const UEdGraphPin* MyPin, const UEdGraphPin* OtherPin, FString& OutReason) const override;
-	virtual void EarlyValidation(class FCompilerResultsLog& MessageLog) const override;
-	virtual void PreloadRequiredAssets() override;
-	virtual void NotifyPinConnectionListChanged(UEdGraphPin* Pin) override;
 	//~ End UK2Node Interface
 
 	UEdGraphPin* GetStateMachinePin() const;
 	/** Get the then output pin */
 	UEdGraphPin* GetThenPin() const;
-	/** Get the Data Table input pin */
-	UEdGraphPin* GetInterfacePin(const TArray<UEdGraphPin*>* InPinsToSearch=NULL) const;
-	/** Get the spawn transform input pin */	
+	/** The hidden pin for the event. */	
 	virtual UEdGraphPin* GetEventPin() const override;
 
-	void OnInterfaceRowListChanged(const UStateMachineInterface* Interface);
+	UFUNCTION()
+	void UpdateSlotExtern(FEventSlot Slot);
 
-	virtual TSet<FName> GetEventSet() const override;
+	FEventSlot GetSlot() const { return this->Event; }
 
 protected:
+
+	void RefreshDefaultValue();
+
 	/**
 	 * Takes the specified "MutatablePin" and sets its 'PinToolTip' field (according
 	 * to the specified description)
@@ -77,4 +74,8 @@ protected:
 	void RefreshEventOptions();
 
 	virtual bool ShouldShowNodeProperties() const { return true; }
+
+	#if WITH_EDITOR
+		virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyEvent) override;
+	#endif
 };

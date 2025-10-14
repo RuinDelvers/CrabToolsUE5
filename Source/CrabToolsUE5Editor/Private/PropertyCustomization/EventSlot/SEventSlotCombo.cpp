@@ -12,25 +12,28 @@
 
 #define LOCTEXT_NAMESPACE "GameplayTagCombo"
 
+/*
 SLATE_IMPLEMENT_WIDGET(SEventSlotCombo)
 void SEventSlotCombo::PrivateRegisterAttributes(FSlateAttributeInitializer& AttributeInitializer)
 {
 	SLATE_ADD_MEMBER_ATTRIBUTE_DEFINITION_WITH_NAME(AttributeInitializer, "EventSlot", SlotAttribute, EInvalidateWidgetReason::Layout);
 }
+*/
 
 SEventSlotCombo::SEventSlotCombo()
-	: SlotAttribute(*this)
+	//: SlotAttribute(*this)
 {
 	
 }
 
 void SEventSlotCombo::Construct(const FArguments& InArgs)
 {
-	this->SlotAttribute.Assign(*this, InArgs._Slot);
+	//this->SlotAttribute.Assign(*this, InArgs._Slot);
 	this->Filter = InArgs._Filter;
 	this->SettingsName = InArgs._SettingsName;
 	this->OnSlotChanged = InArgs._OnSlotChanged;
 	this->PropertyHandle = InArgs._PropertyHandle;
+	this->InlineSlot = InArgs._Slot;
 
 	ChildSlot
 		[
@@ -90,11 +93,13 @@ TSharedRef<SWidget> SEventSlotCombo::OnGetMenuContent()
 {
 	SlotPicker = SNew(SEventSlotPicker)
 		.PropertyHandle(this->PropertyHandle)
-		.Filter(this->Filter);
+		.Filter(this->Filter)
+		.OnSlotChanged_Raw(this, &SEventSlotCombo::OnSlotUpdated);
 		
 
 	return SlotPicker.ToSharedRef();
 }
+
 bool SEventSlotCombo::ShowClearButton() const
 {
 	if (this->PropertyHandle.IsValid())
@@ -124,6 +129,12 @@ bool SEventSlotCombo::ShowClearButton() const
 	}
 }
 
+void SEventSlotCombo::OnSlotUpdated(FEventSlot Slot)
+{
+	this->InlineSlot = Slot;
+	this->OnSlotChanged.ExecuteIfBound(Slot);
+}
+
 FText SEventSlotCombo::GetText() const
 {
 	FName EventName;
@@ -143,6 +154,10 @@ FText SEventSlotCombo::GetText() const
 			
 			this->OnSlotChanged.ExecuteIfBound(EventName);
 		}
+	}
+	else
+	{
+		EventName = this->InlineSlot;
 	}
 	
 	return FText::FromName(EventName);

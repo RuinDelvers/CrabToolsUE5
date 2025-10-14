@@ -24,6 +24,8 @@ class CRABNODES_API UK2Node_EmitEventFromNodeList : public UK2Node_EmitEventBase
 {
 	GENERATED_UCLASS_BODY()
 
+private:
+
 public:
 
 	//~ Begin UEdGraphNode Interface.
@@ -50,7 +52,6 @@ public:
 	UEdGraphPin* GetThenPin() const;
 	/** Get the spawn transform input pin */	
 	virtual UEdGraphPin* GetEventPin() const override;
-
 	virtual TSet<FName> GetEventSet() const override;
 
 protected:

@@ -86,6 +86,15 @@ TSet<FName> UStateMachineInterface::GetCallEvents() const
 {
 	TSet<FName> Collect = this->GetEvents();
 
+	Collect.Append(this->GetNodeEvents());
+
+	return Collect;
+}
+
+TSet<FName> UStateMachineInterface::GetNodeEvents() const
+{
+	TSet<FName> Collect;
+
 	for (const auto& NodeClass : this->NodeEvents)
 	{
 		NodeClass.LoadSynchronous();
@@ -98,42 +107,6 @@ TSet<FName> UStateMachineInterface::GetCallEvents() const
 
 	return Collect;
 }
-
-/*
-TSet<FName> UStateMachineInterface::GetStates() const
-{
-	TSet<FName> Collect;
-
-	for (auto& Name : this->States)
-	{
-		Collect.Add(Name.Key);
-	}
-
-	if (auto CheckParent = this->Parent.LoadSynchronous())
-	{
-		Collect.Append(CheckParent->GetStates());
-	}
-
-	return Collect;
-}
-
-TSet<FName> UStateMachineInterface::GetSubMachines() const
-{
-	TSet<FName> Collect;
-
-	for (auto& Name : this->SubMachines)
-	{
-		Collect.Add(Name.Key);
-	}
-
-	if (auto CheckParent = this->Parent.LoadSynchronous())
-	{
-		Collect.Append(CheckParent->GetSubMachines());
-	}
-
-	return Collect;
-}
-*/
 
 FName UStateMachineInterface::EventToNamespaced(FName EventName) const
 {

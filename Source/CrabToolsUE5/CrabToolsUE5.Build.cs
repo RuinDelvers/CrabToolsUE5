@@ -1,5 +1,3 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
-
 using UnrealBuildTool;
 
 public class CrabToolsUE5 : ModuleRules
@@ -32,7 +30,8 @@ public class CrabToolsUE5 : ModuleRules
 				"GameplayTags",
 				"AIModule",
 				"DeveloperSettings",
-				// ... add other public dependencies that you statically link with here ...
+				"LevelSequence",
+				"MovieScene",
 			});
 			
 		
@@ -43,8 +42,8 @@ public class CrabToolsUE5 : ModuleRules
 				"CoreUObject",
 				"Engine",
 				"NavigationSystem",
-				// ... add private dependencies that you statically link with here ...	
-			});
+                "LevelSequence",
+            });
 		
 		
 		DynamicallyLoadedModuleNames.AddRange(

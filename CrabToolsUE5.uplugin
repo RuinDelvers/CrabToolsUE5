@@ -49,6 +49,6 @@
 		{
 			"Name"	 : "EnhancedInput",
 			"Enabled": true
-		}
+		},
 	]
 }

@@ -106,7 +106,7 @@ public:
 
 	#if WITH_EDITORONLY_DATA
 		UPROPERTY()
-		TSet<TSoftObjectPtr<UStateMachineInterface>> Interfaces;
+		TSet<TObjectPtr<UStateMachineInterface>> Interfaces;
 	#endif //WITH_EDITORONLY_DATA
 
 public:

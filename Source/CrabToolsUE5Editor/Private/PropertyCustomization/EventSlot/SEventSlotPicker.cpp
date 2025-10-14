@@ -32,7 +32,7 @@ void SEventSlotPicker::Construct(const FArguments& InArgs)
 	this->SetCanTick(false);
 	this->Root = MakeShareable(new FRootEventSlotNode());
 
-	OnTagChanged = InArgs._OnTagChanged;
+	OnSlotChanged = InArgs._OnSlotChanged;
 	OnRefreshTagContainers = InArgs._OnRefreshTagContainers;
 	bReadOnly = InArgs._ReadOnly;
 	SettingsName = InArgs._SettingsName;
@@ -165,17 +165,22 @@ void SEventSlotPicker::InitRoot()
 
 void SEventSlotPicker::OnEventSelectionChanged()
 {
-	this->SetEventName(this->Root->GetEventName());
+	FName EName = this->Root->GetEventName();
+	this->SetEventName(EName);
+	this->OnSlotChanged.ExecuteIfBound(EName);
 }
 
 void SEventSlotPicker::SetEventName(FName EName)
 {
-	if (auto StructProp = CastField<FStructProperty>(this->PropertyHandle->GetProperty()))
+	if (this->PropertyHandle.IsValid())
 	{
-		if (StructProp->Struct == FEventSlot::StaticStruct())
+		if (auto StructProp = CastField<FStructProperty>(this->PropertyHandle->GetProperty()))
 		{
-			PropertyHandle->SetValueFromFormattedString(
-				FString::Printf(TEXT("(EventName=\"%s\")"), *EName.ToString()));
+			if (StructProp->Struct == FEventSlot::StaticStruct())
+			{
+				PropertyHandle->SetValueFromFormattedString(
+					FString::Printf(TEXT("(EventName=\"%s\")"), *EName.ToString()));
+			}
 		}
 	}
 }
@@ -659,6 +664,37 @@ FAssetEventSlotNode::FAssetEventSlotNode(UObject* Obj): Object(Obj)
 	}
 }
 
+FName FAssetEventSlotNode::GetEventName() const
+{
+	if (this->Object.IsValid() && this->GetSelectedChild().IsValid())
+	{
+		if (auto SMI = Cast<UStateMachineInterface>(this->Object))
+		{
+			auto EName = this->GetSelectedChild()->GetEventName();
+			if (SMI->HasCallEvent(EName))
+			{
+				return EName;
+			}
+			else
+			{
+				FString ChildString = this->DisplayText.ToString();
+				ChildString.Append(".");
+				ChildString.Append(EName.ToString());
+
+				return FName(ChildString);
+			}
+		}
+		else
+		{
+			return this->GetSelectedChild()->GetEventName();
+		}
+	}
+	else
+	{
+		return NAME_None;
+	}
+}
+
 void FRootEventSlotNode::Init()
 {
 	FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>(FName("AssetRegistry"));
@@ -697,6 +733,20 @@ void FAssetEventSlotNode::Init()
 		for (const auto& Data : SMI->GetEventData())
 		{
 			auto Child = MakeShareable(new FLeafEventSlotNode(Data.Key, Data.Value));
+			this->AddChild(Child);
+		}
+
+		for (const auto& NodeEvents : SMI->GetNodeEvents())
+		{
+			auto Child = MakeShareable(new FLeafEventSlotNode(NodeEvents, FSMIData()));
+			this->AddChild(Child);
+		}
+	}
+	else if (auto BPGC = Cast<UStateMachineBlueprintGeneratedClass>(this->Object))
+	{			
+		for (const auto& Event : BPGC->GetTotalEventSet())
+		{
+			auto Child = MakeShareable(new FLeafEventSlotNode(Event, FSMIData()));
 			this->AddChild(Child);
 		}
 	}

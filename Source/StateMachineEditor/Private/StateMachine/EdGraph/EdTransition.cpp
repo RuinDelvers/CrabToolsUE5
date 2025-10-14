@@ -127,7 +127,7 @@ TMap<FName, FTransitionData> UEdTransition::GetTransitionData(FNodeVerificationC
 			{
 				auto StartName = this->GetStartNode()->GetStateName();
 				auto EndName = StateNode->GetStateName();
-				auto Msg = FString::Printf(TEXT("Transition from %s to %s uses unknown event: %s"),
+				auto Msg = FString::Printf(TEXT("@@ Transition from %s to %s uses unknown event: %s"),
 					*StartName.ToString(),
 					*EndName.ToString(),
 					*Values.Key.ToString());

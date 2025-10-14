@@ -68,27 +68,19 @@ void UK2Node_EmitEventWithDataFromInterface::ExpandNode(class FKismetCompilerCon
 {
 	// Skip the standard node expansion, since it uses the wrong function.
     UK2Node::ExpandNode(CompilerContext, SourceGraph);
+
+	this->RefreshDefaultValue();
+
+	if (this->Event.IsNone())
+	{
+		CompilerContext.MessageLog.Error(*LOCTEXT("InvalidEventError", "Input event is None.").ToString(), this);
+		return;
+	}
     
-	UEdGraphPin* OriginalInterfaceInPin = GetInterfacePin();
 	UEdGraphPin* OriginalStateMachineInPin = GetStateMachinePin();
 
-	if (!this->CheckValidEvent(CompilerContext.MessageLog))
-	{
-		BreakAllNodeLinks();
-		return;
-	}	
-
-    UStateMachineInterface* Table = (OriginalInterfaceInPin != NULL) ? Cast<UStateMachineInterface>(OriginalInterfaceInPin->DefaultObject) : NULL;
-    if((nullptr == OriginalInterfaceInPin) || (0 == OriginalInterfaceInPin->LinkedTo.Num() && nullptr == Table))
-    {
-        CompilerContext.MessageLog.Error(*LOCTEXT("NoInterface_Error", "EmitEventWithDataFromInterface must have a Interface specified.").ToString(), this);
-        // we break exec links so this is the only error we get
-        BreakAllNodeLinks();
-        return;
-    }
-
 	// FUNCTION NODE
-	const FName FunctionName = GET_FUNCTION_NAME_CHECKED(UStateMachineHelperLibrary, EmitEventWithData);
+	const FName FunctionName = GET_FUNCTION_NAME_CHECKED(UStateMachineHelperLibrary, EmitEventSlotWithData);
 	UK2Node_CallFunction* EmitEventFromInterfaceFunction = CompilerContext.SpawnIntermediateNode<UK2Node_CallFunction>(this, SourceGraph);
 	EmitEventFromInterfaceFunction->FunctionReference.SetExternalMember(FunctionName, UStateMachineHelperLibrary::StaticClass());
 	EmitEventFromInterfaceFunction->AllocateDefaultPins();
