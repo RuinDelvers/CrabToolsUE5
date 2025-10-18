@@ -83,6 +83,9 @@ protected:
 		virtual void GetEmittedEvents(TSet<FName>& Events) const override;
 	#endif
 
+	UFUNCTION()
+	void EventNotify_AttemptDialogue(FName EName, UObject* Data);
+
 private:
 
 	void HandleComponent(UDialogueStateComponent* Comp);

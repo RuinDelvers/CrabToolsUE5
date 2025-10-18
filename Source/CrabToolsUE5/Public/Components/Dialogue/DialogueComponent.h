@@ -125,6 +125,16 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Dialogue")
 	FListenForDialogue OnDialogueStarted;
 
+	/*
+	 * This event is used for communicating that there's no active
+	 * dialogue currently. Useful for hiding UI elements which should
+	 * not be visible during dialogue style cutscenes. This is
+	 * generally handled outside the component, but is here for
+	 * a simple centralized communication method.
+	 */
+	UPROPERTY(BlueprintAssignable, Category = "Dialogue")
+	FListenForDialogue OnDialogueNull;
+
 	UPROPERTY(BlueprintAssignable, Category = "Dialogue")
 	FListenForDialogue OnDialogueFinished;
 
@@ -143,6 +153,8 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Dialogue")
 	bool IsInDialogue() const;
+
+	virtual void OnComponentDestroyed(bool bDestroyHierarchy) override;
 
 private:
 

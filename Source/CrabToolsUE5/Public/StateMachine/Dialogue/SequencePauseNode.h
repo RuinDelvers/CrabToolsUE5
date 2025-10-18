@@ -14,6 +14,7 @@ private:
 	UPROPERTY(Transient)
 	TObjectPtr<ULevelSequencePlayer> Player;
 
+	/* Whether or not to set the pause flag when entering this node. */
 	UPROPERTY(EditAnywhere, Category="Pausing")
 	bool bPauseOnEnter = true;
 
@@ -21,6 +22,7 @@ private:
 		meta=(EditCondition="bPauseOnEnter", InlineEditConditionToggle))
 	bool bIsPausedOnEnter = true;
 
+	/* Whether or not to set the pause flag when exiting this node. */
 	UPROPERTY(EditAnywhere, Category = "Pausing")
 	bool bPauseOnExit = true;
 

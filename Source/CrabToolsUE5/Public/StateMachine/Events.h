@@ -93,9 +93,11 @@ namespace Events::Tasks
 
 namespace Events::Dialogue
 {
-	constexpr char REQUEST_CONFIRMED[]  = "REQUEST_DIALOGUE";
-	constexpr char DIALOGUE_CONFIRMED[] = "DIALOGUE_CONFIRMED";
-	constexpr char DIALOGUE_FINISHED[]  = "DIALOGUE_FINISHED";
-	constexpr char DIALOGUE_FAILED[]    = "DIALOGUE_FAILED";
-	constexpr char MONOLOGUE_FINISHED[] = "MONOLOGUE_FINISHED";
+	constexpr char REQUEST_CONFIRMED[]      = "REQUEST_DIALOGUE";
+	constexpr char DIALOGUE_CONFIRMED[]     = "DIALOGUE_CONFIRMED";
+	constexpr char DIALOGUE_FINISHED[]      = "DIALOGUE_FINISHED";
+	constexpr char DIALOGUE_FAILED[]        = "DIALOGUE_FAILED";
+	constexpr char MONOLOGUE_FINISHED[]     = "MONOLOGUE_FINISHED";
+	constexpr char SEQUENCE_LOADED[]        = "PROGRESS_DIALOGUE";
+	constexpr char NULL_SEQUENCE_PROGRESS[] = "PROGRESS_DIALOGUE";
 }

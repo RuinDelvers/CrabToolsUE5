@@ -353,7 +353,7 @@ void UStateMachine::SendEvent(FName EName)
 			CurrentState->GetDestination(EName, Result);
 
 			if (!Result.Destination.IsNone())
-			{				
+			{
 				this->UpdateState(Result.Destination);
 				Result.Condition->OnTransitionTaken();
 				#if STATEMACHINE_DEBUG_DATA
@@ -1148,14 +1148,20 @@ void UStateNode::PostTransition()
 
 void UStateNode::Exit()
 {
-	this->SetActive(false);
-	this->Exit_Inner();
+	if (this->bActive)
+	{
+		this->SetActive(false);
+		this->Exit_Inner();
+	}
 }
 
 void UStateNode::ExitWithData(UObject* Data)
 {
-	this->SetActive(false);
-	this->ExitWithData_Inner(Data);
+	if (this->bActive)
+	{
+		this->SetActive(false);
+		this->ExitWithData_Inner(Data);
+	}
 }
 
 void UStateNode::ExitWithData_Inner_Implementation(UObject* Data)
@@ -1165,14 +1171,20 @@ void UStateNode::ExitWithData_Inner_Implementation(UObject* Data)
 
 void UStateNode::Enter()
 {
-	this->SetActive(true);
-	this->Enter_Inner();
+	if (!this->bActive)
+	{
+		this->SetActive(true);
+		this->Enter_Inner();
+	}
 }
 
 void UStateNode::EnterWithData(UObject* Data)
 {
-	this->SetActive(true);
-	this->EnterWithData_Inner(Data);
+	if (!this->bActive)
+	{
+		this->SetActive(true);
+		this->EnterWithData_Inner(Data);
+	}
 }
 
 void UStateNode::EnterWithData_Inner_Implementation(UObject* Data)

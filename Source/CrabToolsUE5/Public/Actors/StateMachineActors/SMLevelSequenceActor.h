@@ -10,13 +10,18 @@ class ASMLevelSequenceActor : public ALevelSequenceActor, public IEventListenerI
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = StateMachine, 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="StateMachine",
 		meta = (AllowPrivateAccess = "true"))
-	class UStateMachineComponent* StateMachineComponent;
+	TObjectPtr<class UStateMachineComponent> StateMachineComponent;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="StateMachine",
+		meta=(ExposeOnSpawn=true, AllowPrivateAccess))
+	TSubclassOf<UStateMachine> CutsceneClass;
 
 public:
 	ASMLevelSequenceActor(const FObjectInitializer& ObjectInit);
 
+	virtual void BeginPlay() override;
 
 	virtual void Event_Implementation(FName EName) override final { this->Event_Direct(EName); }
 	void Event_Direct(FName EName)

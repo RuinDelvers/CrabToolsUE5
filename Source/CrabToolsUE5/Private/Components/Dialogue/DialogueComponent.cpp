@@ -24,6 +24,12 @@ bool UDialogueStateComponent::HandShake(UDialogueStateComponent* Conversee)
 	return false;
 }
 
+void UDialogueStateComponent::OnComponentDestroyed(bool bDestroyHierarchy)
+{
+	Super::OnComponentDestroyed(bDestroyHierarchy);
+	this->FinishDialogue();
+}
+
 void UDialogueStateComponent::FinishDialogue()
 {
 	TArray<TObjectPtr<UDialogueStateComponent>> OldParts = this->Participants.Array();

@@ -72,7 +72,7 @@ void UCompositeNode::Exit_Inner_Implementation() {
 	for (const auto& Node : this->Nodes) {
 		if (Node.Value) {
 			Node.Value->Exit();	
-			if (!(!this->Active() && this->GetMachine()->IsInState(TID))) {
+			if (!(this->Active() && this->GetMachine()->IsInState(TID))) {
 				return;
 			}
 		}
@@ -84,7 +84,7 @@ void UCompositeNode::ExitWithData_Inner_Implementation(UObject* Data) {
 	for (const auto& Node : this->Nodes) {
 		if (Node.Value) {
 			Node.Value->ExitWithData(Data);
-			if (!(!this->Active() && this->GetMachine()->IsInState(TID))) {
+			if (!(this->Active() && this->GetMachine()->IsInState(TID))) {
 				return;
 			}
 		}
@@ -112,7 +112,7 @@ void UCompositeNode::PostTransition_Inner_Implementation()
 		if (Node.Value)
 		{
 			Node.Value->PostTransition();
-			if (!(!this->Active() && this->GetMachine()->IsInState(TID)))
+			if (!(this->Active() && this->GetMachine()->IsInState(TID)))
 			{
 				return;
 			}

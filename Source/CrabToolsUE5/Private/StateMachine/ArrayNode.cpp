@@ -75,7 +75,7 @@ void UArrayNode::Exit_Inner_Implementation() {
 	for (const auto& Node : this->Nodes) {
 		if (Node) {
 			Node->Exit();	
-			if (!(!this->Active() && this->GetMachine()->IsInState(TID))) {
+			if (!(this->Active() && this->GetMachine()->IsInState(TID))) {
 				return;
 			}
 		}
@@ -87,7 +87,7 @@ void UArrayNode::ExitWithData_Inner_Implementation(UObject* Data) {
 	for (const auto& Node : this->Nodes) {
 		if (Node) {
 			Node->ExitWithData(Data);
-			if (!(!this->Active() && this->GetMachine()->IsInState(TID))) {
+			if (!(this->Active() && this->GetMachine()->IsInState(TID))) {
 				return;
 			}
 		}
@@ -102,8 +102,9 @@ void UArrayNode::PostTransition_Inner_Implementation()
 		if (Node)
 		{
 			Node->PostTransition();
-			if (!(!this->Active() && this->GetMachine()->IsInState(TID)))
+			if (!(this->Active() && this->GetMachine()->IsInState(TID)))
 			{
+				UE_LOG(LogTemp, Warning, TEXT("- - Child did return"));
 				return;
 			}
 		}

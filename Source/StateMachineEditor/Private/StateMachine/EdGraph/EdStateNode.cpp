@@ -159,6 +159,14 @@ TArray<FString> UEdStateNode::GetEventOptions() const
 		}
 	}
 
+	if (this->NodeType == EStateNodeType::EXTENDED_NODE)
+	{
+		if (auto Parent = this->GetStateGraph()->GetBlueprintOwner()->GetStateMachineGeneratedClass()->GetParent())
+		{
+			Parent->GetStateEmittedEvents(this->GetStateGraph()->GetGraphName(), this->GetStateName(), EventsSet);
+		}
+	}
+
 	TArray<FString> EventArray;
 	for (auto& Event : EventsSet) { EventArray.Add(Event.ToString()); }
 	for (auto& Event : this->GetStateGraph()->GetEventOptions()) { EventArray.Add(Event); }
@@ -204,6 +212,25 @@ bool UEdStateNode::Modify(bool bAlwaysMarkDirty)
 
 bool UEdStateNode::HasEvent(FName EName)
 {
+	if (this->NodeType == EStateNodeType::EXTENDED_NODE)
+	{
+		TSet<FName> ParentEvents;
+
+		if (this->NodeType == EStateNodeType::EXTENDED_NODE)
+		{
+			if (auto Parent = this->GetStateGraph()->GetBlueprintOwner()->GetStateMachineGeneratedClass()->GetParent())
+			{
+				Parent->GetStateEmittedEvents(this->GetStateGraph()->GetGraphName(), this->GetStateName(), ParentEvents);
+			}
+		}
+
+		if (ParentEvents.Contains(EName))
+		{
+			return true;
+		}
+
+	}
+
 	this->UpdateEmittedEvents();
 	return this->NodeEmittedEvents.Contains(EName) || this->GetStateGraph()->HasEvent(EName);
 }

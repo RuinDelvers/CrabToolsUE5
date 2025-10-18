@@ -55,6 +55,10 @@ UState* UStateMachineBlueprintGeneratedClass::GetStateData(
 
 	if (MachineData)
 	{
+		if (StateName.ToString().Contains("Setup"))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("------------------ Generating state --------------"));
+		}
 		auto DefaultStateData = MachineData->StateData.Find(StateName);
 
 		if (DefaultStateData)
@@ -562,4 +566,15 @@ bool UStateMachineBlueprintGeneratedClass::HasEvent(FName EName, FName MachineNa
 	}
 
 	return false;
+}
+
+void UStateMachineBlueprintGeneratedClass::GetStateEmittedEvents(FName Machine, FName State, TSet<FName>& OutNames) const
+{
+	if (auto FoundMachine = Machine.IsNone() ? &this->Archetype : this->SubArchetypes.Find(Machine))
+	{
+		if (auto FoundState = FoundMachine->StateData.Find(State))
+		{
+			FoundState->Archetype->GetNode()->GetEmittedEvents(OutNames);
+		}
+	}
 }

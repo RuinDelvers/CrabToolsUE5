@@ -39,6 +39,9 @@ public:
 	void EventWithData_Implementation(FName EName, UObject* Data) override final { this->EventWithData_Direct(EName, Data); }
 	void EventWithData_Direct(FName EName, UObject* Data);
 
+	UFUNCTION(BlueprintCallable, Category="StateMachine")
+	void CreateMachine(TSubclassOf<UStateMachine> MachineClass);
+
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "StateMachine")
 	FName CurrentStateName();
 

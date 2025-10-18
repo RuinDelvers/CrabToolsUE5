@@ -2,8 +2,16 @@
 
 ASMLevelSequenceActor::ASMLevelSequenceActor(const FObjectInitializer& ObjectInit): ALevelSequenceActor(ObjectInit)
 {
-	StateMachineComponent = CreateDefaultSubobject<UStateMachineComponent>(TEXT("StateMachineComponent"));
+	this->StateMachineComponent = CreateDefaultSubobject<UStateMachineComponent>(TEXT("StateMachineComponent"));
 }
 
+void ASMLevelSequenceActor::BeginPlay()
+{
+	if (this->CutsceneClass)
+	{
+		this->StateMachineComponent->CreateMachine(this->CutsceneClass);
+	}
 
+	Super::BeginPlay();
+}
 

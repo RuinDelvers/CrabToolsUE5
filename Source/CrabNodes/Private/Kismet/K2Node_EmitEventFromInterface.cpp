@@ -235,6 +235,8 @@ void UK2Node_EmitEventFromInterface::RefreshDefaultValue()
 	{
 		Pin->DefaultValue =
 			FString::Printf(TEXT("(EventName=\"%s\")"), *this->Event.Name().ToString());
+		this->Modify(true);
+		FBlueprintEditorUtils::MarkBlueprintAsModified(this->GetBlueprint());
 	}
 }
 

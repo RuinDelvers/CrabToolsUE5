@@ -148,6 +148,8 @@ public:
 	void AddStateMachine(FStateMachineArchetypeData Data, FName MachineName = NAME_None);
 	void VerifyClass(FNodeVerificationContext& Context);
 
+	void GetStateEmittedEvents(FName Machine, FName State, TSet<FName>& OutNames) const;
+
 	#if WITH_EDITOR
 		bool DoesImplementInterface(UStateMachineInterface* Interface) const;
 	#endif

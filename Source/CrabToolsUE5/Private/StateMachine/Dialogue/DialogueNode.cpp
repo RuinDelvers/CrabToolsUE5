@@ -77,8 +77,13 @@ void UAttemptDialogueNode::Initialize_Inner_Implementation()
 
 void UAttemptDialogueNode::EventWithData_Inner_Implementation(FName EName, UObject* Data)
 {
+
+}
+
+void UAttemptDialogueNode::EventNotify_AttemptDialogue(FName EName, UObject* Data)
+{
 	UDialogueStateComponent* Comp = Cast<UDialogueStateComponent>(Data);
-	
+
 	if (Comp)
 	{
 		this->HandleComponent(Comp);

@@ -17,8 +17,7 @@ void UStateMachineComponent::BeginPlay()
 
 	if (this->Machine)
 	{
-		//this->Machine->OnStateChanged.AddDynamic(this, &UStateMachineComponent::Statechanged);
-		this->Machine->OnTickRequirementUpdated.AddDynamic(this, &UStateMachineComponent::TickUpdated);
+		this->Machine->OnTickRequirementUpdated.AddUniqueDynamic(this, &UStateMachineComponent::TickUpdated);
 		this->Machine->Initialize(this->GetOwner());		
 	}
 }
@@ -27,8 +26,26 @@ void UStateMachineComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	if (this->Machine) {
+	if (this->Machine)
+	{
 		this->Machine->Tick(DeltaTime);
+	}
+}
+
+void UStateMachineComponent::CreateMachine(TSubclassOf<UStateMachine> MachineClass)
+{
+	auto NewMachine = NewObject<UStateMachine>(this, MachineClass);
+
+	if (NewMachine)
+	{
+		if (this->Machine)
+		{
+			this->Machine->OnTickRequirementUpdated.RemoveAll(this);
+		}
+
+		this->Machine = NewMachine;
+		this->Machine->OnTickRequirementUpdated.AddUniqueDynamic(this, &UStateMachineComponent::TickUpdated);
+		this->Machine->Initialize(this->GetOwner());
 	}
 }
 
