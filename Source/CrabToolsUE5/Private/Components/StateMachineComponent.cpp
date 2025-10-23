@@ -49,17 +49,17 @@ void UStateMachineComponent::CreateMachine(TSubclassOf<UStateMachine> MachineCla
 	}
 }
 
-void UStateMachineComponent::Event_Direct(FName EName)
+void UStateMachineComponent::Event_Direct(FName InEvent)
 {
 	if (this->HasMachine()) {
-		this->Machine->SendEvent(EName);
+		this->Machine->SendEvent(InEvent);
 	}
 }
 
-void UStateMachineComponent::EventWithData_Direct(FName EName, UObject* Data)
+void UStateMachineComponent::EventWithData_Direct(FName InEvent, UObject* Data)
 {
 	if (this->HasMachine()) {
-		this->Machine->SendEventWithData(EName, Data);
+		this->Machine->SendEventWithData(InEvent, Data);
 	}
 }
 

@@ -86,20 +86,20 @@ bool UEdAliasNode::Modify(bool bAlwaysMarkDirty)
 	return this->GetGraph()->Modify(bAlwaysMarkDirty);
 }
 
-bool UEdAliasNode::HasEvent(FName EName)
+bool UEdAliasNode::HasEvent(FName InEvent)
 {
 	for (auto State : this->GetStateGraph()->GetStates())
 	{
 		if (this->AliasedStates.Contains(State->GetStateName()) != this->bComplement)
 		{
-			if (State->HasEvent(EName))
+			if (State->HasEvent(InEvent))
 			{
 				return true;
 			}
 		}
 	}
 
-	return this->GetStateGraph()->HasEvent(EName);;
+	return this->GetStateGraph()->HasEvent(InEvent);;
 }
 
 

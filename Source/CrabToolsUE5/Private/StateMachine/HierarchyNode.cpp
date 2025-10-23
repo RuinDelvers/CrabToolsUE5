@@ -32,7 +32,8 @@ void UHierarchyNode::Initialize_Inner_Implementation()
 
 void UHierarchyNode::PerformExit()
 {
-	if (this->SubMachine != nullptr) {
+	if (this->SubMachine != nullptr)
+	{
 		FName SubStateName = this->SubMachine->GetCurrentStateName();
 
 		if (this->ExitStates.Contains(SubStateName))
@@ -42,19 +43,19 @@ void UHierarchyNode::PerformExit()
 	}
 }
 
-void UHierarchyNode::Event_Inner_Implementation(FName EName)
+void UHierarchyNode::Event_Inner_Implementation(FName InEvent)
 {
 	if (this->SubMachine)
 	{
-		this->SubMachine->SendEvent(EName);
+		this->SubMachine->SendEvent(InEvent);
 	}
 }
 
-void UHierarchyNode::EventWithData_Inner_Implementation(FName EName, UObject* Data)
+void UHierarchyNode::EventWithData_Inner_Implementation(FName InEvent, UObject* Data)
 {
 	if (this->SubMachine)
 	{
-		this->SubMachine->SendEventWithData(EName, Data);
+		this->SubMachine->SendEventWithData(InEvent, Data);
 	}
 }
 
@@ -67,11 +68,6 @@ bool UHierarchyNode::DoesReferenceMachine_Inner_Implementation(FName MachineName
 		default:
 			return false;
 	}
-}
-
-void UHierarchyNode::PostTransition_Inner_Implementation()
-{
-	this->PerformExit();
 }
 
 void UHierarchyNode::Enter_Inner_Implementation()
@@ -93,6 +89,8 @@ void UHierarchyNode::Enter_Inner_Implementation()
 		{
 			this->SubMachine->SendEvent(this->GetMachine()->GetCurrentEvent());
 		}
+
+		this->PerformExit();
 	}
 }
 

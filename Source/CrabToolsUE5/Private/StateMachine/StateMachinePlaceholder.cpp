@@ -19,7 +19,7 @@ void UStateMachinePlaceholderNode::Event_Inner_Implementation(FName Event)
 { 
 
 }
-void UStateMachinePlaceholderNode::EventWithData_Inner_Implementation(FName EName, UObject* Data)
+void UStateMachinePlaceholderNode::EventWithData_Inner_Implementation(FName InEvent, UObject* Data)
 { 
 
 }

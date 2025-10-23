@@ -34,19 +34,19 @@ void UStateMachineInterface::SetParent(TSoftObjectPtr<UStateMachineInterface> Ne
 	this->Parent = NewParent;
 }
 
-bool UStateMachineInterface::HasEvent(FName EName) const
+bool UStateMachineInterface::HasEvent(FName InEvent) const
 {
-	bool bFound = this->GetEvents_Inner().Contains(EName);
+	bool bFound = this->GetEvents_Inner().Contains(InEvent);
 
 	if (auto CheckParent = this->Parent.LoadSynchronous())
 	{
-		bFound = bFound || CheckParent->HasEvent(EName);
+		bFound = bFound || CheckParent->HasEvent(InEvent);
 	}
 
 	return bFound;
 }
 
-bool UStateMachineInterface::HasCallEvent(FName EName) const
+bool UStateMachineInterface::HasCallEvent(FName InEvent) const
 {
 	bool bFound = false;
 
@@ -59,7 +59,7 @@ bool UStateMachineInterface::HasCallEvent(FName EName) const
 			TSet<FName> Notifies;
 			CastChecked<UStateNode>(NodeClass->GetDefaultObject())->GetNotifies(Notifies);
 
-			if (Notifies.Contains(EName))
+			if (Notifies.Contains(InEvent))
 			{
 				bFound = true;
 				break;
@@ -131,9 +131,9 @@ void UStateMachineInterface::UpdateNamespacedEvents() const
 {
 	if (this->NamespacedEvents.Num() == 0)
 	{
-		for (const auto& EName : this->Events)
+		for (const auto& EventName : this->Events)
 		{
-			this->NamespacedEvents.Add(this->EventToNamespaced(EName.Key));
+			this->NamespacedEvents.Add(this->EventToNamespaced(EventName.Key));
 		}
 	}
 }

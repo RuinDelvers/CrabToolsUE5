@@ -124,7 +124,7 @@ public:
 	FName GetStartState(FName MachineName = NAME_None) const;
 	TSet<FName> GetEventSet(FName MachineName = NAME_None) const;
 	TSet<FName> GetTotalEventSet() const;
-	bool HasEvent(FName EName, FName MachineName = NAME_None) const;
+	bool HasEvent(FName InEvent, FName MachineName = NAME_None) const;
 
 	void CollectExtendibleStates(TSet<FString>& StateNames, FName SubMachineName = NAME_None) const;
 	void CollectOverrideableStates(TSet<FString>& StateNames, FName SubMachineName = NAME_None) const;

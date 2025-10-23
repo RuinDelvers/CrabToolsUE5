@@ -98,6 +98,6 @@ namespace Events::Dialogue
 	constexpr char DIALOGUE_FINISHED[]      = "DIALOGUE_FINISHED";
 	constexpr char DIALOGUE_FAILED[]        = "DIALOGUE_FAILED";
 	constexpr char MONOLOGUE_FINISHED[]     = "MONOLOGUE_FINISHED";
-	constexpr char SEQUENCE_LOADED[]        = "PROGRESS_DIALOGUE";
+	constexpr char SEQUENCE_LOADED[]        = "SEQUENCE_LOADED";
 	constexpr char NULL_SEQUENCE_PROGRESS[] = "PROGRESS_DIALOGUE";
 }

@@ -415,13 +415,19 @@ bool FStateItem::IsReadOnly() const
 
 void FStateItem::OnNameTextCommited(const FText& InText, ETextCommit::Type CommitInfo)
 {
-	FName NewName(InText.ToString());
-	this->NodeRef->RenameNode(NewName);
+	if (this->NodeRef.IsValid())
+	{
+		FName NewName(InText.ToString());
+		this->NodeRef->RenameNode(NewName);
+	}
 }
 
 void FStateItem::OnNameChanged(FName Old, FName Name)
 {
-	this->InlineText->SetText(FText::FromName(Name));
+	if (this->InlineText.IsValid())
+	{
+		this->InlineText->SetText(FText::FromName(Name));
+	}
 }
 
 void FStateItem::OnNodeDeleted()

@@ -59,9 +59,9 @@ TArray<FString> AEventTriggerBox::GetEventOptions() const
 	{
 		if (auto Interface = Object.LoadSynchronous())
 		{
-			for (auto& EName : Interface->GetEvents())
+			for (auto& EventName : Interface->GetEvents())
 			{
-				Names.Add(EName.ToString());
+				Names.Add(EventName.ToString());
 			}
 		}
 	}

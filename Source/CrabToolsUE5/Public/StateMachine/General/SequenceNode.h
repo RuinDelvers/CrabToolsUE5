@@ -27,11 +27,10 @@ protected:
 	virtual void Tick_Inner_Implementation(float DeltaTime) override;
 	virtual void Enter_Inner_Implementation() override;
 	virtual void EnterWithData_Inner_Implementation(UObject* Data) override;
-	virtual void Event_Inner_Implementation(FName EName) override;
-	virtual void EventWithData_Inner_Implementation(FName EName, UObject* Data) override;
+	virtual void Event_Inner_Implementation(FName InEvent) override;
+	virtual void EventWithData_Inner_Implementation(FName InEvent, UObject* Data) override;
 	virtual void Exit_Inner_Implementation() override;
 	virtual void Initialize_Inner_Implementation() override;
-	virtual void PostTransition_Inner_Implementation() override;
 	virtual bool RequiresTick_Implementation() const override;
 	virtual bool HasPipedData_Implementation() const override;
 	virtual void SetActive_Inner_Implementation(bool bNewActive) override;

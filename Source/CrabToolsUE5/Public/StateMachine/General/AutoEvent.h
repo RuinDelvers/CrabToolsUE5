@@ -18,7 +18,7 @@ class CRABTOOLSUE5_API UAutoEventNode : public UStateNode
 
 public:
 
-	virtual void PostTransition_Inner_Implementation() override;
+	virtual void Enter_Inner_Implementation() override;
 
 	#if WITH_EDITORONLY_DATA
 		virtual void GetEmittedEvents(TSet<FName>& Events) const override;

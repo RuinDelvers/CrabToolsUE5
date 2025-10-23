@@ -21,7 +21,6 @@
 
 #define LOCTEXT_NAMESPACE "EventSlotPicker"
 
-
 SEventSlotPicker::~SEventSlotPicker()
 {
 
@@ -165,12 +164,12 @@ void SEventSlotPicker::InitRoot()
 
 void SEventSlotPicker::OnEventSelectionChanged()
 {
-	FName EName = this->Root->GetEventName();
-	this->SetEventName(EName);
-	this->OnSlotChanged.ExecuteIfBound(EName);
+	FName EventName = this->Root->GetEventName();
+	this->SetEventName(EventName);
+	this->OnSlotChanged.ExecuteIfBound(EventName);
 }
 
-void SEventSlotPicker::SetEventName(FName EName)
+void SEventSlotPicker::SetEventName(FName InEvent)
 {
 	if (this->PropertyHandle.IsValid())
 	{
@@ -179,7 +178,7 @@ void SEventSlotPicker::SetEventName(FName EName)
 			if (StructProp->Struct == FEventSlot::StaticStruct())
 			{
 				PropertyHandle->SetValueFromFormattedString(
-					FString::Printf(TEXT("(EventName=\"%s\")"), *EName.ToString()));
+					FString::Printf(TEXT("(EventName=\"%s\")"), *InEvent.ToString()));
 			}
 		}
 	}
@@ -670,16 +669,16 @@ FName FAssetEventSlotNode::GetEventName() const
 	{
 		if (auto SMI = Cast<UStateMachineInterface>(this->Object))
 		{
-			auto EName = this->GetSelectedChild()->GetEventName();
-			if (SMI->HasCallEvent(EName))
+			auto EventName = this->GetSelectedChild()->GetEventName();
+			if (SMI->HasCallEvent(EventName))
 			{
-				return EName;
+				return EventName;
 			}
 			else
 			{
 				FString ChildString = this->DisplayText.ToString();
 				ChildString.Append(".");
-				ChildString.Append(EName.ToString());
+				ChildString.Append(EventName.ToString());
 
 				return FName(ChildString);
 			}

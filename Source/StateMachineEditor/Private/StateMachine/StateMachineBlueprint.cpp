@@ -195,8 +195,12 @@ void UStateMachineBlueprint::RenameGraph(UEdStateGraph* Graph, FName Name)
 
 bool UStateMachineBlueprint::Modify(bool bAlwaysMarkDirty)
 {
-	bool Modified = Super::Modify(bAlwaysMarkDirty);
-	return Modified;
+	return Super::Modify(bAlwaysMarkDirty);
+}
+
+void UStateMachineBlueprint::SetRequiresCompile()
+{
+	FBlueprintEditorUtils::MarkBlueprintAsModified(this);
 }
 
 void UStateMachineBlueprint::SelectGraph(UEdStateGraph* Graph)
@@ -275,9 +279,9 @@ void UStateMachineBlueprint::AppendInterfaceEvents(TArray<FString>& Names) const
 	{
 		if (IFacePtr)
 		{
-			for (auto& EName : IFacePtr->GetEvents())
+			for (auto& EventName : IFacePtr->GetEvents())
 			{
-				Names.AddUnique(EName.ToString());
+				Names.AddUnique(EventName.ToString());
 			}
 		}
 	}
@@ -340,7 +344,7 @@ void UStateMachineBlueprint::AddEventsToDataTable(UDataTable* EventSet, bool bCl
 	}
 }
 
-bool UStateMachineBlueprint::HasEvent(FName EName) const
+bool UStateMachineBlueprint::HasEvent(FName InEvent) const
 {
 	bool bHasEvent = false;
 
@@ -348,7 +352,7 @@ bool UStateMachineBlueprint::HasEvent(FName EName) const
 	{
 		if (Interface)
 		{
-			if (Interface->HasEvent(EName))
+			if (Interface->HasEvent(InEvent))
 			{
 				bHasEvent = true;
 				break;

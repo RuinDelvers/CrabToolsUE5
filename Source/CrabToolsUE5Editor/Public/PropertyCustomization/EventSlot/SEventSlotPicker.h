@@ -414,5 +414,5 @@ private:
 	void OnEventSelectionChanged();
 	void InitRoot();
 
-	void SetEventName(FName EName);
+	void SetEventName(FName InEvent);
 };

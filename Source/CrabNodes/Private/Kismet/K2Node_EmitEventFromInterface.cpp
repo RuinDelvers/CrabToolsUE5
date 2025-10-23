@@ -196,7 +196,7 @@ void UK2Node_EmitEventFromInterface::ExpandNode(class FKismetCompilerContext& Co
 		return;
 	}
 
-	UEdGraphPin* EventInPin = EmitEventFromInterfaceFunction->FindPinChecked(TEXT("EName"));
+	UEdGraphPin* EventInPin = EmitEventFromInterfaceFunction->FindPinChecked(TEXT("InEvent"));
 	EventInPin->DefaultValue = this->Event.Name().ToString();
 	CompilerContext.MovePinLinksToIntermediate(*GetEventPin(), *EventInPin);
 

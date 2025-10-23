@@ -25,7 +25,7 @@ void UAISimplePatrolNode::Initialize_Inner_Implementation()
 	check(this->GetAIController());
 }
 
-void UAISimplePatrolNode::PostTransition_Inner_Implementation()
+void UAISimplePatrolNode::Enter_Inner_Implementation()
 {
 	bool bDoReset = true;
 

@@ -8,7 +8,7 @@ UReturnToNavMeshNode::UReturnToNavMeshNode()
 	this->AddEmittedEvent(Events::AI::DONE);
 }
 
-void UReturnToNavMeshNode::PostTransition_Inner_Implementation()
+void UReturnToNavMeshNode::Enter_Inner_Implementation()
 {
 	UNavigationSystemV1* NavSys = FNavigationSystem::GetCurrent<UNavigationSystemV1>(this->GetWorld());
 

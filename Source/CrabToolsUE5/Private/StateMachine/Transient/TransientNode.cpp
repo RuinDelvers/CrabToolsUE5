@@ -56,7 +56,7 @@ bool UTransientNode::RequiresTick_Implementation() const
 	}
 }
 
-void UTransientNode::PostTransition_Inner_Implementation()
+void UTransientNode::Enter_Inner_Implementation()
 {
 	if (this->CurrentTask)
 	{

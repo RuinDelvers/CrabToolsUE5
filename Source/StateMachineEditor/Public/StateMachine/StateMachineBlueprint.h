@@ -68,7 +68,7 @@ public:
 
 	bool IsGraphNameAvailable(FString& Name) const;
 	bool IsEventNameAvailable(FName Name) const;
-	bool HasEvent(FName EName) const;
+	bool HasEvent(FName InEvent) const;
 	bool IsMainGraph(const UEdStateGraph* Graph) const;
 	void RenameGraph(UEdStateGraph* Graph, FName Name);
 	void DeleteGraph(UEdStateGraph* Graph);
@@ -103,6 +103,8 @@ public:
 		virtual void PostEditChangeProperty(
 			FPropertyChangedEvent& PropertyChangedEvent) override;
 	#endif	
+
+	void SetRequiresCompile();
 
 	virtual void SetObjectBeingDebugged(UObject* Obj) override;
 

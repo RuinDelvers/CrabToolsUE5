@@ -31,7 +31,7 @@ void UAISimpleMoveToNode::Exit_Inner_Implementation()
 	this->MoveData.ResetGoal();
 }
 
-void UAISimpleMoveToNode::PostTransition_Inner_Implementation()
+void UAISimpleMoveToNode::Enter_Inner_Implementation()
 {
 	this->BindCallback();
 
@@ -69,6 +69,7 @@ void UAISimpleMoveToNode::PostTransition_Inner_Implementation()
 void UAISimpleMoveToNode::EnterWithData_Inner_Implementation(UObject* Data)
 {
 	this->MoveData.DestinationActor = Cast<AActor>(Data);	
+	this->Enter_Inner();
 }
 
 void UAISimpleMoveToNode::MoveTo()
@@ -117,12 +118,12 @@ void UAISimpleMoveToNode::UnbindCallback()
 	CtrlQ->ReceiveMoveCompleted.RemoveAll(this);
 }
 
-void UAISimpleMoveToNode::EventNotify_PauseMovement(FName EName)
+void UAISimpleMoveToNode::EventNotify_PauseMovement(FName InEvent)
 {
 	this->GetAIController()->PauseMove(this->Result.MoveId);
 }
 
-void UAISimpleMoveToNode::EventNotify_ResumeMovement(FName EName)
+void UAISimpleMoveToNode::EventNotify_ResumeMovement(FName InEvent)
 {
 	this->GetAIController()->ResumeMove(this->Result.MoveId);
 }

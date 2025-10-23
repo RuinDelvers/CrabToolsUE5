@@ -22,5 +22,5 @@ public:
 
 protected:
 
-	virtual void PostTransition_Inner_Implementation() override;
+	virtual void Enter_Inner_Implementation() override;
 };

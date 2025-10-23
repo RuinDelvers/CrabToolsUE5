@@ -69,7 +69,7 @@ void UStateMachine::Initialize(UObject* POwner)
 		#endif
 
 
-		this->UpdateState(this->GetStartState());
+		this->Reset();
 	}
 	else
 	{
@@ -155,7 +155,7 @@ UState* UStateMachine::MakeState(FName StateName)
 	return State;
 }
 
-void UStateMachine::UpdateState(FName Name)
+void UStateMachine::UpdateState()
 {
 	#if STATEMACHINE_DEBUG_DATA
 		if (!this->bWasInitialized)
@@ -164,144 +164,153 @@ void UStateMachine::UpdateState(FName Name)
 			return;
 		}
 	#endif
-
-	if (Name != this->CurrentStateName)
+		
+	// If the destination is none or indifferent, then do not update anything.
+	if (this->Queue.Destination.IsNone() || this->Queue.Destination == this->CurrentStateName)
 	{
-		auto CurrentState = this->GetCurrentState();
+		this->Queue.Clear();
+		return;
+	}
 
-		// We check to see if there is data that needs to be piped.
-		if (CurrentState->Node && CurrentState->Node->HasPipedData())
+	// Cache the queue to detect preemptions on the transition.
+	FTransitionQueue Cached = this->Queue;
+	auto CurrentState = this->GetCurrentState();
+	this->TransPhase = TransitionPhase::Exiting;
+	this->SetupStateChangedData();
+	this->UpdateTransitionPipedData(CurrentState, Cached);
+
+	// Exit Phase: Do an atomic exit call on the node.
+	if (CurrentState)
+	{
+		if (Cached.bHasData)
 		{
-			this->UpdateStateWithData(Name, CurrentState->Node->GetPipedData(), false);
+			CurrentState->ExitWithData(Cached.Data);
 		}
 		else
 		{
+			CurrentState->Exit();
+		}
+	}
 
-			this->TransitionIdentifier.EnterTransition();
-			this->bIsTransitioning = true;
+	// Update the cached data, and see if it's been changed to a new destination.
+	this->GetPreemptTransition(Cached);
 
-			FStateChangedEventData StateChangedData;
+	this->CurrentStateName = Cached.Destination;
+	this->PushStateToStack(Cached.Destination);
+	CurrentState = this->GetCurrentState();
+	StateChangedData.ToState = CurrentState;
+	StateChangedData.To = this->CurrentStateName;
+	this->TransPhase = TransitionPhase::Entering;
 
-			StateChangedData.StateMachine = this;
-			StateChangedData.From = this->CurrentStateName;
-			StateChangedData.To = Name;
+	if (CurrentState)
+	{
+		if (Cached.bHasData)
+		{
+			CurrentState->EnterWithData(Cached.Data);
+		}
+		else
+		{
+			CurrentState->Enter();
+		}
 
+		this->UpdateTickRequirements(CurrentState->RequiresTick());
+	}
 
-			auto OldState = this->CurrentStateName;
+	if (Cached.Transition) { Cached.Transition->OnTransitionTaken(); }
+	this->ActiveTime = this->GetWorld()->GetTimeSeconds();
+	this->OnStateChanged.Broadcast(StateChangedData);
+	this->OnTransitionFinished.Broadcast(this);
+	this->StateChangedData = FStateChangedEventData();
+	this->TransPhase = TransitionPhase::None;
 
-			if (CurrentState)
+	
+	if (this->DidPreempt(Cached))
+	{
+		this->UpdateState();
+	}
+	else
+	{
+		this->Queue.Clear();
+
+		FEventQueueData QueuedEvent;
+
+		while (!this->EventQueue.IsEmpty())
+		{
+			QueuedEvent = this->EventQueue.Pop();
+
+			if (QueuedEvent.bHasData)
 			{
-				CurrentState->Exit();
-				StateChangedData.FromState = CurrentState;
+				this->SendEventWithData(QueuedEvent.EventName, QueuedEvent.Data);
 			}
-
-
-			this->CurrentStateName = Name;
-			this->PushStateToStack(Name);
-			CurrentState = this->GetCurrentState();
-
-			if (CurrentState)
+			else
 			{
-				StateChangedData.ToState = CurrentState;
-				CurrentState->Enter();
+				this->SendEvent(QueuedEvent.EventName);
 			}
-
-			this->StateChanged(StateChangedData);
-			this->OnStateChanged.Broadcast(StateChangedData);
-
-			this->bIsTransitioning = false;
-			this->CurrentEvent = NAME_None;
-
-			if (CurrentState)
-			{
-				CurrentState->Node->PostTransition();
-				this->UpdateTickRequirements(CurrentState->Node->RequiresTick());
-			}
-
-			this->PostTransition();
-			this->OnTransitionFinished.Broadcast(this);
 		}
 	}
 }
 
-void UStateMachine::UpdateStateWithData(FName Name, UObject* Data, bool UsePiped)
+void UStateMachine::UpdateTransitionPipedData(UState* CurrentState, FTransitionQueue& Cached)
 {
-	#if STATEMACHINE_DEBUG_DATA
-		if (!this->bWasInitialized)
-		{
-			this->NotInitializedError();
-			return;
-		}
-	#endif
-	if (Name != this->CurrentStateName)
+	if (CurrentState->HasPipedData())
 	{
-		auto CurrentState = this->GetCurrentState();
-		auto OldState = this->CurrentStateName;
+		auto PipedData = CurrentState->GetPipedData();
 
-		if (UsePiped && CurrentState->Node && CurrentState->Node->HasPipedData())
+		if (Queue.bHasData)
 		{
-			auto NewData = NewObject<UArrayNodeData>(this);
-
-			NewData->AddData(Data);
-			NewData->AddData(CurrentState->Node->GetPipedData());
-
-			Data = NewData;
+			auto ArrayData = NewObject<UArrayNodeData>(this);
+			ArrayData->AddData(Cached.Data);
+			ArrayData->AddData(PipedData);
+			PipedData = PipedData;
 		}
 
-		this->TransitionIdentifier.EnterTransition();
-		this->bIsTransitioning = true;
+		Cached.Data = PipedData;
+		Cached.bHasData = true;
+	}
+}
 
-		FStateChangedEventData StateChangedData;
-
+void UStateMachine::SetupStateChangedData()
+{
+	if (this->TransPhase == TransitionPhase::None)
+	{
+		this->EventQueue.Empty();
+		this->TransPhase = TransitionPhase::Exiting;
 		StateChangedData.StateMachine = this;
 		StateChangedData.From = this->CurrentStateName;
-		StateChangedData.To = Name;		
-		
-
-		if (CurrentState)
-		{
-			StateChangedData.FromState = CurrentState;
-			CurrentState->ExitWithData(Data);
-		}
-
-		this->CurrentStateName = Name;
-		this->PushStateToStack(Name);
-		CurrentState = this->GetCurrentState();
-
-		if (CurrentState)
-		{
-			StateChangedData.ToState = CurrentState;
-			CurrentState->EnterWithData(Data);
-		}
-
-		this->StateChanged(StateChangedData);
-		this->OnStateChanged.Broadcast(StateChangedData);
-
-		this->bIsTransitioning = false;
-		this->CurrentEvent = NAME_None;
-
-		if (CurrentState)
-		{
-			CurrentState->Node->PostTransition();
-			this->UpdateTickRequirements(CurrentState->Node->RequiresTick());
-		}
-
-		this->PostTransition();
-		this->OnTransitionFinished.Broadcast(this);
+		StateChangedData.To = this->Queue.Destination;
 	}
 }
 
-void UStateMachine::Tick(float DeltaTime) {
+bool UStateMachine::DidPreempt(const FTransitionQueue& Cached) const
+{
+	return !Queue.Destination.IsNone() && (Cached.TransitionID != this->Queue.TransitionID);
+}
+
+void UStateMachine::GetPreemptTransition(FTransitionQueue& Cached) const
+{
+	if (this->DidPreempt(Cached))
+	{
+		Cached = this->Queue;
+	}
+}
+
+void UStateMachine::Tick(float DeltaTime)
+{
 	auto State = this->GetCurrentState();
 
-	if (State && State->Node) {
-		State->Node->Tick(DeltaTime);
+	if (State)
+	{
+		State->Tick(DeltaTime);
 	}
+
+	this->UpdateState();
 }
 
 
-void UStateMachine::Reset() {
-	this->UpdateState(this->GetStartState());
+void UStateMachine::Reset()
+{
+	this->Queue.Queue(this->GetStartState());
+	this->UpdateState();
 }
 
 UStateMachine* UStateMachine::GetRootMachine()
@@ -316,7 +325,7 @@ UStateMachine* UStateMachine::GetRootMachine()
 	}
 }
 
-void UStateMachine::SendEvent(FName EName)
+void UStateMachine::SendEvent(FName InEvent)
 {
 	#if STATEMACHINE_DEBUG_DATA
 		if (!this->bWasInitialized)
@@ -326,52 +335,43 @@ void UStateMachine::SendEvent(FName EName)
 		}
 	#endif
 
-	if (this->bIsTransitioning) { return; }
-
-	this->CurrentEvent = EName;
-
-	#if STATEMACHINE_DEBUG_DATA
-		FStateMachineDebugDataFrame Frame;
-
-		Frame.Event = EName;
-		Frame.StartState = this->CurrentStateName;
-		Frame.Time = this->GetWorld()->GetTimeSeconds();
-	#endif
+	if (InEvent.IsNone()) { return; }
 
 	auto CurrentState = this->GetCurrentState();
 
 	if (CurrentState)
 	{
 		#if WITH_EDITORONLY_DATA
-			CurrentState->OnEventReceived.Broadcast(EName);
+			CurrentState->OnEventReceived.Broadcast(InEvent);
 		#endif
 
-		// First we check if there are any declarative events to handle for this state.
-		if (CurrentState->Transitions.Contains(EName))
-		{
-			FDestinationResult Result;
-			CurrentState->GetDestination(EName, Result);
+		FDestinationResult Result;
 
+		// First we check if there are any declarative events to handle for this state.
+		if (CurrentState->GetDestination(InEvent, Result))
+		{
 			if (!Result.Destination.IsNone())
 			{
-				this->UpdateState(Result.Destination);
-				Result.Condition->OnTransitionTaken();
-				#if STATEMACHINE_DEBUG_DATA
-					Frame.EndState = this->CurrentStateName;
-					this->DebugData.CurrentStateTime = Frame.Time;
-				#endif
-				
-				return;
+				this->Queue.Queue(Result.Destination, Result.Condition, InEvent);
 			}
 		}
-		
-		if (CurrentState->Node) CurrentState->Node->Event(EName);
-	}
+		else
+		{
+			if (this->TransPhase == TransitionPhase::Entering)
+			{
+				this->EventQueue.Add(InEvent);
+			}
+			else
+			{
+				CurrentState->Event(InEvent);
+			}
+		}
 
-	this->CurrentEvent = NAME_None;
+		this->UpdateState();
+	}
 }
 
-void UStateMachine::SendEventWithData(FName EName, UObject* Data)
+void UStateMachine::SendEventWithData(FName InEvent, UObject* Data)
 {
 	#if STATEMACHINE_DEBUG_DATA
 		if (!this->bWasInitialized)
@@ -381,48 +381,39 @@ void UStateMachine::SendEventWithData(FName EName, UObject* Data)
 		}
 	#endif
 
-	if (this->bIsTransitioning) { return; }
-
-	this->CurrentEvent = EName;
-
-	#if STATEMACHINE_DEBUG_DATA
-		FStateMachineDebugDataFrame Frame;
-
-		Frame.Event = EName;
-		Frame.StartState = this->CurrentStateName;
-		Frame.Time = this->GetWorld()->GetTimeSeconds();
-	#endif
+	if (InEvent.IsNone()) { return; }
 
 	auto CurrentState = this->GetCurrentState();
 
 	if (CurrentState)
 	{
 		#if WITH_EDITORONLY_DATA
-			CurrentState->OnEventWithDataReceived.Broadcast(EName, Data);
+			CurrentState->OnEventWithDataReceived.Broadcast(InEvent, Data);
 		#endif
-		// First we check if there are any declarative events to handle for this state.
-		if (CurrentState->Transitions.Contains(EName))
-		{
-			FDestinationResult Result;
-			CurrentState->GetDataDestination(EName, Data, Result);
 
+		FDestinationResult Result;
+
+		// First we check if there are any declarative events to handle for this state.
+		if (CurrentState->GetDataDestination(InEvent, Data, Result))
+		{
 			if (!Result.Destination.IsNone())
 			{
-				this->UpdateStateWithData(Result.Destination, Data);
-				Result.Condition->OnTransitionTaken();
-				#if STATEMACHINE_DEBUG_DATA
-					Frame.EndState = this->CurrentStateName;
-					this->DebugData.CurrentStateTime = Frame.Time;
-				#endif
-
-				return;
+				this->Queue.Queue(Result.Destination, Data, InEvent, Result.Condition);
 			}
 		}
-
-		if (CurrentState->Node) CurrentState->Node->EventWithData(EName, Data);
+		else
+		{
+			if (this->TransPhase == TransitionPhase::Entering)
+			{
+				this->EventQueue.Add(InEvent);
+			}
+			else
+			{
+				CurrentState->EventWithData(InEvent, Data);
+			}
+		}
+		this->UpdateState();
 	}
-
-	this->CurrentEvent = NAME_None;
 }
 
 void UStateMachine::UpdateTickRequirements(bool NeedsTick)
@@ -591,10 +582,9 @@ TSet<FName> UStateMachine::GetEvents() const {
 		List.Append(BPGC->GetTotalEventSet());
 	}
 
-	for (const auto& States : this->Graph) {
-		for (const auto& Event : States.Value->Transitions) {
-			List.Add(Event.Key);
-		}
+	for (const auto& States : this->Graph)
+	{
+		States.Value->GetTransitionEvents(List);
 	}
 
 	return List;
@@ -657,7 +647,7 @@ UStateMachine* UStateMachine::FindMachineByInterface(TSubclassOf<UInterface> Mac
 UState* UStateMachine::MakeStateWithNode(FName StateName, UStateNode* Node)
 {
 	UState* Data = NewObject<UState>(this);
-	Data->Node = Cast<UStateNode>(DuplicateObject(Node, this));
+	Data->SetNode(Cast<UStateNode>(DuplicateObject(Node, this)));
 	this->Graph.Add(StateName, Data);
 
 	return Data;
@@ -686,11 +676,11 @@ UStateNode* UStateMachine::GetCurrentStateAs(TSubclassOf<UStateNode> Class, ESea
 
 	if (Class.Get() && Node)
 	{
-		if (Node->Node && Node->Node->IsA(Class.Get()->StaticClass()))
+		if (Node->HasNode() && Node->GetNode()->IsA(Class.Get()->StaticClass()))
 		{
 			Branches = ESearchResult::Found;
 
-			return Node->Node;
+			return Node->GetNode();
 		}
 	}
 
@@ -881,14 +871,14 @@ void UStateMachine::BindDataConditionAt(FString& Address, FTransitionDataDelegat
 	}
 }
 
-void UStateMachine::PushStateToStack(FName EName)
+void UStateMachine::PushStateToStack(FName InEvent)
 {
 	if (this->StateStack.Num() >= this->MaxPrevStateStackSize)
 	{
 		this->StateStack.RemoveNode(this->StateStack.GetHead());
 	}
 
-	this->StateStack.AddTail(EName);
+	this->StateStack.AddTail(InEvent);
 }
 
 FName UStateMachine::GetPreviousStateName() const
@@ -983,6 +973,34 @@ UWorld* UStateMachine::GetWorld() const
 	return nullptr;
 }
 
+void FTransitionQueue::Queue(FName NewDestination, FName Event, UAbstractCondition* TakenTransition)
+{
+	this->Destination = NewDestination;
+	this->bHasData = false;
+	this->Data = nullptr;
+	this->Transition = TakenTransition;
+	this->TransitionID += 1;
+	this->CurrentEvent = Event;
+}
+
+void FTransitionQueue::Queue(FName NewDestination, UObject* NewData, FName Event, UAbstractCondition* TakenTransition)
+{
+	this->Destination = NewDestination;
+	this->bHasData = true;
+	this->Data = NewData;
+	this->Transition = TakenTransition;
+	this->TransitionID += 1;
+	this->CurrentEvent = Event;
+}
+
+void FTransitionQueue::Clear()
+{
+	this->Destination = NAME_None;
+	this->bHasData = false;
+	this->Data = nullptr;
+	this->CurrentEvent = NAME_None;
+	this->TransitionID = 0;
+}
 
 #pragma endregion
 
@@ -1079,16 +1097,18 @@ AActor* UStateNode::GetActorOwner() const
 	return this->Owner->GetActorOwner();
 }
 
-void UStateNode::Event(FName EName)
+void UStateNode::Event(FName InEvent)
 {
 	if (this->bActive)
 	{
-		if (auto Notify = this->EventNotifies.Find(EName))
+		if (auto Notify = this->EventNotifies.Find(InEvent))
 		{
-			Notify->Broadcast(EName);
+			Notify->Broadcast(InEvent);
 		}
-
-		this->Event_Inner(EName);
+		else
+		{
+			this->Event_Inner(InEvent);
+		}
 	}
 }
 
@@ -1097,24 +1117,28 @@ UStateMachine* UStateNode::GetRootMachine() const
 	return this->Owner->GetRootMachine();
 }
 
-void UStateNode::Event_Inner_Implementation(FName EName) {
+void UStateNode::Event_Inner_Implementation(FName InEvent)
+{
 	// Does Nothing by default.
 }
 
-void UStateNode::EventWithData(FName EName, UObject* Data) {
+void UStateNode::EventWithData(FName InEvent, UObject* Data)
+{
 	if (this->bActive)
 	{
-		if (auto Notify = this->EventWithDataNotifies.Find(EName))
+		if (auto Notify = this->EventWithDataNotifies.Find(InEvent))
 		{
-			Notify->Broadcast(EName, Data);
+			Notify->Broadcast(InEvent, Data);
 		}
-
-		this->EventWithData_Inner(EName, Data);
+		else
+		{
+			this->EventWithData_Inner(InEvent, Data);
+		}
 	}
 }
 
-void UStateNode::EventWithData_Inner_Implementation(FName EName, UObject* Data) {
-	this->Event_Inner(EName);
+void UStateNode::EventWithData_Inner_Implementation(FName InEvent, UObject* Data) {
+	this->Event_Inner(InEvent);
 }
 
 bool UStateNode::DoesReferenceMachine(FName MachineName) const
@@ -1132,17 +1156,11 @@ void UStateNode::SetActive(bool bNewActive)
 	this->SetActive_Inner(bNewActive);
 }
 
-void UStateNode::Tick(float DeltaTime) {
-	if (this->bActive) {
-		this->Tick_Inner(DeltaTime);
-	}
-}
-
-void UStateNode::PostTransition()
+void UStateNode::Tick(float DeltaTime)
 {
 	if (this->bActive)
 	{
-		this->PostTransition_Inner();
+		this->Tick_Inner(DeltaTime);
 	}
 }
 
@@ -1269,16 +1287,20 @@ bool UStateNode::RequiresTick_Implementation() const
 	return false;
 }
 
-void UStateNode::EmitEvent(FName EName)
+void UStateNode::EmitEvent(FName InEvent)
 {
 	if (this->Active())
 	{
-		this->GetMachine()->SendEvent(EName);
+		this->GetMachine()->SendEvent(InEvent);
 	}
 }
 
-void UStateNode::EmitEventWithData(FName EName, UObject* Data) {
-	this->GetMachine()->SendEventWithData(EName, Data);
+void UStateNode::EmitEventWithData(FName InEvent, UObject* Data)
+{
+	if (this->Active())
+	{
+		this->GetMachine()->SendEventWithData(InEvent, Data);
+	}
 }
 
 #if WITH_EDITOR
@@ -1489,14 +1511,31 @@ void UAbstractCondition::Initialize(UStateMachine* NewOwner)
 	this->Initialize_Inner();
 }
 
-void UState::AddTransition(FName EventName, FTransitionData Data)
+void UState::AddTransition(FName EventName, FName Destination, FTransitionData Data)
 {
 	if (!this->Transitions.Contains(EventName))
 	{
 		this->Transitions.Add(EventName, FTransitionDataSet());
 	}
 
-	this->Transitions[EventName].Destinations.Add(Data.Destination, Data);
+	this->Transitions[EventName].Destinations.Add(Destination, Data);
+}
+
+void UState::AddTransition(FName EventName, FTransitionDataSet Data)
+{
+	if (this->Transitions.Contains(EventName))
+	{
+		this->Transitions[EventName].Destinations.Append(Data.Destinations);
+	}
+	else
+	{
+		this->Transitions.Add(EventName, Data);
+	}
+}
+
+void UState::AddTransition(const TMap<FName, FTransitionDataSet>& Data)
+{
+	this->Transitions.Append(Data);
 }
 
 void UState::Initialize(UStateMachine* POwner)
@@ -1514,40 +1553,109 @@ void UState::Initialize(UStateMachine* POwner)
 	}
 }
 
+void UState::Tick(float DeltaTime)
+{
+	if (IsValid(this->Node))
+	{
+		this->Node->Tick(DeltaTime);
+	}
+}
+
+bool UState::RequiresTick() const
+{
+	return IsValid(this->Node) ? this->Node->RequiresTick() : false;
+}
+
+void UState::EnterConditions()
+{
+	for (const auto& Transition : this->Transitions)
+	{
+		for (const auto& Destination : Transition.Value.Destinations)
+		{
+			Destination.Value.Condition->Enter();
+			Destination.Value.DataCondition->Enter();
+		}
+	}
+}
+
+void UState::ExitConditions()
+{
+	for (const auto& Transition : this->Transitions)
+	{
+		for (const auto& Destination : Transition.Value.Destinations)
+		{
+			Destination.Value.Condition->Exit();
+			Destination.Value.DataCondition->Exit();
+		}
+	}
+}
+
 void UState::Enter()
 {
 	this->Enter_Inner();
+
 	if (IsValid(this->Node))
 	{
 		this->Node->Enter();
 	}
+
+	this->EnterConditions();
 }
 
 void UState::EnterWithData(UObject* Data)
 {
 	this->EnterWithData_Inner(Data);
+
 	if (IsValid(this->Node))
 	{
 		this->Node->EnterWithData(Data);
 	}
+
+	this->EnterConditions();
 }
 
 void UState::Exit()
 {
 	this->Exit_Inner();
+
 	if (IsValid(this->Node))
 	{
 		this->Node->Exit();
 	}
+
+	this->ExitConditions();
 }
 
 void UState::ExitWithData(UObject* Data)
 {
 	this->ExitWithData_Inner(Data);
+
 	if (IsValid(this->Node))
 	{
 		this->Node->ExitWithData(Data);
 	}
+
+	this->ExitConditions();
+}
+
+void UState::Event(FName InEvent)
+{
+	if (IsValid(this->Node))
+	{
+		this->Node->Event(InEvent);
+	}
+}
+void UState::EventWithData(FName InEvent, UObject* Data)
+{
+	if (IsValid(this->Node))
+	{
+		this->Node->EventWithData(InEvent, Data);
+	}
+}
+
+bool UState::HasNode() const
+{
+	return IsValid(this->Node);
 }
 
 bool UState::IsActive() const
@@ -1565,18 +1673,33 @@ AActor* UState::GetActorOwner() const
 	return this->OwnerMachine->GetActorOwner();
 }
 
-#if STATEMACHINE_DEBUG_DATA
-bool FStateMachineDebugDataFrame::DidTransition()
+bool UState::HasPipedData() const
 {
-	return !this->EndState.IsNone() && this->EndState != this->StartState;
+	return IsValid(this->Node) ? this->Node->HasPipedData() : false;
 }
-#endif
 
-void UState::GetDestination(FName EName, FDestinationResult& Result)
+UObject* UState::GetPipedData() const
 {
-	Result.Destination = NAME_None;
+	return this->Node->GetPipedData();
+}
 
-	if (auto Destination = this->Transitions.Find(EName))
+void UState::GetTransitionEvents(TSet<FName>& Events) const
+{
+	for (const auto& Pair : this->Transitions)
+	{
+		Events.Add(Pair.Key);
+	}
+}
+
+bool UState::GetDestination(FName InEvent, FDestinationResult& Result)
+{
+	this->Event_Inner(InEvent);
+	if (!this->Transitions.Contains(InEvent)) { return false; }
+
+	Result.Destination = NAME_None;
+	bool Transition = false;
+
+	if (auto Destination = this->Transitions.Find(InEvent))
 	{
 		for (const auto& Dest : Destination->Destinations)
 		{
@@ -1584,24 +1707,58 @@ void UState::GetDestination(FName EName, FDestinationResult& Result)
 			{
 				Result.Destination = Dest.Key;
 				Result.Condition = Dest.Value.Condition;
+				Transition = true;
+				break;
 			}
 		}
 	}
+
+	return Transition;
 }
 
-void UState::GetDataDestination(FName EName, UObject* Data, FDestinationResult& Result)
+bool UState::GetDataDestination(FName InEvent, UObject* Data, FDestinationResult& Result)
 {
-	Result.Destination = NAME_None;
+	this->EventWithData_Inner(InEvent, Data);
+	if (!this->Transitions.Contains(InEvent)) { return false; }
 
-	if (auto Destination = this->Transitions.Find(EName))
+	Result.Destination = NAME_None;
+	bool Transition = false;
+
+	if (auto Destination = this->Transitions.Find(InEvent))
 	{
 		for (const auto& Dest : Destination->Destinations)
 		{
 			if (Dest.Value.DataCondition->Check(Data))
 			{
-				Result.Destination = Dest.Value.Destination;
+				Result.Destination = Dest.Key;
 				Result.Condition = Dest.Value.DataCondition;
+				Transition = true;
+				break;
 			}
+		}
+	}
+
+	return Transition;
+}
+
+void UState::Event_Inner(FName InEvent) const
+{
+	for (const auto& Transition : this->Transitions)
+	{
+		for (const auto& Destination : Transition.Value.Destinations)
+		{
+			Destination.Value.Condition->Event(InEvent);
+		}
+	}
+}
+
+void UState::EventWithData_Inner(FName InEvent, UObject* Data) const
+{
+	for (const auto& Transition : this->Transitions)
+	{
+		for (const auto& Destination : Transition.Value.Destinations)
+		{
+			Destination.Value.Condition->EventWithData(InEvent, Data);
 		}
 	}
 }

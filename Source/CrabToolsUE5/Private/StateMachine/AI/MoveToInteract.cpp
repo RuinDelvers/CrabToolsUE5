@@ -112,7 +112,7 @@ void UAIMoveToInteractNode::ComputeTarget()
 	}
 }
 
-void UAIMoveToInteractNode::PostTransition_Inner_Implementation()
+void UAIMoveToInteractNode::Enter_Inner_Implementation()
 {
 	if (!IsValid(this->MoveData.DestinationActor))
 	{
@@ -129,7 +129,7 @@ void UAIMoveToInteractNode::PostTransition_Inner_Implementation()
 	else
 	{
 		this->ComputeTarget();
-		Super::PostTransition_Inner_Implementation();
+		Super::Enter_Inner_Implementation();
 	}
 }
 

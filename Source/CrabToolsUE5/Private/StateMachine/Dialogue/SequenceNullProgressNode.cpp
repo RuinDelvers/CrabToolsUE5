@@ -7,7 +7,7 @@ USequenceNullProgressNode::USequenceNullProgressNode()
 	this->AddEmittedEvent(Events::Dialogue::NULL_SEQUENCE_PROGRESS);
 }
 
-void USequenceNullProgressNode::PostTransition_Inner_Implementation()
+void USequenceNullProgressNode::Enter_Inner_Implementation()
 {
 	if (auto Actor = Cast<ALevelSequenceActor>(this->GetOwner()))
 	{

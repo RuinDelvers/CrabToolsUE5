@@ -34,7 +34,6 @@ public:
 	virtual void Enter_Inner_Implementation() override;
 	virtual void EnterWithData_Inner_Implementation(UObject* Data) override;
 	virtual void Exit_Inner_Implementation() override;
-	virtual void PostTransition_Inner_Implementation() override;
 	virtual bool RequiresTick_Implementation() const override;
 
 private:

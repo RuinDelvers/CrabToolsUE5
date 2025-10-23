@@ -25,8 +25,8 @@ public:
 	virtual void Tick_Inner_Implementation(float DeltaTime) override;
 	virtual void EnterWithData_Inner_Implementation(UObject* Data) override;
 	virtual void Exit_Inner_Implementation() override;	
+	virtual void Enter_Inner_Implementation() override;
 	virtual bool RequiresTick_Implementation() const override;
-	virtual void PostTransition_Inner_Implementation() override;
 
 private:
 

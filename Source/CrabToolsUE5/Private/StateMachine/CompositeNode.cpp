@@ -1,92 +1,87 @@
 #include "StateMachine/CompositeNode.h"
 
-void UCompositeNode::Initialize_Inner_Implementation() {
+void UCompositeNode::Initialize_Inner_Implementation()
+{
 	Super::Initialize_Inner_Implementation();
-	for (auto& NodePairs : this->Nodes) {
+	for (auto& NodePairs : this->Nodes)
+	{
 		NodePairs.Value->Initialize(this->GetMachine());
 	}
 }
 
-void UCompositeNode::Tick_Inner_Implementation(float DeltaTime) {
-	int TID = this->GetMachine()->GetStateID();
-	for (const auto& Node : this->Nodes) {
-		if (Node.Value) {
+void UCompositeNode::Tick_Inner_Implementation(float DeltaTime)
+{
+	for (const auto& Node : this->Nodes)
+	{
+		if (Node.Value)
+		{
 			Node.Value->Tick(DeltaTime);
-			if (!(this->Active() && this->GetMachine()->IsInState(TID))) {
-				return;
-			}
 		}
 	}
 }
 
-void UCompositeNode::Event_Inner_Implementation(FName Event) {
-	int TID = this->GetMachine()->GetStateID();
-	for (const auto& Node : this->Nodes) {
-		if (Node.Value) {
+void UCompositeNode::Event_Inner_Implementation(FName Event)
+{
+	for (const auto& Node : this->Nodes)
+	{
+		if (Node.Value)
+		{
 			Node.Value->Event(Event);
-			if (!(this->Active() && this->GetMachine()->IsInState(TID))) {
-				return;
-			}
 		}
 	}
 }
 
-void UCompositeNode::EventWithData_Inner_Implementation(FName Event, UObject* Data) {
-	int TID = this->GetMachine()->GetStateID();
-	for (const auto& Node : this->Nodes) {
-		if (Node.Value) {
+void UCompositeNode::EventWithData_Inner_Implementation(FName Event, UObject* Data)
+{
+	for (const auto& Node : this->Nodes)
+	{
+		if (Node.Value)
+		{
 			Node.Value->EventWithData(Event, Data);
-			if (!(this->Active() && this->GetMachine()->IsInState(TID))) {
-				return;
-			}
 		}
 	}
 }
 
-void UCompositeNode::Enter_Inner_Implementation() {
-	int TID = this->GetMachine()->GetStateID();
-	for (const auto& Node : this->Nodes) {
-		if (Node.Value) {
+void UCompositeNode::Enter_Inner_Implementation()
+{
+	for (const auto& Node : this->Nodes)
+	{
+		if (Node.Value)
+		{
 			Node.Value->Enter();
-			if (!(this->Active() && this->GetMachine()->IsInState(TID))) {
-				return;
-			}
 		}
 	}
 }
 
-void UCompositeNode::EnterWithData_Inner_Implementation(UObject* Data) {
-	int TID = this->GetMachine()->GetStateID();
-	for (const auto& Node : this->Nodes) {
-		if (Node.Value) {
+void UCompositeNode::EnterWithData_Inner_Implementation(UObject* Data)
+{
+	for (const auto& Node : this->Nodes)
+	{
+		if (Node.Value)
+		{
 			Node.Value->EnterWithData(Data);
-			if (!(this->Active() && this->GetMachine()->IsInState(TID))) {
-				return;
-			}
 		}
 	}
 }
 
-void UCompositeNode::Exit_Inner_Implementation() {
-	int TID = this->GetMachine()->GetStateID();
-	for (const auto& Node : this->Nodes) {
-		if (Node.Value) {
+void UCompositeNode::Exit_Inner_Implementation()
+{
+	for (const auto& Node : this->Nodes)
+	{
+		if (Node.Value)
+		{
 			Node.Value->Exit();	
-			if (!(this->Active() && this->GetMachine()->IsInState(TID))) {
-				return;
-			}
 		}
 	}
 }
 
-void UCompositeNode::ExitWithData_Inner_Implementation(UObject* Data) {
-	int TID = this->GetMachine()->GetStateID();
-	for (const auto& Node : this->Nodes) {
-		if (Node.Value) {
+void UCompositeNode::ExitWithData_Inner_Implementation(UObject* Data)
+{
+	for (const auto& Node : this->Nodes)
+	{
+		if (Node.Value)
+		{
 			Node.Value->ExitWithData(Data);
-			if (!(this->Active() && this->GetMachine()->IsInState(TID))) {
-				return;
-			}
 		}
 	}
 }
@@ -102,22 +97,6 @@ bool UCompositeNode::RequiresTick_Implementation() const
 	}
 
 	return false;
-}
-
-void UCompositeNode::PostTransition_Inner_Implementation()
-{
-	int TID = this->GetMachine()->GetStateID();
-	for (const auto& Node : this->Nodes)
-	{
-		if (Node.Value)
-		{
-			Node.Value->PostTransition();
-			if (!(this->Active() && this->GetMachine()->IsInState(TID)))
-			{
-				return;
-			}
-		}
-	}
 }
 
 void UCompositeNode::SetActive_Inner_Implementation(bool bNewActive)

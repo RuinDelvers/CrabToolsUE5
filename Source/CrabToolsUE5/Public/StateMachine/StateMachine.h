@@ -15,27 +15,6 @@ class UStateMachineBlueprintGeneratedClass;
 
 #define STATEMACHINE_DEBUG_DATA WITH_EDITOR || UE_BUILD_DEBUG
 
-#if STATEMACHINE_DEBUG_DATA
-	struct FStateMachineDebugDataFrame
-	{
-		FName Event;
-		/* The game-world time in seconds. */
-		float Time = 0.0f;
-		FName StartState;
-		FName EndState;
-
-		bool DidTransition();
-	};
-
-	struct FStateMachineDebugDataStack
-	{
-		TArray<FStateMachineDebugDataFrame> DataFrames;
-
-		// The time the current state was started.
-		float CurrentStateTime = -1.0;
-	};
-#endif
-
 /* Structure used to pass to listeners for when states change.*/
 USTRUCT(BlueprintType)
 struct FStateChangedEventData
@@ -94,8 +73,6 @@ struct FTransitionData
 	GENERATED_USTRUCT_BODY()
 
 public:
-	UPROPERTY(EditAnywhere, Category = "StateMachine", meta = (GetOptions = "StateOptions"))
-	FName Destination;
 
 	UPROPERTY(EditAnywhere, Category = "StateMachine")
 	TObjectPtr<UTransitionCondition> Condition;
@@ -116,6 +93,7 @@ struct FTransitionDataSet
 
 public:
 
+	/* Map from destination to their conditions.*/
 	UPROPERTY(VisibleAnywhere, Category="Transitions")
 	TMap<FName, FTransitionData> Destinations;
 
@@ -132,9 +110,6 @@ UCLASS(Blueprintable, CollapseCategories, Category = "StateMachine")
 class CRABTOOLSUE5_API UState : public UObject, public IStateLike
 {
 	GENERATED_BODY()
-
-
-	friend class UStateMachine;
 
 	UPROPERTY(VisibleAnywhere, Transient, DuplicateTransient, Category="StateMachine",
 		meta=(AllowPrivateAccess))
@@ -179,17 +154,29 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "StateMachine")
 	UStateMachine* GetMachine() const { return this->OwnerMachine; }
 
-	UFUNCTION(BlueprintCallable, Category="StateMachine")
-	FORCEINLINE UStateNode* GetNode() const { return this->Node; }
+	
 	//FORCEINLINE const TMap<FName, FTransitionData>& GetTransitions() const { return Transitions; }
 
-	void AddTransition(FName EventName, FTransitionData Data);
+	void AddTransition(FName EventName, FName Destination, FTransitionData Data);
+	void AddTransition(FName EventName, FTransitionDataSet Data);
+	void AddTransition(const TMap<FName, FTransitionDataSet>& Data);
 
 	void Initialize(UStateMachine* POwner);
 	void Enter();
 	void EnterWithData(UObject* Data);
 	void Exit();
 	void ExitWithData(UObject* Data);
+	void Event(FName InEvent);
+	void EventWithData(FName InEvent, UObject* Data);
+	void Tick(float DeltaTime);
+	bool RequiresTick() const;
+	bool HasPipedData() const;
+	UObject* GetPipedData() const;
+
+	UFUNCTION(BlueprintCallable, Category = "StateMachine")
+	UStateNode* GetNode() const { return this->Node; }
+	bool HasNode() const;
+	void SetNode(UStateNode* InNode) { this->Node = Node; }
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category="StateMachine")
 	bool IsActive() const;
@@ -210,8 +197,17 @@ public:
 	void ExitWithData_Inner(UObject* Data);
 	virtual void ExitWithData_Inner_Implementation(UObject* Data) { this->Exit_Inner(); }
 
-	void GetDestination(FName EName, FDestinationResult& Result);
-	void GetDataDestination(FName EName, UObject* Data, FDestinationResult& Result);
+	bool GetDestination(FName InEvent, FDestinationResult& Result);
+	bool GetDataDestination(FName InEvent, UObject* Data, FDestinationResult& Result);
+
+	void GetTransitionEvents(TSet<FName>& Events) const;
+
+private:
+
+	void EnterConditions();
+	void ExitConditions();
+	void Event_Inner(FName InEvent) const;
+	void EventWithData_Inner(FName InEvent, UObject* Data) const;
 };
 
 UCLASS(BlueprintType, Abstract, Category = "StateMachine")
@@ -239,11 +235,29 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "StateMachine|Transition")
 	UStateMachine* GetMachine() const { return this->OwnerMachine; }
 
+	UFUNCTION(BlueprintNativeEvent, Category = "StateMachine|Transition")
+	void Enter();
+
+	UFUNCTION(BlueprintNativeEvent, Category = "StateMachine|Transition")
+	void Exit();
+
+	UFUNCTION(BlueprintNativeEvent, Category = "StateMachine|Transition")
+	void Event(FName InEvent);
+
+	UFUNCTION(BlueprintNativeEvent, Category = "StateMachine|Transition")
+	void EventWithData(FName InEvent, UObject* Data);
+	
+
 protected:
 
 	UFUNCTION(BlueprintNativeEvent, Category = "StateMachine|Transition")
 	void Initialize_Inner();
 	virtual void Initialize_Inner_Implementation() {}
+	virtual void Enter_Implementation() {}
+	virtual void Exit_Implementation() {}
+
+	virtual void Event_Implementation(FName InEvent) {}
+	virtual void EventWithData_Implementation(FName InEvent, UObject* Data) { this->Event(InEvent); }
 };
 
 UCLASS(BlueprintType, Abstract, Category = "StateMachine")
@@ -340,14 +354,14 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintInternalUseOnly, Category = "StateMachine",
 		meta = (HideSelfPin=true))
-	void EmitEvent(FName EName);
+	void EmitEvent(FName InEvent);
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "StateMachine")
 	UState* GetState() const;
 
 	UFUNCTION(BlueprintCallable, BlueprintInternalUseOnly, Category = "StateMachine",
 		meta = (HideSelfPin=true))
-	void EmitEventWithData(FName EName, UObject* Data);
+	void EmitEventWithData(FName InEvent, UObject* Data);
 
 
 	UFUNCTION(BlueprintNativeEvent, Category = "StateMachine")
@@ -361,14 +375,28 @@ public:
 		virtual void PreEditChange(FProperty* PropertyAboutToChange) override;
 	#endif
 
-	void Event(FName EName);
-	void EventWithData(FName EName, UObject* Data);
+	/* Only call from an SM or a managing Node. */
+	void Event(FName InEvent);
+
+	/* Only call from an SM or a managing Node. */
+	void EventWithData(FName InEvent, UObject* Data);
+
+	/* Only call from an SM or a managing Node. */
 	void Enter();
+
+	/* Only call from an SM or a managing Node. */
 	void EnterWithData(UObject* Data);
+
+	/* Only call from an SM or a managing Node. */
 	void Tick(float DeltaTime);
+
+	/* Only call from an SM or a managing Node. */
 	void Exit();
+
+	/* Only call from an SM or a managing Node. */
 	void ExitWithData(UObject* Data);
-	void PostTransition();
+
+	/* Only call from an SM or a managing Node. */
 	void SetActive(bool bNewActive);
 
 	/* Runs a verification check on the node. Returns true if no error, false if an error happened. */
@@ -401,12 +429,12 @@ protected:
 	virtual void Initialize_Inner_Implementation();
 
 	UFUNCTION(BlueprintNativeEvent, Category = "StateMachine", meta = (DisplayName = "Event"))
-	void Event_Inner(FName EName);	
-	virtual void Event_Inner_Implementation(FName EName);
+	void Event_Inner(FName InEvent);	
+	virtual void Event_Inner_Implementation(FName InEvent);
 
 	UFUNCTION(BlueprintNativeEvent, Category = "StateMachine", meta = (DisplayName = "EventWithData"))
-	void EventWithData_Inner(FName EName, UObject* Data);
-	virtual void EventWithData_Inner_Implementation(FName EName, UObject* Data);
+	void EventWithData_Inner(FName InEvent, UObject* Data);
+	virtual void EventWithData_Inner_Implementation(FName InEvent, UObject* Data);
 
 	UFUNCTION(BlueprintNativeEvent, Category = "StateMachine", meta = (DisplayName = "Enter"))
 	void Enter_Inner();	
@@ -423,10 +451,6 @@ protected:
 	UFUNCTION(BlueprintNativeEvent, Category = "StateMachine", meta = (DisplayName = "Exit"))
 	void Exit_Inner();
 	virtual void Exit_Inner_Implementation() {}
-
-	UFUNCTION(BlueprintNativeEvent, Category = "StateMachine", meta = (DisplayName = "PostTransition"))
-	void PostTransition_Inner();
-	virtual void PostTransition_Inner_Implementation() {}
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "StateMachine", meta = (DisplayName = "ExitWithData"))
 	void ExitWithData_Inner(UObject* Data);	
@@ -475,6 +499,60 @@ private:
 	void InitNotifies();
 };
 
+USTRUCT()
+struct FTransitionQueue
+{
+	GENERATED_BODY()
+
+public:
+
+	UPROPERTY(VisibleAnywhere, Category = "Transition")
+	int TransitionID = 0;
+
+	UPROPERTY(VisibleAnywhere, Category="Transition")
+	FName Destination;
+
+	UPROPERTY(VisibleAnywhere, Category = "Transition")
+	FName CurrentEvent;
+
+	UPROPERTY(VisibleAnywhere, Category = "Transition")
+	bool bHasData = false;
+
+	UPROPERTY(VisibleAnywhere, Category = "Transition")
+	TObjectPtr<UObject> Data;
+
+	UPROPERTY(VisibleAnywhere, Category = "Transition")
+	TObjectPtr<UAbstractCondition> Transition;
+
+public:
+
+	void Queue(FName NewDestination, FName Event = NAME_None, UAbstractCondition* TakenTransition = nullptr);
+	void Queue(FName NewDestination, UObject* NewData, FName Event = NAME_None, UAbstractCondition* TakenTransition = nullptr);
+	void Clear();
+};
+
+USTRUCT()
+struct FEventQueueData
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	FName EventName;
+
+	UPROPERTY()
+	bool bHasData = false;
+
+	UPROPERTY()
+	TObjectPtr<UObject> Data;
+
+public:
+
+	FEventQueueData() {}
+	FEventQueueData(FName InEvent) : EventName(InEvent) {}
+	FEventQueueData(FName InEvent, UObject* InData)
+	: EventName(InEvent), bHasData(true), Data(InData)
+	{}
+};
 
 /**
  * State Machine class. This is the base class for any State Machine, and manages all
@@ -488,44 +566,24 @@ class CRABTOOLSUE5_API UStateMachine
 
 private:
 	#if STATEMACHINE_DEBUG_DATA
-		/* Stack data used for debugging state machine transition sequences. */
-		FStateMachineDebugDataStack DebugData;
-
 		/* Whether or not this SM was initialized. Used for debugging only. */
 		bool bWasInitialized = false;
 	#endif
 
-	/* Struct used for identifying unique states. */
-	struct Transition
+	enum class TransitionPhase
 	{
-	private:
-		int ID = 0;
+		None,
+		Exiting,
+		Entering,
+	};
 
-	public:
-		int EnterTransition()
-		{
-			this->ID += 1;
-			return ID;
-		}
+	UPROPERTY(VisibleAnywhere, Category="Transition", meta=(ShowOnlyInnerProperties))
+	FTransitionQueue Queue;
+	TransitionPhase TransPhase = TransitionPhase::None;
+	FStateChangedEventData StateChangedData;
 
-		bool Valid(int OID) const
-		{
-			return OID == this->ID;
-		}
-
-		int CurrentID() const
-		{
-			return this->ID;
-		}
-	} TransitionIdentifier;
-
-	/* Whether or not a transition is happening. */
-	bool bIsTransitioning = false;
-
-	/*
-	 * Current Event that is being processed for Exit/Enter/Event calls. 
-	 */
-	FName CurrentEvent;
+	/* Used when events are received while transitioning. */
+	TArray<FEventQueueData> EventQueue;
 
 	/* Simple cached value for retrieving start state data. Do not read from this directly. Use GetStartState. */
 	mutable FName CachedStartState;
@@ -567,6 +625,10 @@ private:
 	/* Map of name to submachines available to this state machine. */
 	UPROPERTY(DuplicateTransient, meta=(IgnorePropertySearch))
 	TMap<FName, TObjectPtr<UStateMachine>> SubMachines;
+
+	UPROPERTY(VisibleAnywhere, DuplicateTransient, Category = "StateMachine",
+		meta = (AllowPrivateAccess, IgnorePropertySearch))
+	float ActiveTime = 0.0f;
 
 	/* Reference to a parent which uses this state machine as a sub machine. */
 	TObjectPtr<UStateMachine> ParentMachine;
@@ -613,15 +675,15 @@ public:
 	 * Current Event that is being processed for Exit/Enter/Event calls.
 	 */
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "StateMachine")
-	FName GetCurrentEvent() const { return this->CurrentEvent; }
+	FName GetCurrentEvent() const { return this->Queue.CurrentEvent; }
 
 	UFUNCTION(BlueprintCallable, Category = "StateMachine")
-	void SendEvent(FName EName);
-	virtual void Event_Implementation(FName EName) override final { this->SendEvent(EName); }
+	void SendEvent(FName InEvent);
+	virtual void Event_Implementation(FName InEvent) override final { this->SendEvent(InEvent); }
 
 	UFUNCTION(BlueprintCallable, Category = "StateMachine")
-	void SendEventWithData(FName EName, UObject* Data);
-	void EventWithData_Implementation(FName EName, UObject* Data) override final { this->SendEventWithData(EName, Data); }
+	void SendEventWithData(FName InEvent, UObject* Data);
+	void EventWithData_Implementation(FName InEvent, UObject* Data) override final { this->SendEventWithData(InEvent, Data); }
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "StateMachine",
 		meta = (ExpandEnumAsExecs = "Branches"))
@@ -640,6 +702,9 @@ public:
 	UState* GetCurrentState();
 	UState* GetStateData(FName Name);
 
+	UFUNCTION(BlueprintCallable, Category = "StateMachine")
+	float GetActiveTime() const { return this->ActiveTime; }
+
 	UFUNCTION(BlueprintCallable, Category="StateMachine")
 	bool IsActiveState(const UState* State) const;
 
@@ -652,14 +717,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "StateMachine")
 	TArray<FString> StateOptions();
-
-	UFUNCTION(BlueprintNativeEvent, Category="StateMachine")
-	void StateChanged(const FStateChangedEventData& Data);
-	void StateChanged_Implementation(const FStateChangedEventData& Data) {}
-
-	UFUNCTION(BlueprintNativeEvent, Category = "StateMachine")
-	void PostTransition();
-	void PostTransition_Implementation() {}
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category="StateMachine")
 	UStateMachine* GetRootMachine();
@@ -694,12 +751,6 @@ public:
 	UFUNCTION(meta = (IsDefaultCondition))
 	bool ValidDataCondition(UObject* Data);
 
-	UFUNCTION(BlueprintCallable, Category = "StateMachine")
-	int GetStateID() { return this->TransitionIdentifier.CurrentID(); }
-
-	UFUNCTION(BlueprintCallable, Category = "StateMachine")
-	bool IsInState(int ID) { return this->TransitionIdentifier.Valid(ID); }
-
 	TSet<FName> GetEvents() const;
 	TMap<FName, TObjectPtr<UStateNode>> GetSharedNodes() { return this->SharedNodes; }
 
@@ -717,9 +768,6 @@ public:
 	virtual TArray<FString> GetStateOptions(const UObject* Asker) const override;
 	virtual IStateMachineLike* GetSubMachine(FString& Address) const override;
 
-	UFUNCTION(BlueprintCallable, Category="StateMachine")
-	bool IsTransitioning() const { return this->bIsTransitioning; }
-
 	/* Used to bind transition delegates. */
 	void BindConditionAt(FString& Address, FTransitionDelegate& Condition);
 	/* Used to bind transition delegates. */
@@ -734,10 +782,6 @@ public:
 	// End Procedural Construction functions
 
 	void UpdateTickRequirements(bool NeedsTick);
-
-	#if STATEMACHINE_DEBUG_DATA
-		const FStateMachineDebugDataStack& GetDebugData() const { return this->DebugData; }
-	#endif
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "StateMachine", meta=(DeterminesOutputType="MachineClass"))
 	UStateMachine* FindMachineByClass(TSubclassOf<UStateMachine> MachineClass);
@@ -764,8 +808,14 @@ private:
 	#endif // STATEMACHINE_DEBUG_DATA
 
 	void InitFromArchetype();
-	void PushStateToStack(FName EName);
-	void UpdateState(FName Name);
-	void UpdateStateWithData(FName Name, UObject* Data, bool UsePiped=true);
+	void PushStateToStack(FName InEvent);
+	void UpdateState();
 	void InitSubMachines();
+
+	/* Helpers for UpdateState */
+	void UpdateTransitionPipedData(UState* CurrentState, FTransitionQueue& Cached);
+	void SetupStateChangedData();
+	bool DidPreempt(const FTransitionQueue& Cached) const;
+	void GetPreemptTransition(FTransitionQueue& Cached) const;
+	/* End Helpers for UpdateState */
 };

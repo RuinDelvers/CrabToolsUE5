@@ -33,7 +33,6 @@ public:
 	virtual void Enter_Inner_Implementation() override;
 	virtual void Exit_Inner_Implementation() override;
 	virtual void Initialize_Inner_Implementation() override;
-	virtual void PostTransition_Inner_Implementation() override;
 	virtual bool RequiresTick_Implementation() const override { return true; }
 	
 	#if WITH_EDITOR

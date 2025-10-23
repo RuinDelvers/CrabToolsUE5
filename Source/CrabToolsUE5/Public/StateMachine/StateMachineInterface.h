@@ -49,13 +49,13 @@ public:
 
 	UStateMachineInterface();
 	
-	bool HasEvent(FName EName) const;
-	bool HasCallEvent(FName EName) const;
+	bool HasEvent(FName InEvent) const;
+	bool HasCallEvent(FName InEvent) const;
 	TSet<FName> GetCallEvents() const;
 	TSet<FName> GetEvents() const;
 	const TMap<FName, FSMIData> GetEventData() const { return this->Events; }
 
-	void AddEvent(FName EName) { this->Events.Add(EName); }
+	void AddEvent(FName InEvent) { this->Events.Add(InEvent); }
 
 	TSet<FName> GetNodeEvents() const;
 

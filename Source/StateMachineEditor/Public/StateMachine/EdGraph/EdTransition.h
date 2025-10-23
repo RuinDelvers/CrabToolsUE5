@@ -1,6 +1,7 @@
 #pragma once
 
 #include "StateMachine/EdGraph/EdBaseNode.h"
+#include "StateMachine/IStateMachineLike.h"
 #include "EdTransition.generated.h"
 
 class UTransitionCondition;
@@ -14,14 +15,6 @@ struct FEventTransitionData
 {
 	GENERATED_BODY()
 
-	//UPROPERTY(EditDefaultsOnly, Category = "StateMachineEditor",
-	//	meta=(GetOptions="GetConditionOptions"))
-	//FName Condition = FName("TrueCondition");
-
-	//UPROPERTY(EditDefaultsOnly, Category = "StateMachineEditor",
-	//	meta = (GetOptions = "GetDataConditionOptions"))
-	//FName DataCondition = FName("TrueDataCondition");
-
 	UPROPERTY(EditDefaultsOnly, Instanced, Category = "StateMachineEditor")
 	TObjectPtr<UTransitionCondition> Condition;
 
@@ -30,7 +23,7 @@ struct FEventTransitionData
 };
 
 UCLASS(MinimalAPI)
-class UEdTransition : public UEdBaseNode
+class UEdTransition : public UEdBaseNode, public IStateTransitionLike
 {
 	GENERATED_BODY()
 
@@ -39,6 +32,7 @@ class UEdTransition : public UEdBaseNode
 	TMap<FName, FEventTransitionData> EventToConditionMap;
 
 public:
+
 	UEdTransition();
 
 	UPROPERTY()
@@ -59,7 +53,9 @@ public:
 
 	UEdBaseStateNode* GetStartNode() const;
 	UEdBaseStateNode* GetEndNode() const;
-	TMap<FName, FTransitionData> GetTransitionData(FNodeVerificationContext& Context);
+	TMap<FName, FTransitionDataSet> GetTransitionData(FNodeVerificationContext& Context);
+
+	virtual TArray<FString> GetSourceEventOptions() const override { return this->GetEventOptions(); }
 
 	UFUNCTION()
 	TArray<FString> GetEventOptions() const;

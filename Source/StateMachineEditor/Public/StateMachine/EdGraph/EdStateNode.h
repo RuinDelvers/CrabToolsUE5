@@ -1,10 +1,5 @@
 #pragma once
 
-#include "CoreMinimal.h"
-#include "StateMachine/IStateMachineLike.h"
-#include "SGraphNode.h"
-#include "EdGraph/EdGraphNode.h"
-#include "SGraphPin.h"
 #include "StateMachine/StateMachineEnum.h"
 #include "StateMachine/StateMachine.h"
 #include "StateMachine/EdGraph/EdBaseNode.h"
@@ -126,8 +121,8 @@ public:
 	virtual FName GetStateName() const override;
 	/* Returns the name which should appear on graph nodes. */
 	virtual FName GetNodeName() const override { return this->StateName; }
-	virtual bool HasEvent(FName EName) override;
-	virtual bool HasLocalEvent(FName EName) override;
+	virtual bool HasEvent(FName InEvent) override;
+	virtual bool HasLocalEvent(FName InEvent) override;
 	virtual bool Modify(bool bAlwaysMarkDirty = true) override;
 
 	/* Begin IStateLike Interface */
@@ -141,6 +136,7 @@ public:
 	#if WITH_EDITOR
 		virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 		virtual void PostLinkerChange() override;
+		virtual void PostEditUndo() override;
 	#endif
 
 	virtual bool IsActive() const;
@@ -159,10 +155,10 @@ private:
 	FStateArchetypeData GetBaseCompilationData(UObject* Outer);
 
 	UFUNCTION()
-	void ReceiveEvent(FName EName);
+	void ReceiveEvent(FName InEvent);
 
 	UFUNCTION()
-	void ReceiveEventWithData(FName EName, UObject* Data);
+	void ReceiveEventWithData(FName InEvent, UObject* Data);
 
 	void FilterDebugData();
 };

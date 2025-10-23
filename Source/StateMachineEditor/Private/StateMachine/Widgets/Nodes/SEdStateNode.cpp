@@ -17,12 +17,14 @@ SEdStateNode::~SEdStateNode()
 	}
 }
 
-void SEdStateNode::Construct(const FArguments& InArgs, UEdBaseStateNode* InNode) {
+void SEdStateNode::Construct(const FArguments& InArgs, UEdBaseStateNode* InNode)
+{
 	this->GraphNode = InNode;
 	this->UpdateGraphNode();
 	
 	InNode->Events.OnNameChanged.AddRaw(this, &SEdStateNode::OnNodeNameChanged);
 	InNode->Events.OnNodeError.AddRaw(this, &SEdStateNode::OnErrorTextUpdate);
+	InNode->Events.OnAttemptRename.AddRaw(this, &SEdStateNode::OnAttemptRename);
 }
 
 BEGIN_SLATE_FUNCTION_BUILD_OPTIMIZATION
@@ -128,7 +130,6 @@ void SEdStateNode::UpdateGraphNode()
 														[
 															SAssignNew(InlineEditableText, SInlineEditableTextBlock)
 																.Style(FAppStyle::Get(), "Graph.StateNode.NodeTitleInlineEditableText")
-																//.Text(NodeTitle.Get(), &SNodeTitle::GetHeadTitle)
 																.Text(FText::FromName(this->GetStateName()))
 																.OnVerifyTextChanged(this, &SEdStateNode::OnVerifyNameTextChanged)
 																.OnTextCommitted(this, &SEdStateNode::OnNameTextCommited)
@@ -168,6 +169,14 @@ void SEdStateNode::CreatePinWidgets()
 
 			AddPin(NewPin.ToSharedRef());
 		}
+	}
+}
+
+void SEdStateNode::OnAttemptRename()
+{
+	if (this->InlineEditableText.IsValid())
+	{
+		this->InlineEditableText->EnterEditingMode();
 	}
 }
 
@@ -291,10 +300,25 @@ void SEdStateNode::OnNameTextCommited(const FText& InText, ETextCommit::Type Com
 		
 		if (UEdBaseStateNode* CastNode = Cast<UEdBaseStateNode>(this->GraphNode))
 		{
-			CastNode->Modify();
 			CastNode->RenameNode(FName(InText.ToString()));
 		}
 	}
+}
+
+FReply SEdStateNode::OnKeyUp(const FGeometry& MyGeometry, const FKeyEvent& KeyEvent)
+{
+	UE_LOG(LogTemp, Warning, TEXT("OnKeyUp?"));
+	auto Reply = SGraphNode::OnKeyUp(MyGeometry, KeyEvent);
+	if (KeyEvent.GetKey() == EKeys::F2)
+	{
+		if (this->InlineEditableText.IsValid())
+		{
+			this->InlineEditableText->EnterEditingMode();
+			Reply = FReply::Handled();
+		}
+	}
+
+	return Reply;
 }
 
 FName SEdStateNode::GetStateName() const
@@ -322,7 +346,5 @@ FSlateColor SEdStateNode::GetBackgroundColor() const
 	return StateMachineColors::NodeBody::Default;
 	
 }
-
-
 
 #undef LOCTEXT_NAMESPACE

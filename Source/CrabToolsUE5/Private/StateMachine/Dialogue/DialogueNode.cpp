@@ -27,7 +27,7 @@ void UDialogueNode::GetEmittedEvents(TSet<FName>& Events) const
 	}
 }
 
-void UDialogueNode::PostTransition_Inner_Implementation()
+void UDialogueNode::Enter_Inner_Implementation()
 {
 	if (this->DialogueComponent->OnChoicesSpawned.IsBound())
 	{
@@ -75,12 +75,12 @@ void UAttemptDialogueNode::Initialize_Inner_Implementation()
 	check(this->DialogueComponent);
 }
 
-void UAttemptDialogueNode::EventWithData_Inner_Implementation(FName EName, UObject* Data)
+void UAttemptDialogueNode::EventWithData_Inner_Implementation(FName InEvent, UObject* Data)
 {
 
 }
 
-void UAttemptDialogueNode::EventNotify_AttemptDialogue(FName EName, UObject* Data)
+void UAttemptDialogueNode::EventNotify_AttemptDialogue(FName InEvent, UObject* Data)
 {
 	UDialogueStateComponent* Comp = Cast<UDialogueStateComponent>(Data);
 

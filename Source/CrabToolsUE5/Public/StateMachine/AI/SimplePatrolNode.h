@@ -42,7 +42,7 @@ class CRABTOOLSUE5_API UAISimplePatrolNode : public UAIBaseNode
 public:
 	UAISimplePatrolNode();
 
-	virtual void PostTransition_Inner_Implementation() override;
+	virtual void Enter_Inner_Implementation() override;
 	virtual void Exit_Inner_Implementation() override;
 	virtual void Initialize_Inner_Implementation() override;
 	

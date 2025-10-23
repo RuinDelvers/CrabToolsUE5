@@ -68,6 +68,21 @@ public:
 
 };
 
+UINTERFACE(MinimalAPI)
+class UStateTransitionLike : public UInterface
+{
+    GENERATED_BODY()
+};
+
+class IStateTransitionLike
+{
+    GENERATED_BODY()
+
+public:
+
+    virtual TArray<FString> GetSourceEventOptions() const { return {}; }
+};
+
 /* Interface for data objects passed by state machine data piping. */
 UINTERFACE(MinimalAPI)
 class UStateMachineDataInterface : public UInterface

@@ -27,6 +27,9 @@ public:
 		DECLARE_MULTICAST_DELEGATE(FNodeDeleted)
 		FNodeDeleted OnNodeDeleted;
 
+		DECLARE_MULTICAST_DELEGATE(FNodeAttemptRename)
+		FNodeAttemptRename OnAttemptRename;
+
 		DECLARE_MULTICAST_DELEGATE_OneParam(FNodeError, FText)
 		FNodeError OnNodeError;
 	} 
@@ -59,8 +62,8 @@ public:
 	virtual FName SetStateName(FName NewName) { return NAME_None; }
 	/* Returns the name displayed for graph nodes and UI purposes. */
 	virtual FName GetNodeName() const { return NAME_None; }
-	virtual bool HasEvent(FName EName) { return false; }
-	virtual bool HasLocalEvent(FName EName) { return false; }
+	virtual bool HasEvent(FName InEvent) { return false; }
+	virtual bool HasLocalEvent(FName InEvent) { return false; }
 	virtual void RenameNode(FName Name) {};
 
 	/* Begin IStateLike Interface */

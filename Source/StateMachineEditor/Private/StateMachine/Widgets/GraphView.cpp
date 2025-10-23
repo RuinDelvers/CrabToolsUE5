@@ -67,14 +67,36 @@ void SGraphView::AddReferencedObjects(FReferenceCollector& Collector)
 
 void SGraphView::BindEvents(UStateMachineBlueprint* Blueprint)
 {
+	/* This function is for binding commands, such as renaming or deletion. */
 	Blueprint->Events.OnGraphSelected.AddSP(this, &SGraphView::OnGraphSelected);
 
 	FGraphEditorCommands::Register();
 
-	GraphEditorCommands->MapAction(FGenericCommands::Get().Delete,
+	GraphEditorCommands->MapAction(
+		FGenericCommands::Get().Delete,
 		FExecuteAction::CreateRaw(this, &SGraphView::OnDeleteNodes),
 		FCanExecuteAction::CreateRaw(this, &SGraphView::CanDeleteNodes)
 	);
+	GraphEditorCommands->MapAction(
+		FGenericCommands::Get().Rename,
+		FExecuteAction::CreateRaw(this, &SGraphView::OnRenameSelection),
+		FCanExecuteAction::CreateRaw(this, &SGraphView::CanRenameSelection));
+}
+
+void SGraphView::OnRenameSelection()
+{
+	if (this->SelectedNodes.Num() == 1 && this->SelectedNodes[0].IsValid())
+	{
+		if (auto StateNode = Cast<UEdStateNode>(this->SelectedNodes[0]))
+		{
+			StateNode->Events.OnAttemptRename.Broadcast();
+		}
+	}
+}
+
+bool SGraphView::CanRenameSelection()
+{
+	return this->SelectedNodes.Num() == 1;
 }
 
 void SGraphView::OnGraphSelected(UEdStateGraph* Graph)
@@ -84,13 +106,15 @@ void SGraphView::OnGraphSelected(UEdStateGraph* Graph)
 		this->AddGraphToEditor(Graph);
 	}
 
-	auto Widget = this->GraphToEditorMap[Graph];
+	auto& Widget = this->GraphToEditorMap[Graph];
 	this->TabsWidget->SetActiveWidget(Widget.ToSharedRef());
 	this->GraphEditor = Widget;
 }
 
 void SGraphView::OnSelectionChanged(const TSet<UObject*>& NewSelection)
 {
+	this->SelectedNodes.Empty();
+
 	if (auto Graph = Cast<UEdStateGraph>(this->GraphEditor->GetCurrentGraph()))
 	{
 		TArray<UEdGraphNode*> Nodes;
@@ -100,6 +124,7 @@ void SGraphView::OnSelectionChanged(const TSet<UObject*>& NewSelection)
 			if (auto CastElem = Cast<UEdGraphNode>(Elem))
 			{
 				Nodes.Add(CastElem);
+				this->SelectedNodes.Add(CastElem);
 			}			
 		}
 		
@@ -115,24 +140,6 @@ void SGraphView::OnSelectionChanged(const TSet<UObject*>& NewSelection)
 
 FReply SGraphView::OnKeyDown(const FGeometry& Geo, const FKeyEvent& Event)
 {
-	/*
-	if (Event.GetKey() == EKeys::Delete || Event.GetKey() == EKeys::BackSpace)
-	{
-		if (auto Graph = this->GraphEditor->GetCurrentGraph())
-		{
-			for (auto& Node : this->GraphEditor->GetSelectedNodes())
-			{
-				auto CastNode = Cast<UEdGraphNode>(Node);
-				if (CastNode && CastNode->CanUserDeleteNode())
-				{
-					Graph->RemoveNode(CastNode);
-				}
-			}
-			return FReply::Handled();
-		}
-	}
-	*/
-
 	return FReply::Unhandled();
 }
 
@@ -140,10 +147,10 @@ void SGraphView::OnDeleteNodes()
 {
 	const FScopedTransaction Transaction(FGenericCommands::Get().Delete->GetDescription());
 
-	const FGraphPanelSelectionSet SelectedNodes = GraphEditor->GetSelectedNodes();
+	const FGraphPanelSelectionSet GraphSelectedNodes = GraphEditor->GetSelectedNodes();
 	GraphEditor->ClearSelectionSet();
 
-	for (FGraphPanelSelectionSet::TConstIterator NodeIt(SelectedNodes); NodeIt; ++NodeIt)
+	for (FGraphPanelSelectionSet::TConstIterator NodeIt(GraphSelectedNodes); NodeIt; ++NodeIt)
 	{
 		if (auto Node = Cast<UEdStateNode>(*NodeIt))
 		{

@@ -1,10 +1,10 @@
 #include "StateMachine/General/AutoEvent.h"
 
-void UAutoEventNode::PostTransition_Inner_Implementation()
+void UAutoEventNode::Enter_Inner_Implementation()
 {
 	if (!this->EmittedEvent.IsNone())
 	{
-		this->GetMachine()->SendEvent(this->EmittedEvent);
+		this->EmitEvent(this->EmittedEvent);
 	}	
 }
 

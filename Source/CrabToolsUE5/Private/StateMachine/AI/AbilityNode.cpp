@@ -24,6 +24,17 @@ void UAbilityNode::Enter_Inner_Implementation()
 
 		this->Selected->Start();
 	}
+
+	if (!IsValid(this->Selected))
+	{
+		this->EmitEvent(Events::AI::ABILITY_FINISHED);
+	}
+	else if (this->bNeedsFinishing)
+	{
+		this->EmitEvent(Events::AI::ABILITY_FINISHED);
+	}
+
+	this->bNeedsFinishing = false;
 }
 
 void UAbilityNode::Exit_Inner_Implementation()
@@ -43,20 +54,6 @@ bool UAbilityNode::RequiresTick_Implementation() const
 	}
 	
 	return false;
-}
-
-void UAbilityNode::PostTransition_Inner_Implementation()
-{
-	if (!IsValid(this->Selected))
-	{
-		this->EmitEvent(Events::AI::ABILITY_FINISHED);
-	}
-	else if (this->bNeedsFinishing)
-	{
-		this->EmitEvent(Events::AI::ABILITY_FINISHED);
-	}
-
-	this->bNeedsFinishing = false;
 }
 
 void UAbilityNode::EnterWithData_Inner_Implementation(UObject* Data)
@@ -80,7 +77,7 @@ void UAbilityNode::EnterWithData_Inner_Implementation(UObject* Data)
 		}		
 	}
 
-	this->Enter_Inner();
+	this->Enter();
 }
 
 void UAbilityNode::Tick_Inner_Implementation(float DeltaTime)
@@ -93,14 +90,5 @@ void UAbilityNode::Tick_Inner_Implementation(float DeltaTime)
 
 void UAbilityNode::HandleFinish(UAbility* Abi)
 {
-	// Some abilities may finish just as they start, and if that happens, we'll need to delay handling
-	// the end.
-	if (this->GetMachine()->IsTransitioning())
-	{
-		this->bNeedsFinishing = true;
-	}
-	else
-	{
-		this->EmitEvent(Events::AI::ABILITY_FINISHED);
-	}
+	this->EmitEvent(Events::AI::ABILITY_FINISHED);
 }

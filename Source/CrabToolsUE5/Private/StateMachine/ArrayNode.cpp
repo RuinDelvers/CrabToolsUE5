@@ -1,8 +1,10 @@
 #include "StateMachine/ArrayNode.h"
 
-void UArrayNode::Initialize_Inner_Implementation() {
+void UArrayNode::Initialize_Inner_Implementation()
+{
 	Super::Initialize_Inner_Implementation();
-	for (auto& Node : this->Nodes) {
+	for (auto& Node : this->Nodes)
+	{
 		if (IsValid(Node))
 		{
 			Node->Initialize(this->GetMachine());
@@ -10,103 +12,79 @@ void UArrayNode::Initialize_Inner_Implementation() {
 	}
 }
 
-void UArrayNode::Tick_Inner_Implementation(float DeltaTime) {
-	int TID = this->GetMachine()->GetStateID();
-	for (const auto& Node : this->Nodes) {
-		if (Node) {
-			Node->Tick(DeltaTime);
-			if (!(this->Active() && this->GetMachine()->IsInState(TID))) {
-				return;
-			}
-		}
-	}
-}
-
-void UArrayNode::Event_Inner_Implementation(FName Event) {
-	int TID = this->GetMachine()->GetStateID();
-	for (const auto& Node : this->Nodes) {
-		if (Node) {
-			Node->Event(Event);
-			if (!(this->Active() && this->GetMachine()->IsInState(TID))) {
-				return;
-			}
-		}
-	}
-}
-
-void UArrayNode::EventWithData_Inner_Implementation(FName Event, UObject* Data) {
-	int TID = this->GetMachine()->GetStateID();
-	for (const auto& Node : this->Nodes) {
-		if (Node) {
-			Node->EventWithData(Event, Data);
-			if (!(this->Active() && this->GetMachine()->IsInState(TID))) {
-				return;
-			}
-		}
-	}
-}
-
-void UArrayNode::Enter_Inner_Implementation() {
-	int TID = this->GetMachine()->GetStateID();
-	for (const auto& Node : this->Nodes) {
-		if (Node) {
-			Node->Enter();
-			if (!(this->Active() && this->GetMachine()->IsInState(TID))) {
-				return;
-			}
-		}
-	}
-}
-
-void UArrayNode::EnterWithData_Inner_Implementation(UObject* Data) {
-	int TID = this->GetMachine()->GetStateID();
-	for (const auto& Node : this->Nodes) {
-		if (Node) {
-			Node->EnterWithData(Data);
-			if (!(this->Active() && this->GetMachine()->IsInState(TID))) {
-				return;
-			}
-		}
-	}
-}
-
-void UArrayNode::Exit_Inner_Implementation() {
-	int TID = this->GetMachine()->GetStateID();
-	for (const auto& Node : this->Nodes) {
-		if (Node) {
-			Node->Exit();	
-			if (!(this->Active() && this->GetMachine()->IsInState(TID))) {
-				return;
-			}
-		}
-	}
-}
-
-void UArrayNode::ExitWithData_Inner_Implementation(UObject* Data) {
-	int TID = this->GetMachine()->GetStateID();
-	for (const auto& Node : this->Nodes) {
-		if (Node) {
-			Node->ExitWithData(Data);
-			if (!(this->Active() && this->GetMachine()->IsInState(TID))) {
-				return;
-			}
-		}
-	}
-}
-
-void UArrayNode::PostTransition_Inner_Implementation()
+void UArrayNode::Tick_Inner_Implementation(float DeltaTime)
 {
-	int TID = this->GetMachine()->GetStateID();
 	for (const auto& Node : this->Nodes)
 	{
 		if (Node)
 		{
-			Node->PostTransition();
-			if (!(this->Active() && this->GetMachine()->IsInState(TID)))
-			{
-				UE_LOG(LogTemp, Warning, TEXT("- - Child did return"));
-				return;
-			}
+			Node->Tick(DeltaTime);
+		}
+	}
+}
+
+void UArrayNode::Event_Inner_Implementation(FName Event)
+{
+	for (const auto& Node : this->Nodes)
+	{
+		if (Node)
+		{
+			Node->Event(Event);
+		}
+	}
+}
+
+void UArrayNode::EventWithData_Inner_Implementation(FName Event, UObject* Data)
+{
+	for (const auto& Node : this->Nodes)
+	{
+		if (Node)
+		{
+			Node->EventWithData(Event, Data);
+		}
+	}
+}
+
+void UArrayNode::Enter_Inner_Implementation()
+{
+	for (const auto& Node : this->Nodes)
+	{
+		if (Node)
+		{
+			Node->Enter();
+		}
+	}
+}
+
+void UArrayNode::EnterWithData_Inner_Implementation(UObject* Data)
+{
+	for (const auto& Node : this->Nodes)
+	{
+		if (Node)
+		{
+			Node->EnterWithData(Data);
+		}
+	}
+}
+
+void UArrayNode::Exit_Inner_Implementation()
+{
+	for (const auto& Node : this->Nodes)
+	{
+		if (Node)
+		{
+			Node->Exit();	
+		}
+	}
+}
+
+void UArrayNode::ExitWithData_Inner_Implementation(UObject* Data)
+{
+	for (const auto& Node : this->Nodes)
+	{
+		if (Node)
+		{
+			Node->ExitWithData(Data);
 		}
 	}
 }
@@ -139,10 +117,12 @@ bool UArrayNode::HasPipedData_Implementation() const
 
 void UArrayNode::SetActive_Inner_Implementation(bool bNewActive)
 {
+	/*
 	for (const auto& Child : this->Nodes)
 	{
 		Child->SetActive(bNewActive);
 	}
+	*/
 }
 
 UObject* UArrayNode::GetPipedData_Implementation()

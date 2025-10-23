@@ -77,14 +77,14 @@ private:
 protected:
 
 	virtual void Initialize_Inner_Implementation() override;
-	virtual void EventWithData_Inner_Implementation(FName EName, UObject* Data) override;
+	virtual void EventWithData_Inner_Implementation(FName InEvent, UObject* Data) override;
 
 	#if WITH_EDITOR
 		virtual void GetEmittedEvents(TSet<FName>& Events) const override;
 	#endif
 
 	UFUNCTION()
-	void EventNotify_AttemptDialogue(FName EName, UObject* Data);
+	void EventNotify_AttemptDialogue(FName InEvent, UObject* Data);
 
 private:
 
@@ -121,7 +121,7 @@ protected:
 	#endif
 	
 	virtual void Initialize_Inner_Implementation() override;
-	virtual void PostTransition_Inner_Implementation() override;
+	virtual void Enter_Inner_Implementation() override;
 
 private:
 

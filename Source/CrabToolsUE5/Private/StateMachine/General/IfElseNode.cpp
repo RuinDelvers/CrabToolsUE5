@@ -37,9 +37,9 @@ void UIfElseNode::Event_Inner_Implementation(FName Event)
 	if (auto Node = this->GetNode()) { Node->Event(Event); }
 }
 
-void UIfElseNode::EventWithData_Inner_Implementation(FName EName, UObject* Data)
+void UIfElseNode::EventWithData_Inner_Implementation(FName InEvent, UObject* Data)
 {
-	if (auto Node = this->GetNode()) { Node->EventWithData(EName, Data); }
+	if (auto Node = this->GetNode()) { Node->EventWithData(InEvent, Data); }
 }
 
 void UIfElseNode::Enter_Inner_Implementation()
@@ -72,11 +72,6 @@ bool UIfElseNode::RequiresTick_Implementation() const
 	{
 		return false;
 	}
-}
-
-void UIfElseNode::PostTransition_Inner_Implementation()
-{
-	if (auto Node = this->GetNode()) { Node->PostTransition(); }
 }
 
 void UIfElseNode::SetActive_Inner_Implementation(bool bNewActive)

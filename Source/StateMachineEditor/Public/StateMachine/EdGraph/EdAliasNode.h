@@ -39,7 +39,7 @@ public:
 
 	virtual FName GetStateName() const override;
 	/* Returns the name which should appear on graph nodes. */
-	virtual bool HasEvent(FName EName) override;
+	virtual bool HasEvent(FName InEvent) override;
 	virtual bool Modify(bool bAlwaysMarkDirty = true) override;
 	virtual void RenameNode(FName Name) override;
 	virtual FName GetNodeName() const override { return this->AliasLabel; }

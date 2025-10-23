@@ -59,13 +59,12 @@ protected:
 	virtual void Initialize_Inner_Implementation() override;
 	virtual void Tick_Inner_Implementation(float DeltaTime) override;
 	virtual void Event_Inner_Implementation(FName Event) override;
-	virtual void EventWithData_Inner_Implementation(FName EName, UObject* Data) override;
+	virtual void EventWithData_Inner_Implementation(FName InEvent, UObject* Data) override;
 	virtual void Enter_Inner_Implementation() override;
 	virtual void EnterWithData_Inner_Implementation(UObject* Data) override;
 	virtual void Exit_Inner_Implementation() override;
 	virtual void ExitWithData_Inner_Implementation(UObject* Data) override;
 	virtual bool RequiresTick_Implementation() const override;
-	virtual void PostTransition_Inner_Implementation() override;
 	virtual void SetActive_Inner_Implementation(bool bNewActive) override;
 	virtual bool HasPipedData_Implementation() const override;
 	virtual UObject* GetPipedData_Implementation() override;

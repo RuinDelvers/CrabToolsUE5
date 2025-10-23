@@ -31,7 +31,7 @@ void UMonologueNode::Initialize_Inner_Implementation()
 	this->Data->OnMonologueFinished.AddDynamic(this, &UMonologueNode::HandleFinish);
 }
 
-void UMonologueNode::PostTransition_Inner_Implementation()
+void UMonologueNode::Enter_Inner_Implementation()
 {
 	if (this->Data->Finished())
 	{

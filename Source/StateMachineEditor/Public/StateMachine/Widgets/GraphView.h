@@ -1,25 +1,14 @@
 #pragma once
 
-#include "CoreMinimal.h"
-#include "Templates/SubclassOf.h"
-#include "Styling/SlateColor.h"
-#include "Layout/SlateRect.h"
-#include "Layout/Visibility.h"
 #include "Layout/Geometry.h"
 #include "Input/Reply.h"
-#include "Layout/ArrangedWidget.h"
-#include "Widgets/SWidget.h"
 #include "UObject/GCObject.h"
-#include "Types/SlateStructs.h"
-#include "Animation/CurveSequence.h"
 #include "Widgets/DeclarativeSyntaxSupport.h"
-#include "Styling/SlateBrush.h"
-#include "Components/Widget.h"
 #include "StateMachine/Editor.h"
-#include "Settings/LevelEditorPlaySettings.h"
-#include "Layout/WidgetPath.h"
 #include "GraphEditor.h"
 
+class UStateMachineBlueprint;
+class UEdBaseStateNode;
 
 class STATEMACHINEEDITOR_API SGraphView : public SCompoundWidget, public FGCObject
 {
@@ -27,6 +16,7 @@ class STATEMACHINEEDITOR_API SGraphView : public SCompoundWidget, public FGCObje
 private:
 	TSharedPtr<FUICommandList> GraphEditorCommands;
 	TWeakObjectPtr<UStateMachineBlueprint> BlueprintRef;
+	TArray<TWeakObjectPtr<UEdGraphNode>> SelectedNodes;
 	TSharedPtr<SGraphEditor> GraphEditor;
 	TSharedPtr<SWidgetSwitcher> TabsWidget;
 	TMap<TWeakObjectPtr<UEdGraph>, TSharedPtr<SGraphEditor>> GraphToEditorMap;
@@ -54,6 +44,8 @@ private:
 	void OnGraphSelected(UEdStateGraph* Graph);
 	void OnDeleteNodes();
 	bool CanDeleteNodes() { return true; }
+	void OnRenameSelection();
+	bool CanRenameSelection();
 	void BindEvents(UStateMachineBlueprint* Blueprint);
 
 	void AddGraphToEditor(UEdGraph* Graph);

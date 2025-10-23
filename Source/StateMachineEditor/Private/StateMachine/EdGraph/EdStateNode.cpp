@@ -53,8 +53,11 @@ TSet<FName> UEdStateNode::GetNotifies() const
 
 FName UEdStateNode::SetStateName(FName NewName)
 {
+	FScopedTransaction RenameTransaction(LOCTEXT("StateNodeRename", "Rename State Node"));
+	this->Modify();
 	FName OldName = this->StateName;
-	this->StateName = NewName;
+	this->StateName = NewName;	
+	this->GetStateGraph()->GetBlueprintOwner()->SetRequiresCompile();
 	this->Events.OnNameChanged.Broadcast(OldName, NewName);
 
 	return NewName;
@@ -210,7 +213,7 @@ bool UEdStateNode::Modify(bool bAlwaysMarkDirty)
 	return this->GetGraph()->Modify(bAlwaysMarkDirty);
 }
 
-bool UEdStateNode::HasEvent(FName EName)
+bool UEdStateNode::HasEvent(FName InEvent)
 {
 	if (this->NodeType == EStateNodeType::EXTENDED_NODE)
 	{
@@ -224,7 +227,7 @@ bool UEdStateNode::HasEvent(FName EName)
 			}
 		}
 
-		if (ParentEvents.Contains(EName))
+		if (ParentEvents.Contains(InEvent))
 		{
 			return true;
 		}
@@ -232,13 +235,13 @@ bool UEdStateNode::HasEvent(FName EName)
 	}
 
 	this->UpdateEmittedEvents();
-	return this->NodeEmittedEvents.Contains(EName) || this->GetStateGraph()->HasEvent(EName);
+	return this->NodeEmittedEvents.Contains(InEvent) || this->GetStateGraph()->HasEvent(InEvent);
 }
 
-bool UEdStateNode::HasLocalEvent(FName EName)
+bool UEdStateNode::HasLocalEvent(FName InEvent)
 {
 	this->UpdateEmittedEvents();
-	return this->NodeEmittedEvents.Contains(EName);
+	return this->NodeEmittedEvents.Contains(InEvent);
 }
 
 void UEdStateNode::UpdateEmittedEvents()
@@ -283,7 +286,7 @@ bool UEdStateNode::DoesReferenceMachine(FName MachineName) const
 {
 	for (const auto& Node : this->Nodes)
 	{
-		if (Node->DoesReferenceMachine(MachineName))
+		if (Node && Node->DoesReferenceMachine(MachineName))
 		{
 			return true;
 		}
@@ -387,21 +390,21 @@ void UEdStateNode::SetDebugObject(UState* State)
 	}
 }
 
-void UEdStateNode::ReceiveEvent(FName EName)
+void UEdStateNode::ReceiveEvent(FName InEvent)
 {
 	FStateNodeEventDebugData Data;
 
-	Data.EventName = EName;
+	Data.EventName = InEvent;
 	Data.TimeReceived = this->DebugStateObject->GetMachine()->GetWorld()->GetTimeSeconds();
 
 	this->EventDebugData.Add(Data);
 }
 
-void UEdStateNode::ReceiveEventWithData(FName EName, UObject* Data)
+void UEdStateNode::ReceiveEventWithData(FName InEvent, UObject* Data)
 {
 	FStateNodeEventDebugData DebugData;
 
-	DebugData.EventName = EName;
+	DebugData.EventName = InEvent;
 	DebugData.bHadData = true;
 	DebugData.Data = Data;
 	DebugData.TimeReceived = this->DebugStateObject->GetMachine()->GetWorld()->GetTimeSeconds();
@@ -440,7 +443,7 @@ FString UEdStateNode::GetDebugDataString()
 
 		if (this->IsActive())
 		{
-			float ActiveTime = this->DebugStateObject->GetMachine()->GetDebugData().CurrentStateTime;
+			float ActiveTime = this->DebugStateObject->GetMachine()->GetActiveTime();
 			DataString.Append(FString::Printf(TEXT("Active Time: %f"), CurrentTime - ActiveTime));
 		}
 		
@@ -522,6 +525,13 @@ void UEdStateNode::PostEditChangeProperty(FPropertyChangedEvent& PropertyChanged
 	{
 		this->StateClass = NewObject<UState>(this);
 	}
+}
+
+void UEdStateNode::PostEditUndo()
+{
+	Super::PostEditUndo();
+
+	this->Events.OnNameChanged.Broadcast(this->GetNodeName(), this->GetNodeName());
 }
 
 void UEdStateNode::PostLinkerChange()

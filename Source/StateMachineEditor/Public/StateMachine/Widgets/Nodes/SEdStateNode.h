@@ -1,11 +1,7 @@
 #pragma once
 
-#include "CoreMinimal.h"
 #include "SGraphNode.h"
-#include "EdGraph/EdGraphNode.h"
 #include "SGraphPin.h"
-#include "StateMachine/StateMachine.h"
-#include "StateMachine/EdGraph/EdStateNode.h"
 
 
 class STATEMACHINEEDITOR_API SEdStateNode : public SGraphNode
@@ -33,6 +29,7 @@ public:
 	virtual const FSlateBrush* GetNameIcon() const;
 
 	virtual void GetNodeInfoPopups(FNodeInfoContext* Context, TArray<FGraphInformationPopupInfo>& Popups) const override;
+	virtual FReply OnKeyUp(const FGeometry& MyGeometry, const FKeyEvent& KeyEvent) override;
 
 	FName GetStateName() const;
 	UEdBaseStateNode* GetStateNode() const { return Cast<UEdBaseStateNode>(this->GraphNode); }
@@ -43,5 +40,6 @@ private:
 	void OnNodeNameChanged(FName OldName, FName Name);
 
 	void OnErrorTextUpdate(FText ErrText);
+	void OnAttemptRename();
 };
 

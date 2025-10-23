@@ -94,9 +94,9 @@ TArray<FString> UEdTransition::GetEventOptions() const
 {
 	TSet<FString> EventNames;
 
-	for (const auto& EName : Cast<UEdStateGraph>(this->GetGraph())->GetEventOptions())
+	for (const auto& EventName : Cast<UEdStateGraph>(this->GetGraph())->GetEventOptions())
 	{
-		EventNames.Add(EName);
+		EventNames.Add(EventName);
 	}
 
 	EventNames.Append(this->GetStartNode()->GetEventOptions());
@@ -106,19 +106,19 @@ TArray<FString> UEdTransition::GetEventOptions() const
 	return EventNames.Array();
 }
 
-TMap<FName, FTransitionData> UEdTransition::GetTransitionData(FNodeVerificationContext& Context)
+TMap<FName, FTransitionDataSet> UEdTransition::GetTransitionData(FNodeVerificationContext& Context)
 {
-	TMap<FName, FTransitionData> Data;
+	TMap<FName, FTransitionDataSet> Data;
 
 	for (auto& Values : this->EventToConditionMap)
 	{
+		FTransitionDataSet DestData;
 		auto Node = this->GetEndNode();
 
 		if (auto StateNode = Cast<UEdStateNode>(Node))
 		{
 			FTransitionData DataValue
 			{
-				StateNode->GetStateName(),
 				DuplicateObject(Values.Value.Condition, Context.GetOuter()),
 				DuplicateObject(Values.Value.DataCondition, Context.GetOuter()),
 			};
@@ -137,7 +137,8 @@ TMap<FName, FTransitionData> UEdTransition::GetTransitionData(FNodeVerificationC
 				continue;
 			}
 
-			Data.Add(Values.Key, DataValue);
+			DestData.Destinations.Add(StateNode->GetStateName(), DataValue);
+			Data.Add(Values.Key, DestData);
 		}
 		else if (auto AliasNode = Cast<UEdAliasNode>(Node))
 		{
@@ -145,7 +146,6 @@ TMap<FName, FTransitionData> UEdTransition::GetTransitionData(FNodeVerificationC
 			{
 				FTransitionData DataValue
 				{
-					SName,
 					DuplicateObject(Values.Value.Condition, Context.GetOuter()),
 					DuplicateObject(Values.Value.DataCondition, Context.GetOuter()),
 				};
@@ -164,7 +164,8 @@ TMap<FName, FTransitionData> UEdTransition::GetTransitionData(FNodeVerificationC
 					continue;
 				}
 
-				Data.Add(Values.Key, DataValue);
+				DestData.Destinations.Add(SName, DataValue);
+				Data.Add(Values.Key, DestData);
 			}
 		}
 	}

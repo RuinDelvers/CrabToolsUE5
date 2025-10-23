@@ -36,7 +36,7 @@ public:
 	virtual void EnterWithData_Inner_Implementation(UObject* Data) override;
 	virtual void Exit_Inner_Implementation() override;
 	virtual void Initialize_Inner_Implementation() override;
-	virtual void PostTransition_Inner_Implementation() override;
+	virtual void Enter_Inner_Implementation() override;
 
 	#if WITH_EDITOR
 		virtual void PostLinkerChange() override;
@@ -50,10 +50,10 @@ protected:
 	void SetOverrideLocation(FVector Location);
 
 	UFUNCTION()
-	void EventNotify_PauseMovement(FName EName);
+	void EventNotify_PauseMovement(FName InEvent);
 
 	UFUNCTION()
-	void EventNotify_ResumeMovement(FName EName);
+	void EventNotify_ResumeMovement(FName InEvent);
 
 private:
 

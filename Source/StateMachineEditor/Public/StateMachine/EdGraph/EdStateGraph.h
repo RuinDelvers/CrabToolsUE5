@@ -192,7 +192,7 @@ public:
 	FName GetStartStateName() const;
 	TArray<UEdBaseNode*> GetDestinations(UEdBaseNode* Node) const;
 	UEdStartStateNode* GetStartNode() const;
-	bool HasEvent(FName EName) const;
+	bool HasEvent(FName InEvent) const;
 	EStateMachineAccessibility GetAccessibility() const { return this->Accessibility; }
 	void Inspect();
 	bool IsMainGraph() const;
@@ -251,7 +251,7 @@ private:
 	bool UpdateOverrideData();
 
 	/* Checks whether or not an emitter attached to this graph has an event. */
-	bool DoesEmitterHaveEvent(FName EName) const;
+	bool DoesEmitterHaveEvent(FName InEvent) const;
 	void AppendEmitterEvents(TArray<FString>& Names) const;
 
 	/* Returns the "default" state machine for this graph. */
@@ -263,8 +263,8 @@ private:
 
 	TSet<FName> GetAllPublicStates() const;
 
-	bool DoesArchetypeHaveEvent(FName EName) const;
-	bool DoesHierarchyProvideEvent(FName EName) const;
+	bool DoesArchetypeHaveEvent(FName InEvent) const;
+	bool DoesHierarchyProvideEvent(FName InEvent) const;
 
 	UFUNCTION()
 	void OnDebugStateChanged(const FStateChangedEventData& Data);

@@ -45,7 +45,7 @@ void UEdStateGraph::SetDebugMachine(UStateMachine* Machine)
 
 	if (IsValid(Machine))
 	{
-		Machine->OnStateChanged.AddDynamic(this, &UEdStateGraph::OnDebugStateChanged);
+		Machine->OnStateChanged.AddUniqueDynamic(this, &UEdStateGraph::OnDebugStateChanged);
 
 		if (auto StateNode = this->GetStateNodeByName(Machine->GetCurrentStateName()))
 		{
@@ -247,10 +247,10 @@ FName UEdStateGraph::GetStartStateName() const
 	}
 }
 
-bool UEdStateGraph::HasEvent(FName EName) const
+bool UEdStateGraph::HasEvent(FName InEvent) const
 {
 	bool bHasEvent = false;
-	auto Ev = this->EventObjects.FindByPredicate([&](const UEdEventObject* Ev) { return Ev->GetEventName() == EName; });
+	auto Ev = this->EventObjects.FindByPredicate([&](const UEdEventObject* Ev) { return Ev->GetEventName() == InEvent; });
 
 	if (Ev)
 	{
@@ -262,23 +262,23 @@ bool UEdStateGraph::HasEvent(FName EName) const
 		{
 			if (auto Parent = BPGC->GetParent())
 			{
-				bHasEvent = Parent->HasEvent(EName, this->GetGraphName());
+				bHasEvent = Parent->HasEvent(InEvent, this->GetGraphName());
 			}
 		}		
 
 		if (!bHasEvent)
 		{
-			bHasEvent = this->DoesEmitterHaveEvent(EName)
-				|| this->GetBlueprintOwner()->HasEvent(EName)
-				|| this->DoesArchetypeHaveEvent(EName)
-				|| this->DoesHierarchyProvideEvent(EName);
+			bHasEvent = this->DoesEmitterHaveEvent(InEvent)
+				|| this->GetBlueprintOwner()->HasEvent(InEvent)
+				|| this->DoesArchetypeHaveEvent(InEvent)
+				|| this->DoesHierarchyProvideEvent(InEvent);
 		}
 	}	
 
 	return bHasEvent;;
 }
 
-bool UEdStateGraph::DoesHierarchyProvideEvent(FName EName) const
+bool UEdStateGraph::DoesHierarchyProvideEvent(FName InEvent) const
 {
 	if (this->IsMainGraph())
 	{
@@ -291,7 +291,7 @@ bool UEdStateGraph::DoesHierarchyProvideEvent(FName EName) const
 	{
 		if (State->DoesReferenceMachine(this->GetGraphName()))
 		{			
-			if (State->HasLocalEvent(EName))
+			if (State->HasLocalEvent(InEvent))
 			{
 				return true;
 			}
@@ -304,7 +304,7 @@ bool UEdStateGraph::DoesHierarchyProvideEvent(FName EName) const
 		{
 			if (State->DoesReferenceMachine(this->GetGraphName()))
 			{
-				if (State->HasLocalEvent(EName))
+				if (State->HasLocalEvent(InEvent))
 				{
 					return true;
 				}
@@ -315,7 +315,7 @@ bool UEdStateGraph::DoesHierarchyProvideEvent(FName EName) const
 	return false;
 }
 
-bool UEdStateGraph::DoesArchetypeHaveEvent(FName EName) const
+bool UEdStateGraph::DoesArchetypeHaveEvent(FName InEvent) const
 {
 	if (this->IsMainGraph())
 	{
@@ -336,13 +336,13 @@ bool UEdStateGraph::DoesArchetypeHaveEvent(FName EName) const
 
 	if (BPGC != nullptr)
 	{
-		bHasEvent = BPGC->HasEvent(EName, this->GetGraphName());
+		bHasEvent = BPGC->HasEvent(InEvent, this->GetGraphName());
 
 		if (!bHasEvent)
 		{
 			for (auto& IFace : BPGC->Interfaces)
 			{
-				if (IFace->HasEvent(EName))
+				if (IFace->HasEvent(InEvent))
 				{
 					bHasEvent = true;
 					break;
@@ -354,11 +354,11 @@ bool UEdStateGraph::DoesArchetypeHaveEvent(FName EName) const
 	return bHasEvent;
 }
 
-bool UEdStateGraph::DoesEmitterHaveEvent(FName EName) const
+bool UEdStateGraph::DoesEmitterHaveEvent(FName InEvent) const
 {
 	for (auto& Emitter : this->EventEmitters)
 	{
-		if (Emitter->GetEmittedEvents().Contains(EName))
+		if (Emitter->GetEmittedEvents().Contains(InEvent))
 		{
 			return true;
 		}
@@ -563,11 +563,12 @@ FStateMachineArchetypeData UEdStateGraph::CompileStateMachine(FNodeVerificationC
 
 		for (auto Transition : this->GetExitTransitions(State))
 		{
+			//auto Destination = Transition->GetEndNode()->GetStateName();
 			auto TData = Transition->GetTransitionData(Context);
 
 			for (auto& Values : TData)
 			{
-				BuiltState.GetArchetype()->AddTransition(Values.Key, Values.Value);
+				BuiltState.GetArchetype()->AddTransition(TData);
 			}
 		}
 
@@ -797,9 +798,9 @@ void UEdStateGraph::AppendEmitterEvents(TArray<FString>& Names) const
 {
 	for (auto& Emitter : this->EventEmitters)
 	{		
-		for (auto& EName : Emitter->GetEmittedEvents())
+		for (auto& EventName : Emitter->GetEmittedEvents())
 		{
-			Names.Add(EName.ToString());
+			Names.Add(EventName.ToString());
 		}
 	}
 }

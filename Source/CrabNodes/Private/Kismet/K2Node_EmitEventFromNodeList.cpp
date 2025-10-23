@@ -161,7 +161,7 @@ void UK2Node_EmitEventFromNodeList::ExpandNode(class FKismetCompilerContext& Com
     UEdGraphPin* SelfInPin = EmitEventFromNodeListFunction->FindPinChecked(TEXT("self"));
 	CompilerContext.MovePinLinksToIntermediate(*GetSelfPin(), *SelfInPin);
 
-	UEdGraphPin* EventInPin = EmitEventFromNodeListFunction->FindPinChecked(TEXT("EName"));
+	UEdGraphPin* EventInPin = EmitEventFromNodeListFunction->FindPinChecked(TEXT("InEvent"));
 	CompilerContext.MovePinLinksToIntermediate(*GetEventPin(), *EventInPin);
 
 	// Get some pins to work with

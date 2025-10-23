@@ -55,10 +55,6 @@ UState* UStateMachineBlueprintGeneratedClass::GetStateData(
 
 	if (MachineData)
 	{
-		if (StateName.ToString().Contains("Setup"))
-		{
-			UE_LOG(LogTemp, Warning, TEXT("------------------ Generating state --------------"));
-		}
 		auto DefaultStateData = MachineData->StateData.Find(StateName);
 
 		if (DefaultStateData)
@@ -549,19 +545,19 @@ TSet<FName> UStateMachineBlueprintGeneratedClass::GetTotalEventSet() const
 	return EventNames;
 }
 
-bool UStateMachineBlueprintGeneratedClass::HasEvent(FName EName, FName MachineName) const
+bool UStateMachineBlueprintGeneratedClass::HasEvent(FName InEvent, FName MachineName) const
 {
 	auto Parent = this->GetParent();
 
 	if (MachineName.IsNone())
 	{
-		return this->Archetype.EventSet.Contains(EName) || (Parent ? Parent->HasEvent(EName, MachineName) : false);
+		return this->Archetype.EventSet.Contains(InEvent) || (Parent ? Parent->HasEvent(InEvent, MachineName) : false);
 	}
 	else
 	{
 		if (auto SubArch = this->SubArchetypes.Find(MachineName))
 		{
-			return SubArch->EventSet.Contains(EName) || (Parent ? Parent->HasEvent(EName, MachineName) : false);
+			return SubArch->EventSet.Contains(InEvent) || (Parent ? Parent->HasEvent(InEvent, MachineName) : false);
 		}
 	}
 
@@ -576,5 +572,10 @@ void UStateMachineBlueprintGeneratedClass::GetStateEmittedEvents(FName Machine, 
 		{
 			FoundState->Archetype->GetNode()->GetEmittedEvents(OutNames);
 		}
+	}
+
+	if (auto Parent = this->GetParent())
+	{
+		Parent->GetStateEmittedEvents(Machine, State, OutNames);
 	}
 }

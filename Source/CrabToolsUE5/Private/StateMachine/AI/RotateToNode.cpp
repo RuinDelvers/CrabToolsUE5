@@ -56,6 +56,11 @@ void UAIRotateToNode::EnterWithData_Inner_Implementation(UObject* Data)
 			}
 		}
 	}
+
+	if (!this->TargetActor.IsValid())
+	{
+		this->EmitEvent(Events::AI::LOST);
+	}
 }
 
 void UAIRotateToNode::Enter_Inner_Implementation()
@@ -73,10 +78,7 @@ void UAIRotateToNode::Enter_Inner_Implementation()
 			this->TargetActor = nullptr;
 		}
 	}
-}
 
-void  UAIRotateToNode::PostTransition_Inner_Implementation()
-{
 	if (!this->TargetActor.IsValid())
 	{
 		this->EmitEvent(Events::AI::LOST);

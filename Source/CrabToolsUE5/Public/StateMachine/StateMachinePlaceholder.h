@@ -27,7 +27,7 @@ public:
 
 	virtual void Tick_Inner_Implementation(float DeltaTime) override;
 	virtual void Event_Inner_Implementation(FName Event) override;
-	virtual void EventWithData_Inner_Implementation(FName EName, UObject* Data);
+	virtual void EventWithData_Inner_Implementation(FName InEvent, UObject* Data);
 	virtual void Enter_Inner_Implementation();
 	virtual void EnterWithData_Inner_Implementation(UObject* Data) override;
 	virtual void Exit_Inner_Implementation();

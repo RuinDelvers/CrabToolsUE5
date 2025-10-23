@@ -33,11 +33,11 @@ public:
 		FActorComponentTickFunction* ThisTickFunction)
 		override;
 
-	virtual void Event_Implementation(FName EName) override final { this->Event_Direct(EName); }
-	void Event_Direct(FName EName);
+	virtual void Event_Implementation(FName InEvent) override final { this->Event_Direct(InEvent); }
+	void Event_Direct(FName InEvent);
 
-	void EventWithData_Implementation(FName EName, UObject* Data) override final { this->EventWithData_Direct(EName, Data); }
-	void EventWithData_Direct(FName EName, UObject* Data);
+	void EventWithData_Implementation(FName InEvent, UObject* Data) override final { this->EventWithData_Direct(InEvent, Data); }
+	void EventWithData_Direct(FName InEvent, UObject* Data);
 
 	UFUNCTION(BlueprintCallable, Category="StateMachine")
 	void CreateMachine(TSubclassOf<UStateMachine> MachineClass);

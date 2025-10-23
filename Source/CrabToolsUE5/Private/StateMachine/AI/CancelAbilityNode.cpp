@@ -7,12 +7,6 @@ UCancelAbilityNode::UCancelAbilityNode()
 	this->AddEmittedEvent(Events::AI::DONE);
 }
 
-
-void UCancelAbilityNode::PostTransition_Inner_Implementation()
-{
-	this->EmitEvent(Events::AI::DONE);
-}
-
 void UCancelAbilityNode::Enter_Inner_Implementation()
 {
 	if (this->bCanCallOwner && this->GetOwner()->Implements<UHasAbilityInterface>())
@@ -22,6 +16,8 @@ void UCancelAbilityNode::Enter_Inner_Implementation()
 			GetAbi->Cancel();
 		}
 	}
+
+	this->EmitEvent(Events::AI::DONE);
 }
 
 void UCancelAbilityNode::EnterWithData_Inner_Implementation(UObject* Data)
@@ -51,4 +47,6 @@ void UCancelAbilityNode::EnterWithData_Inner_Implementation(UObject* Data)
 			GetAbi->Cancel();
 		}
 	}
+
+	this->EmitEvent(Events::AI::DONE);
 }
