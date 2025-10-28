@@ -1,13 +1,11 @@
 #include "StateMachine/StateMachine.h"
+#include "StateMachine/Dialogue/AbstractDialogueNode.h"
 #include "DialogueNullNode.generated.h"
 
 UCLASS(Blueprintable, CollapseCategories, Category = "StateMachine|Dialogue")
-class CRABTOOLSUE5_API UDialogueNullNode : public UStateNode
+class CRABTOOLSUE5_API UDialogueNullNode : public UAbstractDialogueNode
 {
 	GENERATED_BODY()
-
-	UPROPERTY()
-	TObjectPtr<class UDialogueStateComponent> DialogueComponent;
 
 	UPROPERTY(EditAnywhere, Category="Flags")
 	bool bUseOnEnter = true;
@@ -17,7 +15,6 @@ class CRABTOOLSUE5_API UDialogueNullNode : public UStateNode
 
 protected:
 
-	virtual void Initialize_Inner_Implementation() override;
 	virtual void Enter_Inner_Implementation() override;
 	virtual void Exit_Inner_Implementation() override;
 };

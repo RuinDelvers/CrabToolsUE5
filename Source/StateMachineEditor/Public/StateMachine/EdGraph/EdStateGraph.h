@@ -236,6 +236,7 @@ public:
 	virtual TArray<FString> GetEventOptions() const override;
 	virtual TArray<FString> GetConditionOptions() const override;
 	virtual TArray<FString> GetDataConditionOptions() const override;
+	virtual void OnModify() override;
 	
 	TArray<FString> GetInheritableStates(EStateNodeType NodeType) const;
 	FString GetDisplayName() const;

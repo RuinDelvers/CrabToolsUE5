@@ -1,5 +1,6 @@
 #include "StateMachine/StateMachineInterface.h"
 #include "StateMachine/StateMachine.h"
+#include "UObject/AssetRegistryTagsContext.h"
 
 UStateMachineInterface::UStateMachineInterface()
 {
@@ -145,6 +146,17 @@ const TSet<FName>& UStateMachineInterface::GetEvents_Inner() const
 	return this->NamespacedEvents;
 }
 
+void UStateMachineInterface::GetAssetRegistryTags(FAssetRegistryTagsContext Context) const
+{
+	Super::GetAssetRegistryTags(Context);
+
+	Context.AddTag(
+		FAssetRegistryTag(
+			GET_MEMBER_NAME_CHECKED(UStateMachineInterface, Description),
+			Description,
+			FAssetRegistryTag::TT_Hidden));
+}
+
 #if WITH_EDITOR
 void UStateMachineInterface::PreEditChange(FProperty* Property)
 {
@@ -172,7 +184,7 @@ void UStateMachineInterface::PostEditChangeProperty(FPropertyChangedEvent& Prope
 	this->Events.KeySort([&](const FName& A, const FName& B) { return A.ToString() < B.ToString(); });
 
 	this->NamespacedEvents.Empty();
-	this->UpdateNamespacedEvents();	
+	this->UpdateNamespacedEvents();
 }
 
 

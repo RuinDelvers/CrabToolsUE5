@@ -4,6 +4,7 @@
 #include "DataStructures.generated.h"
 
 class UStateNode;
+class UStateMachine;
 
 USTRUCT(BlueprintType)
 struct FEventSetRow : public FTableRowBase
@@ -116,20 +117,54 @@ public:
 	}
 };
 
+
+UENUM(BlueprintType)
+enum class EHierarchyInputType : uint8
+{
+	/* Use an event or state machine that is defined in the blueprint. */
+	DEFINED       UMETA(DisplayName = "Defined"),
+	/* Use an event or state machine that is inlined in this slot. */
+	INLINED       UMETA(DisplayName = "Inlined"),
+};
+
 /* Structure used to store a reference to a submachine. */
 USTRUCT(BlueprintType)
 struct FSubMachineSlot
 {
 	GENERATED_USTRUCT_BODY()
 
+
 public:
 
+	UPROPERTY(EditDefaultsOnly, Category = "StateMachine")
+	EHierarchyInputType StateMachineSource = EHierarchyInputType::DEFINED;
+
+	UPROPERTY(EditAnywhere, Instanced, Category = "StateMachine",
+		meta = (ShowInnerProperties, ShowOnlyInnerProperties,
+			EditCondition = "StateMachineSource == EHierarchyInputType::INLINED", EditConditionHides))
+	TObjectPtr<UStateMachine> SubMachine;
+
+
 	UPROPERTY(EditAnywhere, Category = "StateMachine",
-		meta = (GetOptions = "GetMachineOptions"))
+		meta = (GetOptions = "GetMachineOptions",
+			EditCondition = "StateMachineSource == EHierarchyInputType::DEFINED",
+			EditConditionHides))
 	FName MachineName;
+
+public:
+
+	void Initialize(UStateMachine* MachineSource);
+
+	operator UStateMachine* () const { return this->SubMachine; }
+	operator bool() const { return this->SubMachine != nullptr; }
+	UStateMachine* operator->() const { return this->SubMachine; }
+
+	bool DoesReferenceMachine(FName InMachineName) const;
 
 	friend uint32 GetTypeHash(const FSubMachineSlot& Value)
 	{
 		return GetTypeHash(Value.MachineName);
 	}
+
+	void Validate();
 };

@@ -148,6 +148,12 @@ UObject* UStateMachine::GetOwner() const
 	return this->Owner;
 }
 
+UStateMachine* UStateMachine::GetSubMachine(const FSubMachineSlot& Slot) const
+{
+	FString Address = Slot.MachineName.ToString();
+	return Cast<UStateMachine>(this->GetSubMachine(Address));
+}
+
 UState* UStateMachine::MakeState(FName StateName)
 {
 	auto State = NewObject<UState>(this);
@@ -1303,6 +1309,16 @@ void UStateNode::EmitEventWithData(FName InEvent, UObject* Data)
 	}
 }
 
+bool UStateNode::Modify(bool bShouldAlwaysMarkDirty)
+{
+	if (auto StateLike = UtilsFunctions::GetOuterAs<IStateLike>(this))
+	{
+		StateLike->OnModify();
+	}
+
+	return Super::Modify(bShouldAlwaysMarkDirty);
+}
+
 #if WITH_EDITOR
 
 void UStateNode::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
@@ -1434,11 +1450,14 @@ void UState::Append(UState* Data)
 	{
 		if (!this->Transitions.Contains(Trans.Key))
 		{
+
 			this->Transitions.Add(Trans.Key, Trans.Value);
+			this->Transitions[Trans.Key].Copy(this);
 		}
 		else
 		{
 			this->Transitions[Trans.Key].Destinations.Append(Trans.Value.Destinations);
+			this->Transitions[Trans.Key].Copy(this);
 		}
 	}
 }
@@ -1452,10 +1471,12 @@ void UState::AppendCopy(UState* Data)
 		if (!this->Transitions.Contains(Trans.Key))
 		{
 			this->Transitions.Add(Trans.Key, Trans.Value);
+			this->Transitions[Trans.Key].Copy(this);
 		}
 		else
 		{
 			this->Transitions[Trans.Key].Destinations.Append(Trans.Value.Destinations);
+			this->Transitions[Trans.Key].Copy(this);
 		}
 	}
 }
@@ -1505,10 +1526,17 @@ void UState::AppendNodeCopy(UStateNode* ANode)
 UObject* UAbstractCondition::GetOwner() const { return this->OwnerMachine->GetOwner(); }
 AActor*  UAbstractCondition::GetActorOwner() const { return this->OwnerMachine->GetActorOwner(); }
 
-void UAbstractCondition::Initialize(UStateMachine* NewOwner)
+void UAbstractCondition::Initialize(UStateMachine* NewOwner, FName ISource, FName IDestination)
 {
 	this->OwnerMachine = NewOwner;
+	this->Source = ISource;
+	this->Destination = IDestination;
 	this->Initialize_Inner();
+}
+
+void UAbstractCondition::Tick(float DeltaTime)
+{
+	this->Tick_Inner(DeltaTime);
 }
 
 void UState::AddTransition(FName EventName, FName Destination, FTransitionData Data)
@@ -1542,9 +1570,9 @@ void UState::Initialize(UStateMachine* POwner)
 {
 	this->OwnerMachine = POwner;
 
-	for (auto& Dest : this->Transitions)
+	for (auto& Events : this->Transitions)
 	{	
-		Dest.Value.Initialize(POwner);		
+		Events.Value.Initialize(POwner, Events.Key);		
 	}
 
 	if (IsValid(this->Node))
@@ -1558,6 +1586,15 @@ void UState::Tick(float DeltaTime)
 	if (IsValid(this->Node))
 	{
 		this->Node->Tick(DeltaTime);
+	}
+
+	for (const auto& Event : this->Transitions)
+	{
+		for (const auto& Condition : Event.Value.Destinations)
+		{
+			Condition.Value.Condition->Tick(DeltaTime);
+			Condition.Value.DataCondition->Tick(DeltaTime);
+		}
 	}
 }
 
@@ -1763,12 +1800,12 @@ void UState::EventWithData_Inner(FName InEvent, UObject* Data) const
 	}
 }
 
-void FTransitionData::Initialize(UStateMachine* Owner)
+void FTransitionData::Initialize(UStateMachine* Owner, FName ISource, FName IDestination)
 {
 	this->Validate();
 
-	this->Condition->Initialize(Owner);
-	this->DataCondition->Initialize(Owner);
+	this->Condition->Initialize(Owner, ISource, IDestination);
+	this->DataCondition->Initialize(Owner, ISource, IDestination);
 }
 
 void FTransitionData::Validate()
@@ -1784,11 +1821,32 @@ void FTransitionData::Validate()
 	}
 }
 
-void FTransitionDataSet::Initialize(UStateMachine* Owner)
+void FTransitionData::Copy(UObject* NewOwner)
+{
+	if (this->Condition && !(this->Condition->GetOuter() == NewOwner))
+	{
+		this->Condition = DuplicateObject<UTransitionCondition>(this->Condition, NewOwner);
+	}
+
+	if (this->DataCondition && !(this->DataCondition->GetOuter() == NewOwner))
+	{
+		this->DataCondition = DuplicateObject<UTransitionDataCondition>(this->DataCondition, NewOwner);
+	}
+}
+
+void FTransitionDataSet::Initialize(UStateMachine* Owner, FName ISource)
 {
 	for (auto& Dest : this->Destinations)
 	{
-		Dest.Value.Initialize(Owner);
+		Dest.Value.Initialize(Owner, ISource, Dest.Key);
+	}
+}
+
+void FTransitionDataSet::Copy(UObject* NewOwner)
+{
+	for (auto& Dest : this->Destinations)
+	{
+		Dest.Value.Copy(NewOwner);
 	}
 }
 

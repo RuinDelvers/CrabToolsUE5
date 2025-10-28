@@ -27,6 +27,9 @@ public:
     virtual TArray<FString> GetMachineOptions() const { return {}; };
     virtual IStateMachineLike* GetSubMachine(FString& Address) const { return nullptr; }
     virtual TArray<FString> GetSubMachineStateOptions(FName SMName) const { return {}; };
+
+    // Editor Functions
+    virtual void OnModify() {}
 };
 
 /* Interface for objects that act like states within a state machine. */
@@ -51,6 +54,9 @@ public:
 
     /* Returns the list of states that this state can enter. */
     virtual TArray<FString> GetExitStates() const { return {}; }
+
+    // Editor Functions
+    virtual void OnModify() {}
 };
 
 UINTERFACE(MinimalAPI)

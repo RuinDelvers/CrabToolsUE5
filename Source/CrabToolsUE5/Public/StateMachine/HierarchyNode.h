@@ -5,14 +5,6 @@
 #include "StateMachine/DataStructures.h"
 #include "HierarchyNode.generated.h"
 
-UENUM(BlueprintType)
-enum class EHierarchyInputType : uint8
-{
-	/* Use an event or state machine that is defined in the blueprint. */
-	DEFINED       UMETA(DisplayName = "Defined"),
-	/* Use an event or state machine that is inlined in this slot. */
-	INLINED       UMETA(DisplayName = "Inlined"),
-};
 
 USTRUCT(BlueprintType)
 struct FHierarchyEventValue
@@ -43,18 +35,9 @@ class CRABTOOLSUE5_API UHierarchyNode : public UStateNode
 {
 	GENERATED_BODY()
 	
-	UPROPERTY(EditDefaultsOnly, Category="StateMachine")
-	EHierarchyInputType StateMachineSource = EHierarchyInputType::DEFINED;
-
-	UPROPERTY(EditAnywhere, Instanced, Category = "StateMachine", 
-		meta = (AllowPrivateAccess = "true", ShowInnerProperties, ShowOnlyInnerProperties,
-			EditCondition = "StateMachineSource == EHierarchyInputType::INLINED", EditConditionHides))
-	TObjectPtr<UStateMachine> SubMachine;
-
 	/* Name of the submachine to be placed in this node. */
 	UPROPERTY(EditAnywhere, Category="StateMachine",
-		meta=(EditCondition= "StateMachineSource == EHierarchyInputType::DEFINED", EditConditionHides,
-			ShowOnlyInnerProperties))
+		meta=(ShowOnlyInnerProperties))
 	FSubMachineSlot Slot;
 
 	/* Map of SubMachine states and events to be emitted to the SM of this node. */

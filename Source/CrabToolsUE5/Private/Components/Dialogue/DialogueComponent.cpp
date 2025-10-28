@@ -63,6 +63,16 @@ void UDialogueStateComponent::SendMonologue(UMonologueData* Data)
 	}
 }
 
+void UDialogueStateComponent::NullDialogue() const
+{
+	this->OnDialogueNull.Broadcast();
+
+	for (const auto& Part : this->Participants)
+	{
+		Part->OnDialogueNull.Broadcast();
+	}
+}
+
 bool UMonologueData::Step()
 {
 	this->Index += 1;

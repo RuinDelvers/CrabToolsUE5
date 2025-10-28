@@ -35,6 +35,9 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "Interface")
 	float EventDebugDataLifetime = 10;
 
+	/* Flag used to prevent recursion for setting blueprint compilation. */
+	bool bRequiresCompile = false;
+
 public:
 
 	/* Editor Events when this object is changed. */
@@ -84,6 +87,7 @@ public:
 
 	// IStateMachineLike Interface
 	virtual TArray<FString> GetMachineOptions() const override;
+	virtual void OnModify() override;
 
 	UStateMachineBlueprintGeneratedClass* GetStateMachineGeneratedClass() const;
 
@@ -103,8 +107,6 @@ public:
 		virtual void PostEditChangeProperty(
 			FPropertyChangedEvent& PropertyChangedEvent) override;
 	#endif	
-
-	void SetRequiresCompile();
 
 	virtual void SetObjectBeingDebugged(UObject* Obj) override;
 

@@ -154,6 +154,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Dialogue")
 	bool IsInDialogue() const;
 
+	UFUNCTION(BlueprintCallable, Category = "Dialogue")
+	void NullDialogue() const;
+
 	virtual void OnComponentDestroyed(bool bDestroyHierarchy) override;
 
 private:

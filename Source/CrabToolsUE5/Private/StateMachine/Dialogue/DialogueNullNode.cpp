@@ -1,23 +1,18 @@
 #include "StateMachine/Dialogue/DialogueNullNode.h"
 #include "Components/Dialogue/DialogueComponent.h"
 
-void UDialogueNullNode::Initialize_Inner_Implementation()
-{
-	this->DialogueComponent = this->GetActorOwner()->GetComponentByClass<UDialogueStateComponent>();
-}
-
 void UDialogueNullNode::Enter_Inner_Implementation()
 {
-	if (this->bUseOnEnter && this->DialogueComponent)
+	if (this->bUseOnEnter)
 	{
-		this->DialogueComponent->OnDialogueNull.Broadcast();
+		this->GetDialogueComponent()->NullDialogue();
 	}
 }
 
 void UDialogueNullNode::Exit_Inner_Implementation()
 {
-	if (this->bUseOnExit && this->DialogueComponent)
+	if (this->bUseOnExit)
 	{
-		this->DialogueComponent->OnDialogueNull.Broadcast();
+		this->GetDialogueComponent()->NullDialogue();
 	}
 }

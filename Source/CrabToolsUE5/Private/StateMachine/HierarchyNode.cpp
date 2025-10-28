@@ -6,8 +6,8 @@ void UHierarchyNode::Initialize_Inner_Implementation()
 {
 	UStateNode::Initialize_Inner_Implementation();
 
-	FString Address = this->Slot.MachineName.ToString();
-
+	this->Slot.Initialize(this->GetMachine());
+	/*
 	if (this->SubMachine)
 	{
 		switch (this->StateMachineSource)
@@ -17,24 +17,25 @@ void UHierarchyNode::Initialize_Inner_Implementation()
 				break;
 			case EHierarchyInputType::DEFINED: break;
 		}
-		this->SubMachine->Initialize(this->GetMachine()->GetActorOwner());
+		this->SubMachine->Initialize(this->GetMachine()->GetOwner());
 	}
-	else if (auto Machine = Cast<UStateMachine>(this->GetMachine()->GetSubMachine(Address)))
+	else if (auto Machine = this->GetMachine()->GetSubMachine(this->Slot))
 	{
 		this->SubMachine = Machine;
 	}
+	*/
 
-	if (this->SubMachine)
+	if (this->Slot)
 	{
-		this->SubMachine->OnTransitionFinished.AddDynamic(this, &UHierarchyNode::StateChangedCallback);
+		this->Slot->OnTransitionFinished.AddDynamic(this, &UHierarchyNode::StateChangedCallback);
 	}
 }
 
 void UHierarchyNode::PerformExit()
 {
-	if (this->SubMachine != nullptr)
+	if (this->Slot)
 	{
-		FName SubStateName = this->SubMachine->GetCurrentStateName();
+		FName SubStateName = this->Slot->GetCurrentStateName();
 
 		if (this->ExitStates.Contains(SubStateName))
 		{
@@ -45,49 +46,43 @@ void UHierarchyNode::PerformExit()
 
 void UHierarchyNode::Event_Inner_Implementation(FName InEvent)
 {
-	if (this->SubMachine)
+	if (this->Slot)
 	{
-		this->SubMachine->SendEvent(InEvent);
+		this->Slot->SendEvent(InEvent);
 	}
 }
 
 void UHierarchyNode::EventWithData_Inner_Implementation(FName InEvent, UObject* Data)
 {
-	if (this->SubMachine)
+	if (this->Slot)
 	{
-		this->SubMachine->SendEventWithData(InEvent, Data);
+		this->Slot->SendEventWithData(InEvent, Data);
 	}
 }
 
 bool UHierarchyNode::DoesReferenceMachine_Inner_Implementation(FName MachineName) const
 {
-	switch (this->StateMachineSource)
-	{
-		case EHierarchyInputType::DEFINED:
-			return this->Slot.MachineName == MachineName;
-		default:
-			return false;
-	}
+	return this->Slot.DoesReferenceMachine(MachineName);
 }
 
 void UHierarchyNode::Enter_Inner_Implementation()
 {
-	if (this->SubMachine)
+	if (this->Slot)
 	{
-		this->SubMachine->SetActive(true);
+		this->Slot->SetActive(true);
 
 		if (this->ResetOnEnter)
 		{
-			this->SubMachine->Reset();
+			this->Slot->Reset();
 		}
 		else
 		{
-			this->SubMachine->SendEvent(this->EnterEventName);
+			this->Slot->SendEvent(this->EnterEventName);
 		}
 
 		if (this->bPropagateEnterEvent)
 		{
-			this->SubMachine->SendEvent(this->GetMachine()->GetCurrentEvent());
+			this->Slot->SendEvent(this->GetMachine()->GetCurrentEvent());
 		}
 
 		this->PerformExit();
@@ -96,26 +91,26 @@ void UHierarchyNode::Enter_Inner_Implementation()
 
 void UHierarchyNode::Tick_Inner_Implementation(float DeltaTime)
 {
-	if (this->SubMachine)
+	if (this->Slot)
 	{
-		this->SubMachine->Tick(DeltaTime);
+		this->Slot->Tick(DeltaTime);
 		this->PerformExit();
 	}
 }
 
 void UHierarchyNode::Exit_Inner_Implementation()
 {
-	if (this->SubMachine)
+	if (this->Slot)
 	{
 		if (this->ResetOnExit)
 		{
-			this->SubMachine->Reset();
+			this->Slot->Reset();
 		}
 		else
 		{
-			this->SubMachine->SendEvent(this->ExitEventName);
+			this->Slot->SendEvent(this->ExitEventName);
 		}
-		this->SubMachine->SetActive(false);
+		this->Slot->SetActive(false);
 	}
 }
 
@@ -151,9 +146,9 @@ void UHierarchyNode::StateChangedCallback(UStateMachine* Data)
 
 bool UHierarchyNode::RequiresTick_Implementation() const
 {
-	if (this->SubMachine)
+	if (this->Slot)
 	{
-		if (auto Node = this->SubMachine->GetCurrentState()->GetNode())
+		if (auto Node = this->Slot->GetCurrentState()->GetNode())
 		{
 			return Node->RequiresTick();
 		}
@@ -187,23 +182,16 @@ void UHierarchyNode::GetEmittedEvents(TSet<FName>& Events) const
 
 void UHierarchyNode::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
-	if (this->StateMachineSource == EHierarchyInputType::DEFINED)
-	{
-		this->SubMachine = nullptr;
-	}
-	else if (this->StateMachineSource == EHierarchyInputType::INLINED)
-	{
-		this->Slot.MachineName = NAME_None;
-	}
+	this->Slot.Validate();
 }
 
 TArray<FString> UHierarchyNode::GetSubMachineStateOptions() const
 {
 	TArray<FString> Names;
 
-	if (IsValid(this->SubMachine))
+	if (IsValid(this->Slot))
 	{
-		Names.Append(this->SubMachine->GetStateOptions(this));
+		Names.Append(this->Slot->GetStateOptions(this));
 	}
 
 	Names.Sort([&](const FString& A, const FString& B) { return A < B; });
@@ -215,9 +203,9 @@ TArray<FString> UHierarchyNode::GetSubMachineTransitionEvents() const
 {
 	TArray<FString> Names;
 
-	if (IsValid(this->SubMachine))
+	if (IsValid(this->Slot))
 	{
-		for (const auto& Name : this->SubMachine->GetEvents())
+		for (const auto& Name : this->Slot->GetEvents())
 		{
 			Names.Add(Name.ToString());
 		}
@@ -233,9 +221,9 @@ TArray<FString> UHierarchyNode::GetStateEventOptions() const
 {
 	TArray<FString> Names;	
 
-	if (this->SubMachine)
+	if (this->Slot)
 	{
-		Names = this->SubMachine->GetStateOptions(this);
+		Names = this->Slot->GetStateOptions(this);
 	}
 
 	Names.Sort([&](const FString& A, const FString& B) { return A < B; });

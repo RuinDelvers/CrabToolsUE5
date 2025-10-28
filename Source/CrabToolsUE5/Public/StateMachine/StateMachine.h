@@ -83,7 +83,8 @@ public:
 public:
 
 	void Validate();
-	void Initialize(UStateMachine* Owner);
+	void Initialize(UStateMachine* Owner, FName ISource, FName IDestination);
+	void Copy(UObject* NewOwner);
 };
 
 USTRUCT(BlueprintType)
@@ -97,7 +98,9 @@ public:
 	UPROPERTY(VisibleAnywhere, Category="Transitions")
 	TMap<FName, FTransitionData> Destinations;
 
-	void Initialize(UStateMachine* Owner);
+	void Initialize(UStateMachine* Owner, FName ISource);
+	void Copy(UObject* NewOwner);
+
 };
 
 struct FDestinationResult
@@ -210,81 +213,7 @@ private:
 	void EventWithData_Inner(FName InEvent, UObject* Data) const;
 };
 
-UCLASS(BlueprintType, Abstract, Category = "StateMachine")
-class CRABTOOLSUE5_API UAbstractCondition : public UObject
-{
-	GENERATED_BODY()
 
-	UPROPERTY(Transient, DuplicateTransient)
-	TObjectPtr<UStateMachine> OwnerMachine;
-
-public:
-
-	void Initialize(UStateMachine* NewOwner);
-
-	UFUNCTION(BlueprintCallable, Category = "StateMachine|Transition")
-	UObject* GetOwner() const;
-
-	UFUNCTION(BlueprintCallable, Category = "StateMachine|Transition")
-	AActor* GetActorOwner() const;
-
-	UFUNCTION(BlueprintNativeEvent, Category = "StateMachine|Transition")
-	void OnTransitionTaken();
-	virtual void OnTransitionTaken_Implementation() {}
-
-	UFUNCTION(BlueprintCallable, Category = "StateMachine|Transition")
-	UStateMachine* GetMachine() const { return this->OwnerMachine; }
-
-	UFUNCTION(BlueprintNativeEvent, Category = "StateMachine|Transition")
-	void Enter();
-
-	UFUNCTION(BlueprintNativeEvent, Category = "StateMachine|Transition")
-	void Exit();
-
-	UFUNCTION(BlueprintNativeEvent, Category = "StateMachine|Transition")
-	void Event(FName InEvent);
-
-	UFUNCTION(BlueprintNativeEvent, Category = "StateMachine|Transition")
-	void EventWithData(FName InEvent, UObject* Data);
-	
-
-protected:
-
-	UFUNCTION(BlueprintNativeEvent, Category = "StateMachine|Transition")
-	void Initialize_Inner();
-	virtual void Initialize_Inner_Implementation() {}
-	virtual void Enter_Implementation() {}
-	virtual void Exit_Implementation() {}
-
-	virtual void Event_Implementation(FName InEvent) {}
-	virtual void EventWithData_Implementation(FName InEvent, UObject* Data) { this->Event(InEvent); }
-};
-
-UCLASS(BlueprintType, Abstract, Category = "StateMachine")
-class CRABTOOLSUE5_API UTransitionCondition : public UAbstractCondition
-{
-	GENERATED_BODY()
-
-public:
-
-	
-	virtual bool Check() const { return false; }
-
-protected:
-
-	
-};
-
-UCLASS(BlueprintType, Abstract, Category = "StateMachine")
-class CRABTOOLSUE5_API UTransitionDataCondition : public UAbstractCondition
-{
-	GENERATED_BODY()
-
-public:
-
-	virtual bool Check(UObject* Data) const { return false; }
-
-};
 
 /**
  * Base Node class for an individual node in a statemachine. Defines the general behaviour and interface
@@ -374,6 +303,8 @@ public:
 		virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 		virtual void PreEditChange(FProperty* PropertyAboutToChange) override;
 	#endif
+
+		virtual bool Modify(bool bShouldAlwaysMarkDirty = true) override;
 
 	/* Only call from an SM or a managing Node. */
 	void Event(FName InEvent);
@@ -497,6 +428,94 @@ private:
 	void EventWithDataNotifySignatureFunction(FName Name, UObject* Data) {}
 
 	void InitNotifies();
+};
+
+UCLASS(BlueprintType, Abstract, Category = "StateMachine")
+class CRABTOOLSUE5_API UAbstractCondition : public UObject
+{
+	GENERATED_BODY()
+
+	UPROPERTY(Transient, DuplicateTransient)
+	TObjectPtr<UStateMachine> OwnerMachine;
+
+	UPROPERTY(Transient, DuplicateTransient)
+	FName Source;
+
+	UPROPERTY(Transient, DuplicateTransient)
+	FName Destination;
+
+public:
+
+	void Initialize(UStateMachine* NewOwner, FName ISource, FName IDestination);
+
+	void Tick(float DeltaTime);
+
+	UFUNCTION(BlueprintCallable, Category = "StateMachine|Transition")
+	UObject* GetOwner() const;
+
+	UFUNCTION(BlueprintCallable, Category = "StateMachine|Transition")
+	AActor* GetActorOwner() const;
+
+	UFUNCTION(BlueprintNativeEvent, Category = "StateMachine|Transition")
+	void OnTransitionTaken();
+	virtual void OnTransitionTaken_Implementation() {}
+
+	UFUNCTION(BlueprintCallable, Category = "StateMachine|Transition")
+	UStateMachine* GetMachine() const { return this->OwnerMachine; }
+
+	UFUNCTION(BlueprintNativeEvent, Category = "StateMachine|Transition")
+	void Enter();
+
+	UFUNCTION(BlueprintNativeEvent, Category = "StateMachine|Transition")
+	void Exit();
+
+	UFUNCTION(BlueprintNativeEvent, Category = "StateMachine|Transition")
+	void Event(FName InEvent);
+
+	UFUNCTION(BlueprintNativeEvent, Category = "StateMachine|Transition")
+	void EventWithData(FName InEvent, UObject* Data);
+
+
+protected:
+
+	UFUNCTION(BlueprintNativeEvent, Category = "StateMachine|Transition")
+	void Initialize_Inner();
+	virtual void Initialize_Inner_Implementation() {}
+	virtual void Enter_Implementation() {}
+	virtual void Exit_Implementation() {}
+
+	UFUNCTION(BlueprintNativeEvent, Category = "StateMachine|Transition")
+	void Tick_Inner(float DeltaTime);
+	virtual void Tick_Inner_Implementation(float DeltaTime) {}
+
+	virtual void Event_Implementation(FName InEvent) {}
+	virtual void EventWithData_Implementation(FName InEvent, UObject* Data) { this->Event(InEvent); }
+};
+
+UCLASS(BlueprintType, Abstract, Category = "StateMachine")
+class CRABTOOLSUE5_API UTransitionCondition : public UAbstractCondition
+{
+	GENERATED_BODY()
+
+public:
+
+
+	virtual bool Check() const { return false; }
+
+protected:
+
+
+};
+
+UCLASS(BlueprintType, Abstract, Category = "StateMachine")
+class CRABTOOLSUE5_API UTransitionDataCondition : public UAbstractCondition
+{
+	GENERATED_BODY()
+
+public:
+
+	virtual bool Check(UObject* Data) const { return false; }
+
 };
 
 USTRUCT()
@@ -767,6 +786,10 @@ public:
 	// IStateMachineLike interface
 	virtual TArray<FString> GetStateOptions(const UObject* Asker) const override;
 	virtual IStateMachineLike* GetSubMachine(FString& Address) const override;
+
+	/* Returns the submachine defined by this slot. */
+	UFUNCTION(BlueprintCallable, Category="SubMachine")
+	UStateMachine* GetSubMachine(const FSubMachineSlot& Slot) const;
 
 	/* Used to bind transition delegates. */
 	void BindConditionAt(FString& Address, FTransitionDelegate& Condition);

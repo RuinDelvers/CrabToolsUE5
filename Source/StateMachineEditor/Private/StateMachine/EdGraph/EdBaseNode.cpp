@@ -98,3 +98,8 @@ TArray<FString> UEdBaseStateNode::GetExitStates() const
 
 	return Names;
 }
+
+void UEdBaseStateNode::OnModify()
+{
+	this->GetStateGraph()->OnModify();
+}

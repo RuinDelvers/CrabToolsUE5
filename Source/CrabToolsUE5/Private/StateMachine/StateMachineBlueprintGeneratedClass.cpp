@@ -223,6 +223,25 @@ FName UStateMachineBlueprintGeneratedClass::GetStartState_Inner(FName MachineNam
 	}
 }
 
+void UStateMachineBlueprintGeneratedClass::AppendInterfaceEvents(TArray<FString>& Names) const
+{
+	for (const auto& IFace : this->Interfaces)
+	{
+		if (IFace)
+		{
+			for (const auto& Event : IFace->GetEvents())
+			{
+				Names.AddUnique(Event.ToString());
+			}
+		}
+	}
+
+	if (auto Parent = this->GetParent())
+	{
+		Parent->AppendInterfaceEvents(Names);
+	}
+}
+
 
 #if WITH_EDITOR
 bool UStateMachineBlueprintGeneratedClass::DoesImplementInterface(UStateMachineInterface* Interface) const
@@ -558,6 +577,27 @@ bool UStateMachineBlueprintGeneratedClass::HasEvent(FName InEvent, FName Machine
 		if (auto SubArch = this->SubArchetypes.Find(MachineName))
 		{
 			return SubArch->EventSet.Contains(InEvent) || (Parent ? Parent->HasEvent(InEvent, MachineName) : false);
+		}
+	}
+
+	return false;
+}
+
+bool UStateMachineBlueprintGeneratedClass::HasInterfaceEvent(FName InEvent) const
+{
+	for (const auto& IFace : this->Interfaces)
+	{
+		if (IFace && IFace->HasEvent(InEvent))
+		{
+			return true;
+		}
+	}
+
+	if (auto Parent = this->GetParent())
+	{
+		if (Parent->HasInterfaceEvent(InEvent))
+		{
+			return true;
 		}
 	}
 

@@ -198,7 +198,8 @@ bool UStateMachineBlueprint::Modify(bool bAlwaysMarkDirty)
 	return Super::Modify(bAlwaysMarkDirty);
 }
 
-void UStateMachineBlueprint::SetRequiresCompile()
+
+void UStateMachineBlueprint::OnModify()
 {
 	FBlueprintEditorUtils::MarkBlueprintAsModified(this);
 }
@@ -285,6 +286,12 @@ void UStateMachineBlueprint::AppendInterfaceEvents(TArray<FString>& Names) const
 			}
 		}
 	}
+
+
+	if (auto Parent = this->GetStateMachineGeneratedClass()->GetParent())
+	{
+		Parent->AppendInterfaceEvents(Names);
+	}
 }
 
 void UStateMachineBlueprint::DeleteGraph(UEdStateGraph* Graph)
@@ -357,6 +364,14 @@ bool UStateMachineBlueprint::HasEvent(FName InEvent) const
 				bHasEvent = true;
 				break;
 			}
+		}
+	}
+
+	if (!bHasEvent)
+	{
+		if (auto Parent = this->GetStateMachineGeneratedClass()->GetParent())
+		{
+			bHasEvent = Parent->HasInterfaceEvent(InEvent);
 		}
 	}
 

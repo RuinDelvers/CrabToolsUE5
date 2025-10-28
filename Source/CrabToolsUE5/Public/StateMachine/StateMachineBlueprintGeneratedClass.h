@@ -124,7 +124,14 @@ public:
 	FName GetStartState(FName MachineName = NAME_None) const;
 	TSet<FName> GetEventSet(FName MachineName = NAME_None) const;
 	TSet<FName> GetTotalEventSet() const;
+
+	/*
+	 * Returns whether or not the given event was defined in the given machine. Does not search
+	 * interfaces.
+	 */
 	bool HasEvent(FName InEvent, FName MachineName = NAME_None) const;
+	bool HasInterfaceEvent(FName InEvent) const;
+	void AppendInterfaceEvents(TArray<FString>& Names) const;
 
 	void CollectExtendibleStates(TSet<FString>& StateNames, FName SubMachineName = NAME_None) const;
 	void CollectOverrideableStates(TSet<FString>& StateNames, FName SubMachineName = NAME_None) const;

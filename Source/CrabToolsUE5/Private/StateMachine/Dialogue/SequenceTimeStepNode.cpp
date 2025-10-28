@@ -15,10 +15,7 @@ void USequenceTimeStepNode::Enter_Inner_Implementation()
 	{
 		if (auto Seq = this->Player->GetSequence())
 		{
-			if (auto Data = this->EnterSteps.Find(Seq))
-			{
-				this->Player->SetPlaybackPosition(*Data);
-			}
+			this->Player->SetPlaybackPosition(this->EnterSteps);
 		}
 	}
 }
@@ -29,10 +26,7 @@ void USequenceTimeStepNode::Exit_Inner_Implementation()
 	{
 		if (auto Seq = this->Player->GetSequence())
 		{
-			if (auto Data = this->ExitSteps.Find(Seq))
-			{
-				this->Player->SetPlaybackPosition(*Data);
-			}
+			this->Player->SetPlaybackPosition(this->ExitSteps);
 		}
 	}
 }

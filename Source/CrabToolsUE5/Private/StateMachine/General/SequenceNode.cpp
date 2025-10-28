@@ -112,7 +112,7 @@ void USequenceNode::Increment()
 {
 	if (this->CurrentNode)
 	{
-		this->CurrentNode->SetActive(false);
+		this->CurrentNode->Exit();
 	}
 
 	if (this->bLoop)
@@ -128,7 +128,7 @@ void USequenceNode::Increment()
 
 	if (this->CurrentNode)
 	{
-		this->CurrentNode->SetActive(true);
+		this->CurrentNode->Enter();
 	}
 }
 

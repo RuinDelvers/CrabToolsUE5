@@ -69,5 +69,6 @@ public:
 	/* Begin IStateLike Interface */
 	virtual TArray<FString> GetEnterStates() const override;
 	virtual TArray<FString> GetExitStates() const override;
+	virtual void OnModify() override;
 	/* End IStateLike Interface */
 };

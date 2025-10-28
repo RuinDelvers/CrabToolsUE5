@@ -1,8 +1,8 @@
-#include "StateMachine/StateMachine.h"
+#include "StateMachine/Dialogue/AbstractDialogueNode.h"
 #include "MonologueNode.generated.h"
 
 UCLASS(Blueprintable, Category = "StateMachine|Dialogue")
-class CRABTOOLSUE5_API UMonologueNode : public UStateNode
+class CRABTOOLSUE5_API UMonologueNode : public UAbstractDialogueNode
 {
 	GENERATED_BODY()
 
@@ -10,8 +10,8 @@ class CRABTOOLSUE5_API UMonologueNode : public UStateNode
 	UPROPERTY(VisibleAnywhere, Category = "DialogueNode", meta = (ShowInnerProperties))
 	TObjectPtr<class UMonologueData> Data;
 
-	UPROPERTY()
-	TObjectPtr<class UDialogueStateComponent> DialogueComponent;
+	UPROPERTY(EditAnywhere, Category = "DialogueNode", meta = (AllowPrivateAccess))
+	bool bNullOnExit = false;
 
 public:
 

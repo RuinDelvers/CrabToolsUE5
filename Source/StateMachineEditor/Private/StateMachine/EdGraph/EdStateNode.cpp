@@ -55,9 +55,9 @@ FName UEdStateNode::SetStateName(FName NewName)
 {
 	FScopedTransaction RenameTransaction(LOCTEXT("StateNodeRename", "Rename State Node"));
 	this->Modify();
+	this->OnModify();
 	FName OldName = this->StateName;
 	this->StateName = NewName;	
-	this->GetStateGraph()->GetBlueprintOwner()->SetRequiresCompile();
 	this->Events.OnNameChanged.Broadcast(OldName, NewName);
 
 	return NewName;
@@ -217,21 +217,17 @@ bool UEdStateNode::HasEvent(FName InEvent)
 {
 	if (this->NodeType == EStateNodeType::EXTENDED_NODE)
 	{
-		TSet<FName> ParentEvents;
-
-		if (this->NodeType == EStateNodeType::EXTENDED_NODE)
+		if (auto Parent = this->GetStateGraph()->GetBlueprintOwner()->GetStateMachineGeneratedClass()->GetParent())
 		{
-			if (auto Parent = this->GetStateGraph()->GetBlueprintOwner()->GetStateMachineGeneratedClass()->GetParent())
+			TSet<FName> ParentEvents;
+
+			Parent->GetStateEmittedEvents(this->GetStateGraph()->GetGraphName(), this->GetStateName(), ParentEvents);
+
+			if (ParentEvents.Contains(InEvent))
 			{
-				Parent->GetStateEmittedEvents(this->GetStateGraph()->GetGraphName(), this->GetStateName(), ParentEvents);
+				return true;
 			}
 		}
-
-		if (ParentEvents.Contains(InEvent))
-		{
-			return true;
-		}
-
 	}
 
 	this->UpdateEmittedEvents();
@@ -477,14 +473,11 @@ FString UEdStateNode::GetDebugDataString()
 void UEdStateNode::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
 	Super::PostEditChangeProperty(PropertyChangedEvent);
+	this->Modify();
 
 	this->UpdateEmittedEvents();
 
-	if (PropertyChangedEvent.GetPropertyName() == GET_MEMBER_NAME_CHECKED(UEdStateNode, Nodes))
-	{
-		this->Modify();
-	}
-	else if (PropertyChangedEvent.GetPropertyName() == GET_MEMBER_NAME_CHECKED(UEdStateNode, NodeType))
+	if (PropertyChangedEvent.GetPropertyName() == GET_MEMBER_NAME_CHECKED(UEdStateNode, NodeType))
 	{
 		if (this->NodeType == EStateNodeType::INLINE_NODE)
 		{

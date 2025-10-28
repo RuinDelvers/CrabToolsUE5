@@ -367,7 +367,10 @@ bool UEdStateGraph::DoesEmitterHaveEvent(FName InEvent) const
 	return false;
 }
 
-
+void UEdStateGraph::OnModify()
+{
+	this->GetBlueprintOwner()->OnModify();
+}
 
 
 void UEdStateGraph::ClearDelegates()

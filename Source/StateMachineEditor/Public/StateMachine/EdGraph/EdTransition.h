@@ -22,6 +22,16 @@ struct FEventTransitionData
 	TObjectPtr<UTransitionDataCondition> DataCondition;
 };
 
+USTRUCT(BlueprintType)
+struct FEdTransitionDocumentation
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, Category="Documentation")
+	FText Comment;
+
+};
+
 UCLASS(MinimalAPI)
 class UEdTransition : public UEdBaseNode, public IStateTransitionLike
 {

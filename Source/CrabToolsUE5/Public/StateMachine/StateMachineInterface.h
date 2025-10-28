@@ -47,6 +47,12 @@ private:
 
 public:
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Documentation",
+		meta=(MultiLine=true))
+	FString Description;
+
+public:
+
 	UStateMachineInterface();
 	
 	bool HasEvent(FName InEvent) const;
@@ -68,6 +74,8 @@ public:
 		virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 		virtual void PreEditChange(FProperty* Property) override;
 	#endif //WITH_EDITOR
+
+		virtual void GetAssetRegistryTags(FAssetRegistryTagsContext Context) const override;
 
 private:
 

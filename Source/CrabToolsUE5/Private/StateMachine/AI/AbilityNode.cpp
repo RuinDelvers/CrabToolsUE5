@@ -77,7 +77,7 @@ void UAbilityNode::EnterWithData_Inner_Implementation(UObject* Data)
 		}		
 	}
 
-	this->Enter();
+	this->Enter_Inner_Implementation();
 }
 
 void UAbilityNode::Tick_Inner_Implementation(float DeltaTime)

@@ -2,12 +2,11 @@
 
 #pragma once
 
-#include "StateMachine/StateMachine.h"
-#include "Components/Dialogue/DialogueComponent.h"
+#include "StateMachine/Dialogue/AbstractDialogueNode.h"
 #include "DialogueNode.generated.h"
 
 UCLASS(Blueprintable, Category = "StateMachine|Dialogue")
-class CRABTOOLSUE5_API UFinishDialogueNode : public UStateNode
+class CRABTOOLSUE5_API UFinishDialogueNode : public UAbstractDialogueNode
 {
 	GENERATED_BODY()
 
@@ -21,8 +20,6 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Dialogue", meta=(AllowPrivateAccess))
 	bool bBroadcaster = false;
 
-	UPROPERTY()
-	TObjectPtr<UDialogueStateComponent> DialogueComponent;
 
 protected:
 
@@ -65,18 +62,14 @@ private:
  * it when it is possible.
  */
 UCLASS(Blueprintable, Category = "StateMachine|Dialogue")
-class CRABTOOLSUE5_API UAttemptDialogueNode : public UStateNode
+class CRABTOOLSUE5_API UAttemptDialogueNode : public UAbstractDialogueNode
 {
 	GENERATED_BODY()
 
 private:
 
-	UPROPERTY()
-	TObjectPtr<UDialogueStateComponent> DialogueComponent;
-
 protected:
 
-	virtual void Initialize_Inner_Implementation() override;
 	virtual void EventWithData_Inner_Implementation(FName InEvent, UObject* Data) override;
 
 	#if WITH_EDITOR
@@ -98,7 +91,7 @@ private:
  * it'll send it through there.
  */
 UCLASS(Blueprintable, Category = "StateMachine|Dialogue")
-class CRABTOOLSUE5_API UDialogueNode : public UStateNode
+class CRABTOOLSUE5_API UDialogueNode : public UAbstractDialogueNode
 {
 	GENERATED_BODY()
 	
@@ -106,8 +99,8 @@ class CRABTOOLSUE5_API UDialogueNode : public UStateNode
 	UPROPERTY(VisibleAnywhere, Category = "DialogueNode", meta = (AllowPrivateAccess = "true", ShowInnerProperties))
 	TObjectPtr<UDialogueDataStruct> Choices;
 
-	UPROPERTY()
-	TObjectPtr<UDialogueStateComponent> DialogueComponent;
+	UPROPERTY(EditAnywhere, Category="DialogueNode", meta=(AllowPrivateAccess))
+	bool bNullOnExit = false;
 
 public:
 
@@ -122,6 +115,7 @@ protected:
 	
 	virtual void Initialize_Inner_Implementation() override;
 	virtual void Enter_Inner_Implementation() override;
+	virtual void Exit_Inner_Implementation() override;
 
 private:
 

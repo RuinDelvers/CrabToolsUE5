@@ -8,13 +8,12 @@ UDialogueNode::UDialogueNode()
 
 void UDialogueNode::Initialize_Inner_Implementation()
 {
+	Super::Initialize_Inner_Implementation();
+
 	for (const auto& Dialogue : this->Choices->DialogueData)
 	{
 		Dialogue->OnDialogueSelected.AddDynamic(this, &UDialogueNode::HandleDialogueSelection);
 	}
-
-	this->DialogueComponent = this->GetActorOwner()->GetComponentByClass<UDialogueStateComponent>();
-	check(this->DialogueComponent);
 }
 
 void UDialogueNode::GetEmittedEvents(TSet<FName>& Events) const
@@ -29,17 +28,22 @@ void UDialogueNode::GetEmittedEvents(TSet<FName>& Events) const
 
 void UDialogueNode::Enter_Inner_Implementation()
 {
-	if (this->DialogueComponent->OnChoicesSpawned.IsBound())
-	{
-		this->DialogueComponent->OnChoicesSpawned.Broadcast(this->Choices);
-	}
+	this->GetDialogueComponent()->OnChoicesSpawned.Broadcast(this->Choices);
 
-	for (const auto& Participant : this->DialogueComponent->Participants)
+	for (const auto& Participant : this->GetDialogueComponent()->Participants)
 	{
 		if (Participant->OnChoicesSpawned.IsBound())
 		{
 			Participant->OnChoicesSpawned.Broadcast(this->Choices);
 		}
+	}
+}
+
+void UDialogueNode::Exit_Inner_Implementation()
+{
+	if (this->bNullOnExit)
+	{
+		this->GetDialogueComponent()->NullDialogue();
 	}
 }
 
@@ -69,11 +73,6 @@ void UDialogueNode::PostEditChangeProperty(FPropertyChangedEvent& PropertyChange
 #endif
 
 #pragma region Attempt Dialogue Node
-void UAttemptDialogueNode::Initialize_Inner_Implementation()
-{
-	this->DialogueComponent = this->GetActorOwner()->GetComponentByClass<UDialogueStateComponent>();
-	check(this->DialogueComponent);
-}
 
 void UAttemptDialogueNode::EventWithData_Inner_Implementation(FName InEvent, UObject* Data)
 {
@@ -101,7 +100,7 @@ void UAttemptDialogueNode::EventNotify_AttemptDialogue(FName InEvent, UObject* D
 
 void UAttemptDialogueNode::HandleComponent(UDialogueStateComponent* Comp)
 {
-	if (Comp->HandShake(this->DialogueComponent))
+	if (Comp->HandShake(this->GetDialogueComponent()))
 	{
 		this->EmitEvent(Events::Dialogue::DIALOGUE_CONFIRMED);
 	}
@@ -136,15 +135,15 @@ void UConfirmDialogueNode::GetEmittedEvents(TSet<FName>& Events) const
 
 void UFinishDialogueNode::Initialize_Inner_Implementation()
 {
-	this->DialogueComponent = this->GetActorOwner()->GetComponentByClass<UDialogueStateComponent>();
-	this->DialogueComponent->OnDialogueFinished.AddDynamic(this, &UFinishDialogueNode::HandleDialogueFinished);
+	Super::Initialize_Inner_Implementation();
+	this->GetDialogueComponent()->OnDialogueFinished.AddDynamic(this, &UFinishDialogueNode::HandleDialogueFinished);
 }
 
 void UFinishDialogueNode::Enter_Inner_Implementation()
 {
 	if (this->bBroadcaster)
 	{
-		this->DialogueComponent->FinishDialogue();
+		this->GetDialogueComponent()->FinishDialogue();
 	}
 }
 

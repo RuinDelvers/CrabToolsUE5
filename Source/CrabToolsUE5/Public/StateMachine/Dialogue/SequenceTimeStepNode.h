@@ -20,11 +20,11 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = "Sequence",
 		meta = (AllowPrivateAccess))
-	TMap<TSoftObjectPtr<ULevelSequence>, FMovieSceneSequencePlaybackParams> EnterSteps;
+	FMovieSceneSequencePlaybackParams EnterSteps;
 
 	UPROPERTY(EditAnywhere, Category = "Sequence",
 		meta = (AllowPrivateAccess))
-	TMap<TSoftObjectPtr<ULevelSequence>, FMovieSceneSequencePlaybackParams> ExitSteps;
+	FMovieSceneSequencePlaybackParams ExitSteps;
 
 protected:
 

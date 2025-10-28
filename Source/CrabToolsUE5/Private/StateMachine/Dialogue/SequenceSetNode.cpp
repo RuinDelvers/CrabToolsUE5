@@ -21,9 +21,9 @@ void USequenceSetNode::Enter_Inner_Implementation()
 {
 	switch (this->SequenceSource)
 	{
-	case ESequenceSource::INLINE: this->LoadInline(); break;
-	case ESequenceSource::PROPERTY: this->LoadProperty(); break;
-	case ESequenceSource::INTERFACE: this->LoadInterface(); break;
+		case ESequenceSource::INLINE: this->LoadInline(); break;
+		case ESequenceSource::PROPERTY: this->LoadProperty(); break;
+		case ESequenceSource::INTERFACE: this->LoadInterface(); break;
 	}
 }
 
@@ -104,8 +104,7 @@ void USequenceSetNode::LoadSoftPtr(TSoftObjectPtr<ULevelSequence> Ptr)
 		else
 		{
 			this->OnLoadStart();
-			Actor->SetSequence(Ptr.LoadSynchronous());
-			
+			Actor->SetSequence(Ptr.LoadSynchronous());			
 			this->OnLoadEnd();
 
 			if (this->GetPlayPhase() == ESequenceStatePlayPhase::ON_LOAD)
