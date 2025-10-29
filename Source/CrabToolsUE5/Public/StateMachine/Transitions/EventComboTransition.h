@@ -46,7 +46,7 @@ struct FEventComboNodeData
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, Category = "Events",
-		meta = (GetKeyOptions = "GetEventOptions"))
+		meta = (GetKeyOptions = "GetSourceEventOptions"))
 	TMap<FName, FEventComboNodeDataPoint> Events;
 
 public:
@@ -72,13 +72,13 @@ class CRABTOOLSUE5_API UEventComboTransitionCondition : public UTransitionCondit
 public:
 
 	virtual bool Check() const override;
-	virtual void Exit_Implementation() override;
-	virtual void Event_Implementation(FName InEvent) override;
+	virtual void Exit_Inner_Implementation() override;
+	virtual void Event_Inner_Implementation(FName InEvent) override;
 
 private:
 	#if WITH_EDITOR
 		UFUNCTION()
-		TArray<FString> GetEventOptions() const;
+		TArray<FString> GetSourceEventOptions() const;
 	#endif
 };
 
@@ -96,12 +96,12 @@ class CRABTOOLSUE5_API UEventComboTransitionDataCondition : public UTransitionDa
 public:
 
 	virtual bool Check(UObject* Data) const override;
-	virtual void Exit_Implementation() override;
-	virtual void Event_Implementation(FName InEvent) override;
+	virtual void Exit_Inner_Implementation() override;
+	virtual void Event_Inner_Implementation(FName InEvent) override;
 
 private:
 	#if WITH_EDITOR
 		UFUNCTION()
-		TArray<FString> GetEventOptions() const;
+		TArray<FString> GetSourceEventOptions() const;
 	#endif
 };

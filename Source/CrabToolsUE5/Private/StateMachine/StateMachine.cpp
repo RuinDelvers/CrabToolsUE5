@@ -1523,20 +1523,11 @@ void UState::AppendNodeCopy(UStateNode* ANode)
 	}
 }
 
-UObject* UAbstractCondition::GetOwner() const { return this->OwnerMachine->GetOwner(); }
-AActor*  UAbstractCondition::GetActorOwner() const { return this->OwnerMachine->GetActorOwner(); }
-
 void UAbstractCondition::Initialize(UStateMachine* NewOwner, FName ISource, FName IDestination)
 {
-	this->OwnerMachine = NewOwner;
 	this->Source = ISource;
 	this->Destination = IDestination;
-	this->Initialize_Inner();
-}
-
-void UAbstractCondition::Tick(float DeltaTime)
-{
-	this->Tick_Inner(DeltaTime);
+	UStateNode::Initialize(NewOwner);
 }
 
 void UState::AddTransition(FName EventName, FName Destination, FTransitionData Data)
@@ -1600,7 +1591,26 @@ void UState::Tick(float DeltaTime)
 
 bool UState::RequiresTick() const
 {
-	return IsValid(this->Node) ? this->Node->RequiresTick() : false;
+	bool NodeTicks =  IsValid(this->Node) ? this->Node->RequiresTick() : false;
+
+	if (!NodeTicks)
+	{
+		for (const auto& Event : this->Transitions)
+		{
+			for (const auto& Dest : Event.Value.Destinations)
+			{
+				NodeTicks = Dest.Value.Condition->RequiresTick()
+					|| Dest.Value.DataCondition->RequiresTick();
+
+				if (NodeTicks)
+				{
+					break;
+				}
+			}
+		}
+	}
+
+	return NodeTicks;
 }
 
 void UState::EnterConditions()

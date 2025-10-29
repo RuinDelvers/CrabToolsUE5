@@ -15,7 +15,7 @@ class FEventSlotStyleSet final : public FSlateStyleSet
 public:
 	static FString InContent(const FString& RelativePath, const ANSICHAR* Extension)
 	{
-		static FString ContentDir = IPluginManager::Get().FindPlugin(TEXT("MassEntity"))->GetContentDir() / TEXT("Slate");
+		static FString ContentDir = IPluginManager::Get().FindPlugin(TEXT("CrabToolsUE5"))->GetContentDir() / TEXT("Slate");
 		return (ContentDir / RelativePath) + Extension;
 	}
 

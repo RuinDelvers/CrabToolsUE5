@@ -26,9 +26,9 @@ public:
 	virtual void Tick_Inner_Implementation(float DeltaTime) override;
 	virtual bool Check() const override;
 	virtual void Initialize_Inner_Implementation() override;
-	virtual void Exit_Implementation() override;
-	virtual void Event_Implementation(FName InEvent) override;
-	virtual void EventWithData_Implementation(FName InEvent, UObject* Data) override;
+	virtual void Exit_Inner_Implementation() override;
+	virtual void Event_Inner_Implementation(FName InEvent) override;
+	virtual void EventWithData_Inner_Implementation(FName InEvent, UObject* Data) override;
 
 private:
 
@@ -42,7 +42,23 @@ class CRABTOOLSUE5_API UStateMachineTransitionDataCondition : public UTransition
 {
 	GENERATED_BODY()
 
+	UPROPERTY(EditAnywhere, Category = "Transition")
+	FSubMachineSlot Slot;
+
+	UPROPERTY(EditAnywhere, Category = "Transition")
+	TSet<FName> ValidStates;
+
+	UPROPERTY(EditAnywhere, Category = "Transition")
+	bool bResetOnExit = true;
+
 public:
+
+	virtual void Tick_Inner_Implementation(float DeltaTime) override;
+	virtual bool Check(UObject* Data) const override;
+	virtual void Initialize_Inner_Implementation() override;
+	virtual void Exit_Inner_Implementation() override;
+	virtual void Event_Inner_Implementation(FName InEvent) override;
+	virtual void EventWithData_Inner_Implementation(FName InEvent, UObject* Data) override;
 
 private:
 

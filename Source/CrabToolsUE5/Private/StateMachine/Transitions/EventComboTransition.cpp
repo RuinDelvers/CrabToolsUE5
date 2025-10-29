@@ -14,7 +14,7 @@ bool UEventComboTransitionCondition::Check() const
 	return false;
 }
 
-void UEventComboTransitionCondition::Event_Implementation(FName InEvent)
+void UEventComboTransitionCondition::Event_Inner_Implementation(FName InEvent)
 {
 	for (auto& Data : this->Combos)
 	{
@@ -22,7 +22,7 @@ void UEventComboTransitionCondition::Event_Implementation(FName InEvent)
 	}
 }
 
-void UEventComboTransitionCondition::Exit_Implementation()
+void UEventComboTransitionCondition::Exit_Inner_Implementation()
 {
 	for (auto& Data : this->Combos)
 	{
@@ -43,7 +43,7 @@ bool UEventComboTransitionDataCondition::Check(UObject* Data) const
 	return false;
 }
 
-void UEventComboTransitionDataCondition::Event_Implementation(FName InEvent)
+void UEventComboTransitionDataCondition::Event_Inner_Implementation(FName InEvent)
 {
 	for (auto& Data : this->Combos)
 	{
@@ -51,7 +51,7 @@ void UEventComboTransitionDataCondition::Event_Implementation(FName InEvent)
 	}
 }
 
-void UEventComboTransitionDataCondition::Exit_Implementation()
+void UEventComboTransitionDataCondition::Exit_Inner_Implementation()
 {
 	for (auto& Data : this->Combos)
 	{
@@ -60,7 +60,7 @@ void UEventComboTransitionDataCondition::Exit_Implementation()
 }
 
 #if WITH_EDITOR
-TArray<FString> UEventComboTransitionCondition::GetEventOptions() const
+TArray<FString> UEventComboTransitionCondition::GetSourceEventOptions() const
 {
 	TArray<FString> Names;
 
@@ -72,7 +72,7 @@ TArray<FString> UEventComboTransitionCondition::GetEventOptions() const
 	return Names;
 }
 
-TArray<FString> UEventComboTransitionDataCondition::GetEventOptions() const
+TArray<FString> UEventComboTransitionDataCondition::GetSourceEventOptions() const
 {
 	TArray<FString> Names;
 

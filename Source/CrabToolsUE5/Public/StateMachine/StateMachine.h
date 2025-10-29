@@ -431,12 +431,9 @@ private:
 };
 
 UCLASS(BlueprintType, Abstract, Category = "StateMachine")
-class CRABTOOLSUE5_API UAbstractCondition : public UObject
+class CRABTOOLSUE5_API UAbstractCondition : public UStateNode
 {
 	GENERATED_BODY()
-
-	UPROPERTY(Transient, DuplicateTransient)
-	TObjectPtr<UStateMachine> OwnerMachine;
 
 	UPROPERTY(Transient, DuplicateTransient)
 	FName Source;
@@ -448,48 +445,10 @@ public:
 
 	void Initialize(UStateMachine* NewOwner, FName ISource, FName IDestination);
 
-	void Tick(float DeltaTime);
-
-	UFUNCTION(BlueprintCallable, Category = "StateMachine|Transition")
-	UObject* GetOwner() const;
-
-	UFUNCTION(BlueprintCallable, Category = "StateMachine|Transition")
-	AActor* GetActorOwner() const;
-
 	UFUNCTION(BlueprintNativeEvent, Category = "StateMachine|Transition")
 	void OnTransitionTaken();
 	virtual void OnTransitionTaken_Implementation() {}
 
-	UFUNCTION(BlueprintCallable, Category = "StateMachine|Transition")
-	UStateMachine* GetMachine() const { return this->OwnerMachine; }
-
-	UFUNCTION(BlueprintNativeEvent, Category = "StateMachine|Transition")
-	void Enter();
-
-	UFUNCTION(BlueprintNativeEvent, Category = "StateMachine|Transition")
-	void Exit();
-
-	UFUNCTION(BlueprintNativeEvent, Category = "StateMachine|Transition")
-	void Event(FName InEvent);
-
-	UFUNCTION(BlueprintNativeEvent, Category = "StateMachine|Transition")
-	void EventWithData(FName InEvent, UObject* Data);
-
-
-protected:
-
-	UFUNCTION(BlueprintNativeEvent, Category = "StateMachine|Transition")
-	void Initialize_Inner();
-	virtual void Initialize_Inner_Implementation() {}
-	virtual void Enter_Implementation() {}
-	virtual void Exit_Implementation() {}
-
-	UFUNCTION(BlueprintNativeEvent, Category = "StateMachine|Transition")
-	void Tick_Inner(float DeltaTime);
-	virtual void Tick_Inner_Implementation(float DeltaTime) {}
-
-	virtual void Event_Implementation(FName InEvent) {}
-	virtual void EventWithData_Implementation(FName InEvent, UObject* Data) { this->Event(InEvent); }
 };
 
 UCLASS(BlueprintType, Abstract, Category = "StateMachine")

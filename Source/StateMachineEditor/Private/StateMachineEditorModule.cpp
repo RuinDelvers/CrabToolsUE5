@@ -1,5 +1,6 @@
 #include "StateMachineEditorModule.h"
 #include "EdGraphUtilities.h"
+#include "Style/StateMachineStyle.h"
 #include "StateMachine/StateMachineBlueprint.h"
 
 #define LOCTEXT_NAMESPACE "FStateMachineEditorModule"
@@ -33,6 +34,7 @@ void FStateMachineEditorModule::StartupModule()
 		UStateMachineBlueprint::StaticClass(), 
 		&FStateMachineEditorModule::GetCompiler);
 
+	FStateMachineStyle::Initialize();
 }
 
 void FStateMachineEditorModule::ShutdownModule()

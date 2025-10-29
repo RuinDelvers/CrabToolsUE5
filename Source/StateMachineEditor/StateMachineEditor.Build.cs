@@ -38,11 +38,11 @@ public class StateMachineEditor : ModuleRules
 				"Core",
 				"CoreUObject",
 				"Engine",
-				"Slate",
 				"KismetCompiler",
 				"EditorFramework",
 				"UnrealEd",
                 "GraphEditor",
+				"Slate",
 				"SlateCore",
 				"InputCore",
                 "Kismet",
@@ -52,6 +52,7 @@ public class StateMachineEditor : ModuleRules
 				"AssetTools",
 				"EditorSubsystem",
 				"BlueprintGraph",
+				"Projects",
 			});
 	}
 }
