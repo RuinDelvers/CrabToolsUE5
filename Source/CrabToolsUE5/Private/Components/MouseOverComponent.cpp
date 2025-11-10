@@ -14,8 +14,12 @@ UMouseOverComponent::UMouseOverComponent()
 void UMouseOverComponent::BeginPlay()
 {
 	Super::BeginPlay();
-
-	this->PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+	
+	if (this->PawnOwner = Cast<APawn>(this->GetOwner()))
+	{
+		this->PlayerController = Cast<APlayerController>(this->PawnOwner->GetController());
+		PawnOwner->ReceiveControllerChangedDelegate.AddDynamic(this, &UMouseOverComponent::OnControllerChanged);
+	}
 
 	Params.AddIgnoredActor(this->GetOwner());
 
@@ -27,6 +31,12 @@ void UMouseOverComponent::BeginPlay()
 	this->UpdateViewportData();
 }
 
+void UMouseOverComponent::OnControllerChanged(APawn* Pawn, AController* OldController, AController* NewController)
+{
+	this->PlayerController = Cast<APlayerController>(NewController);
+}
+
+
 void UMouseOverComponent::TickComponent(
 	float DeltaTime,
 	ELevelTick TickType,
@@ -34,7 +44,10 @@ void UMouseOverComponent::TickComponent(
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	this->DoTrace();
+	if (IsValid(this->PlayerController))
+	{
+		this->DoTrace();
+	}
 }
 
 void UMouseOverComponent::DoTrace()
@@ -63,9 +76,8 @@ void UMouseOverComponent::DoTrace()
 
 		if (this->bDoMultiTrace)
 		{
-			TArray<FHitResult> Results;
 			bSuccess = this->GetWorld()->LineTraceMultiByChannel(
-				Results,
+				this->MultiResults,
 				Position,
 				EndPoint,
 				Channel,
@@ -73,12 +85,30 @@ void UMouseOverComponent::DoTrace()
 
 			if (bSuccess)
 			{
-				for (const auto& CheckResult : Results)
+				FHitResult& FinalResult = this->MultiResults[0];
+				bool bDidPass = false;
+
+				for (const auto& CheckResult : this->MultiResults)
 				{
-					if (this->ProcessResult(CheckResult))
+					if (this->ProcessResult(CheckResult, true))
 					{
-						break;
+						bDidPass = true;
+						FinalResult = CheckResult;
+
+						if (CheckResult.bBlockingHit)
+						{
+							break;
+						}
 					}
+				}
+
+				if (bDidPass)
+				{
+					this->UpdateResult(FinalResult);
+				}
+				else
+				{
+					this->ReplaceActors(nullptr);
 				}
 			}
 			else
@@ -227,33 +257,49 @@ bool UMouseOverComponent::IsWithinDistance(float Distance) const
 	}
 }
 
-bool UMouseOverComponent::ProcessResult(const FHitResult& CheckResult)
+bool UMouseOverComponent::ProcessResult(const FHitResult& CheckResult, bool bIsMulti)
 {
-	if (Result.bBlockingHit)
+	if (CheckResult.bBlockingHit)
 	{
-		this->Result = CheckResult;
-		this->ReplaceActors(this->Result.GetActor());
+		if (!bIsMulti)
+		{
+			this->UpdateResult(CheckResult);
+		}
 		return true;
 	}
 	else if (IsValid(CheckResult.GetActor()))
 	{
-		this->Result = CheckResult;
 		if (this->ValidateActor(CheckResult.GetActor()))
 		{			
-			this->ReplaceActors(Result.GetActor());
+			if (!bIsMulti)
+			{
+				this->UpdateResult(CheckResult);
+			}
 			return true;
 		}
 		else
 		{
-			this->ReplaceActors(nullptr);
+			if (!bIsMulti)
+			{
+				this->ReplaceActors(nullptr);
+			}
 			return false;
 		}
 	}
 	else
 	{
-		this->ReplaceActors(nullptr);
+		if (!bIsMulti)
+		{
+			this->ReplaceActors(nullptr);
+		}
 		return false;
 	}
+}
+
+void UMouseOverComponent::UpdateResult(const FHitResult& CheckResult)
+{
+	this->Result = CheckResult;
+	this->ReplaceActors(this->Result.GetActor());
 }
 
 void UMouseOverComponent::ReplaceActors(AActor* NewActor)

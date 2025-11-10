@@ -28,15 +28,7 @@ void UDialogueNode::GetEmittedEvents(TSet<FName>& Events) const
 
 void UDialogueNode::Enter_Inner_Implementation()
 {
-	this->GetDialogueComponent()->OnChoicesSpawned.Broadcast(this->Choices);
-
-	for (const auto& Participant : this->GetDialogueComponent()->Participants)
-	{
-		if (Participant->OnChoicesSpawned.IsBound())
-		{
-			Participant->OnChoicesSpawned.Broadcast(this->Choices);
-		}
-	}
+	this->GetDialogueComponent()->SendDialogue(this->Choices);
 }
 
 void UDialogueNode::Exit_Inner_Implementation()

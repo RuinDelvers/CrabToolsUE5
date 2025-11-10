@@ -34,6 +34,7 @@ protected:
 	virtual void Tick_Inner_Implementation(float DeltaTime) override;
 	virtual void Finish_Inner_Implementation() override;
 	virtual bool RequiresTick_Implementation() const override;
+	virtual void Detach_Inner_Implementation() override;
 
 private:
 

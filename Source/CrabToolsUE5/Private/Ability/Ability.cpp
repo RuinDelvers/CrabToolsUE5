@@ -9,23 +9,9 @@ UAbility::UAbility()
 
 void UAbility::Initialize(AActor* POwner)
 {
-	if (POwner)
-	{
-		if (!this->Owner)
-		{
-			this->Owner = POwner;
-		}
-	}
-	else
-	{
-		if (this->Owner)
-		{
-			this->Owner = this->GetOwner();
-		}
-	}
+	this->Owner = POwner;
 
 	this->AbilityData->Initialize();
-
 	this->Initialize_Inner();
 }
 
@@ -48,6 +34,13 @@ void UAbility::Start()
 	}
 }
 
+void UAbility::Detach()
+{
+	this->Finish();
+	this->Detach_Inner();
+	this->Owner = nullptr;
+}
+
 UAbility* UAbility::GetParent() const
 {
 	return Cast<UAbility>(this->GetOuter());
@@ -55,18 +48,7 @@ UAbility* UAbility::GetParent() const
 
 AActor* UAbility::GetOwner() const
 {
-	if (this->Owner)
-	{
-		return this->Owner;
-	}
-	else if (auto Parent = this->GetParent())
-	{
-		return Parent->GetOwner();
-	}
-	else
-	{
-		return nullptr;
-	}
+	return this->Owner;
 }
 
 UAbility* UAbility::GetParentAs(TSubclassOf<UAbility> ParentClass) const

@@ -30,6 +30,21 @@ void UDialogueStateComponent::OnComponentDestroyed(bool bDestroyHierarchy)
 	this->FinishDialogue();
 }
 
+void UDialogueStateComponent::SendDialogue(UDialogueDataStruct* DialogueData)
+{
+	this->ClearCachedData();
+	this->CurrentDialogue = DialogueData;
+	this->OnChoicesSpawned.Broadcast(DialogueData);
+
+	for (const auto& Participant : this->Participants)
+	{
+		if (Participant->OnChoicesSpawned.IsBound())
+		{
+			Participant->OnChoicesSpawned.Broadcast(DialogueData);
+		}
+	}
+}
+
 void UDialogueStateComponent::FinishDialogue()
 {
 	TArray<TObjectPtr<UDialogueStateComponent>> OldParts = this->Participants.Array();
@@ -56,11 +71,20 @@ void UDialogueStateComponent::FinishDialogueInner()
 
 void UDialogueStateComponent::SendMonologue(UMonologueData* Data)
 {
+	this->ClearCachedData();
+	this->CurrentMonologue = Data;
 	this->OnMonologueSpawned.Broadcast(Data);
+
 	for (const auto& Parts : this->Participants)
 	{
 		Parts->OnMonologueSpawned.Broadcast(Data);
 	}
+}
+
+void UDialogueStateComponent::ClearCachedData()
+{
+	this->CurrentDialogue = nullptr;
+	this->CurrentMonologue = nullptr;
 }
 
 void UDialogueStateComponent::NullDialogue() const
@@ -73,20 +97,91 @@ void UDialogueStateComponent::NullDialogue() const
 	}
 }
 
-bool UMonologueData::Step()
+void UMonologueData::Step(UObject* RemovedLock)
 {
-	this->Index += 1;
-	
-	if (this->Index < this->MonologueText.Num())
+	if (this->Locks.Remove(RemovedLock) > 0)
 	{
-		this->OnMonologueUpdate.Broadcast(this);
-		return true;
+		this->OnMonologueLocksUpdated.Broadcast(this);
+	}
+
+	if (this->MonologueText.IsEmpty())
+	{
+		this->OnMonologueFinished.Broadcast(this);
+	}
+	else if (this->Index < 0)
+	{
+		this->Index += 1;
+		this->StepHelper(false);
+	}
+	else if (this->Index == this->MonologueText.Num() - 1)
+	{
+		auto& CurrentCheck = this->Current();
+
+		if (this->Locks.Num() == 0 || !CurrentCheck.bUseLock)
+		{
+			this->OnMonologueFinished.Broadcast(this);
+		}
+		else
+		{
+			this->OnMonologueLocksUpdated.Broadcast(this);
+		}
 	}
 	else
 	{
-		this->OnMonologueFinished.Broadcast(this);
-		return false;
+		this->StepHelper(true);
 	}
+}
+
+void UMonologueData::StepHelper(bool bIncrement)
+{
+	auto& CurrentCheck = this->Current();
+
+	if (this->Locks.Num() == 0 || !CurrentCheck.bUseLock)
+	{
+		if (bIncrement)
+		{
+			this->Index += 1;
+		}
+
+		auto& Current = this->Current();
+
+		if (Current.bApplySequenceAction && this->Player)
+		{
+			USequencerBlueprintHelpers::ApplyAction(this->Player, Current.Action);
+		}
+		this->OnMonologueUpdate.Broadcast(this);
+	}
+	else
+	{
+		this->OnMonologueLocksUpdated.Broadcast(this);
+	}
+}
+
+void UMonologueData::AddLock(UObject* AddedLock)
+{
+	this->Locks.Add(AddedLock);
+	this->OnMonologueLocksUpdated.Broadcast(this);
+}
+
+void UMonologueData::RemoveLock(UObject* AddedLock)
+{
+	this->Locks.Remove(AddedLock);
+	this->OnMonologueLocksUpdated.Broadcast(this);
+}
+
+void UMonologueData::SetPlayer(ULevelSequencePlayer* InPlayer)
+{
+	this->Player = InPlayer;
+}
+
+void UMonologueData::Broadcast()
+{
+	this->OnMonologueUpdate.Broadcast(this);
+}
+
+const FMonologueDataStruct& UMonologueData::Current() const
+{
+	return this->MonologueText[this->Index];
 }
 
 FText UMonologueData::CurrentText() const
@@ -99,6 +194,16 @@ FText UMonologueData::CurrentText() const
 	{
 		return FText();
 	}
+}
+
+bool UMonologueData::IsEmpty() const
+{
+	return this->Current().Text.IsEmpty();
+}
+
+bool UMonologueData::IsLocked() const
+{
+	return this->Locks.Num() > 0 && this->Current().bUseLock;
 }
 
 void UMonologueData::Reset()
@@ -116,4 +221,28 @@ void UMonologueData::ClearListeners(UObject* Obj)
 {
 	this->OnMonologueUpdate.RemoveAll(Obj);
 	this->OnMonologueFinished.RemoveAll(Obj);
+}
+
+UObject* UMonologueData::GetDataByClass(UClass* DataClass) const
+{
+	for (const auto& Data : this->Current().CustomData)
+	{
+		if (Data && Data->IsA(DataClass))
+		{
+			return Data;
+		}
+	}
+
+	return nullptr;
+}
+
+void UMonologueData::GetAllDataByClass(UClass* DataClass, TArray<UObject*>& OutData) const
+{
+	for (const auto& Data : this->Current().CustomData)
+	{
+		if (Data && Data->IsA(DataClass))
+		{
+			OutData.Add(Data);
+		}
+	}
 }

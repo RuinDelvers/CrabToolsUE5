@@ -1,5 +1,6 @@
 #include "StateMachine/Dialogue/SequenceTimeStepNode.h"
 #include "LevelSequenceActor.h"
+#include "Components/Dialogue/DialogueComponent.h"
 
 void USequenceTimeStepNode::Initialize_Inner_Implementation()
 {
@@ -11,7 +12,7 @@ void USequenceTimeStepNode::Initialize_Inner_Implementation()
 
 void USequenceTimeStepNode::Enter_Inner_Implementation()
 {
-	if (this->Player)
+	if (this->bEnterStep && this->Player)
 	{
 		if (auto Seq = this->Player->GetSequence())
 		{
@@ -22,7 +23,7 @@ void USequenceTimeStepNode::Enter_Inner_Implementation()
 
 void USequenceTimeStepNode::Exit_Inner_Implementation()
 {
-	if (this->Player)
+	if (this->bEnterStep && this->Player)
 	{
 		if (auto Seq = this->Player->GetSequence())
 		{

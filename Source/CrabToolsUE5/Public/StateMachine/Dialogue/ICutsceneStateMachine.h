@@ -27,9 +27,9 @@ public:
 
     UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category="Sequence")
     TSoftObjectPtr<ULevelSequence> GetMachineSequence() const;
-    TSoftObjectPtr<ULevelSequence> GetMachineSequence_Implementation() const { return nullptr; }
+    virtual TSoftObjectPtr<ULevelSequence> GetMachineSequence_Implementation() const { return nullptr; }
 
     UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Sequence")
     ESequenceStatePlayPhase GetPlayPhase() const;
-    ESequenceStatePlayPhase GetPlayPhase_Implementation() const { return ESequenceStatePlayPhase::UNSPECIFIED; }
+    virtual ESequenceStatePlayPhase GetPlayPhase_Implementation() const { return ESequenceStatePlayPhase::UNSPECIFIED; }
 };

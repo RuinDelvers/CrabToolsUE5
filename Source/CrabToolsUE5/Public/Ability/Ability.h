@@ -167,6 +167,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Ability")
 	void Initialize(AActor* POwner);
 
+	UFUNCTION(BlueprintCallable, Category = "Ability")
+	void Detach();
+
 	UFUNCTION(BlueprintCallable, Category="Ability")
 	void Start();
 
@@ -225,28 +228,39 @@ public:
 
 protected:
 
-	UFUNCTION(BlueprintNativeEvent, Category = "Ability")
+	UFUNCTION(BlueprintNativeEvent, Category = "Ability",
+		meta=(DisplayName="Detach"))
+	void Detach_Inner();
+	virtual void Detach_Inner_Implementation() {}
+
+	UFUNCTION(BlueprintNativeEvent, Category = "Ability",
+		meta = (DisplayName = "Cancel"))
 	void Cancel_Inner();
-	void Cancel_Inner_Implementation() {}
+	virtual void Cancel_Inner_Implementation() {}
 
 	/* Start the ability; Used for initializing data. */
-	UFUNCTION(BlueprintNativeEvent, Category = "Ability")
+	UFUNCTION(BlueprintNativeEvent, Category = "Ability",
+		meta = (DisplayName = "Start"))
 	void Start_Inner();
 	virtual void Start_Inner_Implementation() {}
 
-	UFUNCTION(BlueprintNativeEvent, Category = "Ability")
+	UFUNCTION(BlueprintNativeEvent, Category = "Ability",
+		meta = (DisplayName = "Initialize"))
 	void Initialize_Inner();
 	virtual void Initialize_Inner_Implementation() {}
 
-	UFUNCTION(BlueprintNativeEvent, Category = "Ability")
+	UFUNCTION(BlueprintNativeEvent, Category = "Ability",
+		meta = (DisplayName = "Perform"))
 	void Perform_Inner();
 	virtual void Perform_Inner_Implementation() {}
 
-	UFUNCTION(BlueprintNativeEvent, Category = "Ability")
+	UFUNCTION(BlueprintNativeEvent, Category = "Ability",
+		meta = (DisplayName = "Tick"))
 	void Tick_Inner(float DeltaTime);
 	virtual void Tick_Inner_Implementation(float DeltaTime) {}
 
-	UFUNCTION(BlueprintNativeEvent, Category = "Ability")
+	UFUNCTION(BlueprintNativeEvent, Category = "Ability",
+		meta = (DisplayName = "Finish"))
 	void Finish_Inner();
 	virtual void Finish_Inner_Implementation() {}
 

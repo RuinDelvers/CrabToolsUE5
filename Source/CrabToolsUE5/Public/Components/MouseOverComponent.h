@@ -1,6 +1,5 @@
 #pragma once
 
-#include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "CollisionQueryParams.h"
 #include "MouseOverComponent.generated.h"
@@ -59,6 +58,12 @@ class CRABTOOLSUE5_API UMouseOverComponent : public UActorComponent
 		UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Trace", meta = (AllowPrivateAccess))
 		bool bDrawDebugLine = false;
 	#endif
+
+	UPROPERTY()
+	TObjectPtr<APawn> PawnOwner;
+
+	UPROPERTY()
+	TArray<FHitResult> MultiResults;
 
 	UPROPERTY()
 	TObjectPtr<APlayerController> PlayerController;
@@ -166,9 +171,13 @@ private:
 	void OnViewportResized(FViewport* Viewport, uint32 Index);
 
 	void UpdateViewportData();
-	bool ProcessResult(const FHitResult& CheckResult);
+	bool ProcessResult(const FHitResult& CheckResult, bool bIsMulti=false);
 	void ReplaceActors(AActor* NewActor);
+	void UpdateResult(const FHitResult& CheckResult);
 
 	void UpdateMousePointActors();
 	void UpdateTickingState();
+
+	UFUNCTION()
+	void OnControllerChanged(APawn* Pawn, AController* OldController, AController* NewController);
 };

@@ -57,6 +57,14 @@ bool UAbilityChain::RequiresTick_Implementation() const
 	return false;
 }
 
+void UAbilityChain::Detach_Inner_Implementation()
+{
+	for (auto& Abi : this->AbilityChain)
+	{
+		Abi->Detach();
+	}
+}
+
 void UAbilityChain::HandleFinish(UAbility* _Abi)
 {
 	auto& AbiOld = this->AbilityChain[this->ActiveIndex];

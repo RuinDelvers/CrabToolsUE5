@@ -1,18 +1,9 @@
 #pragma once
 
 #include "StateMachine/StateMachine.h"
-#include "LevelSequencePlayer.h"
+#include "Sequencer/SequencerStruct.h"
 #include "SequenceActionNode.generated.h"
 
-UENUM()
-enum class ESequenceActionType
-{
-	NONE UMETA(DisplayName="None"),
-	STOP UMETA(DisplayName = "Stop"),
-	PLAY UMETA(DisplayName = "Play"),
-	PAUSE UMETA(DisplayName = "Pause"),
-	PLAY_FROM_START UMETA(DisplayName = "Play from Start"),
-};
 
 UCLASS(Blueprintable, CollapseCategories, Category = "StateMachine|Dialogue")
 class CRABTOOLSUE5_API USequenceActionNode : public UStateNode
@@ -25,10 +16,10 @@ private:
 	TObjectPtr<ULevelSequencePlayer> Player;
 
 	UPROPERTY(EditAnywhere, Category="Pausing")
-	ESequenceActionType EnterAction = ESequenceActionType::NONE;
+	FSequencerAction EnterAction;
 
 	UPROPERTY(EditAnywhere, Category = "Pausing")
-	ESequenceActionType ExitAction = ESequenceActionType::NONE;
+	FSequencerAction ExitAction;
 
 
 protected:
@@ -39,5 +30,4 @@ protected:
 
 private:
 
-	void ApplyAction(ESequenceActionType Action);
 };

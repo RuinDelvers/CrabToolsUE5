@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Components/ActorComponent.h"
-
+#include "Sequencer/SequencerStruct.h"
 #include "DialogueComponent.generated.h"
 
 /* A reference to a choice*/
@@ -48,13 +48,22 @@ struct FMonologueDataStruct
 {
 	GENERATED_BODY()
 
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "DialogueNode", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "DialogueNode")
 	FText Text;
 
-	/* Used to determine if the monologue should auto step. If greater than 0, it'll make a timer. */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "DialogueNode", meta = (AllowPrivateAccess = "true"))
-	float Timeout = 0.0;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "DialogueNode",
+		meta=(InlineEditConditionToggle))
+	bool bApplySequenceAction = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "DialogueNode",
+		meta=(EditCondition="bApplySequenceAction"))
+	FSequencerAction Action;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Instanced, Category = "DialogueNode")
+	TArray<TObjectPtr<UObject>> CustomData;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "DialogueNode")
+	bool bUseLock = false;
 };
 
 UCLASS(Blueprintable, EditInlineNew, Category = "StateMachine|Dialogue")
@@ -62,15 +71,13 @@ class CRABTOOLSUE5_API UMonologueData : public UObject
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Mono", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Monologue", meta = (AllowPrivateAccess = "true"))
 	TArray<FMonologueDataStruct> MonologueText;
 
-	/* Timeout used for all parts of the monologue sequence. */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Mono", meta = (AllowPrivateAccess = "true"))
-	float Timeout = 0.0;
+	int Index = -1;
 
 	UPROPERTY()
-	int Index = -1;
+	TObjectPtr<ULevelSequencePlayer> Player;
 
 public:
 
@@ -82,13 +89,45 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Dialogue")
 	FMonologueUpdated OnMonologueUpdate;
 
+	UPROPERTY(BlueprintAssignable, Category = "Dialogue")
+	FMonologueUpdated OnMonologueHidden;
+
+	UPROPERTY(BlueprintAssignable, Category = "Dialogue")
+	FMonologueUpdated OnMonologueLocksUpdated;
+
+	/*
+	 * This holds all the objects the monologue data is waiting on before 
+	 * broadcasting an update.
+	 */
+	UPROPERTY()
+	TSet<TObjectPtr<UObject>> Locks;
+
 public:
 
 	UFUNCTION(BlueprintCallable, Category = "Dialogue")
-	bool Step();
+	void Step(UObject* RemovedLock=nullptr);
+
+	UFUNCTION(BlueprintCallable, Category = "Dialogue")
+	void AddLock(UObject* AddedLock);
+
+	UFUNCTION(BlueprintCallable, Category = "Dialogue")
+	void RemoveLock(UObject* AddedLock);
+
+	UFUNCTION(BlueprintCallable, Category = "Dialogue")
+	bool IsLocked() const;
+
+	UFUNCTION(BlueprintCallable, Category = "Dialogue")
+	const FMonologueDataStruct& Current() const;
 
 	UFUNCTION(BlueprintCallable, Category = "Dialogue")
 	FText CurrentText() const;
+
+	UFUNCTION(BlueprintCallable, BlueprintPure=false, Category = "Dialogue",
+		meta=(ExpandBoolAsExecs="ReturnValue"))
+	bool IsEmpty() const;
+
+	UFUNCTION(BlueprintCallable, Category = "Dialogue")
+	void Broadcast();
 
 	UFUNCTION(BlueprintCallable, Category = "Dialogue")
 	void Reset();
@@ -98,12 +137,31 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Dialogue")
 	void ClearListeners(UObject* Obj);
+
+	UFUNCTION(BlueprintCallable, Category = "Dialogue")
+	void SetPlayer(ULevelSequencePlayer* InPlayer);
+
+	UFUNCTION(BlueprintCallable, Category = "Dialogue", meta=(DeterminesOutputType="DataClass"))
+	UObject* GetDataByClass(UClass* DataClass) const;
+
+	UFUNCTION(BlueprintCallable, Category = "Dialogue")
+	void GetAllDataByClass(UClass* DataClass, TArray<UObject*>& OutData) const;
+
+	template <class T>
+	UObject* GetDataByClass() const { return this->GetDataByClass(T::StaticClass()); }
+
+	template <class T>
+	void GetAllDataByClass(TArray<UObject*>& OutData) const { this->GetAllDataByClass(T::StaticClass(), OutData); }
+
+private:
+	
+	void StepHelper(bool bIncrement);
 };
 
 /* This component can be used in conjuction of the DialogueNode & related to manage a dialogue state. */
 UCLASS(Blueprintable, Category = "StateMachine|Dialogue",
 	meta = (BlueprintSpawnableComponent))
-	class CRABTOOLSUE5_API UDialogueStateComponent : public UActorComponent
+class CRABTOOLSUE5_API UDialogueStateComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
@@ -138,6 +196,12 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Dialogue")
 	FListenForDialogue OnDialogueFinished;
 
+	UPROPERTY()
+	TObjectPtr<UMonologueData> CurrentMonologue;
+
+	UPROPERTY()
+	TObjectPtr<UDialogueDataStruct> CurrentDialogue;
+
 public:
 
 	bool HandShake(UDialogueStateComponent* Conversee);
@@ -155,6 +219,9 @@ public:
 	bool IsInDialogue() const;
 
 	UFUNCTION(BlueprintCallable, Category = "Dialogue")
+	void SendDialogue(UDialogueDataStruct* DialogueData);
+
+	UFUNCTION(BlueprintCallable, Category = "Dialogue")
 	void NullDialogue() const;
 
 	virtual void OnComponentDestroyed(bool bDestroyHierarchy) override;
@@ -162,4 +229,5 @@ public:
 private:
 
 	void FinishDialogueInner();
+	void ClearCachedData();
 };

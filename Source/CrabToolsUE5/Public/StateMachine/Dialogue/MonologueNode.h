@@ -19,10 +19,6 @@ public:
 
 protected:
 
-	#if WITH_EDITOR
-		virtual void GetEmittedEvents(TSet<FName>& Events) const override;
-	#endif
-
 	virtual void Initialize_Inner_Implementation() override;
 	virtual void Exit_Inner_Implementation() override;
 	virtual void Enter_Inner_Implementation() override;

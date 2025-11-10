@@ -23,27 +23,10 @@ void USequenceActionNode::Initialize_Inner_Implementation()
 
 void USequenceActionNode::Enter_Inner_Implementation()
 {
-	this->ApplyAction(this->EnterAction);
+	USequencerBlueprintHelpers::ApplyAction(this->Player, this->EnterAction);
 }
 
 void USequenceActionNode::Exit_Inner_Implementation()
 {
-	this->ApplyAction(this->ExitAction);
-}
-
-void USequenceActionNode::ApplyAction(ESequenceActionType Action)
-{
-	if (this->Player)
-	{
-		switch (Action)
-		{
-			case ESequenceActionType::PLAY: this->Player->Play(); break;
-			case ESequenceActionType::PAUSE: this->Player->Pause(); break;
-			case ESequenceActionType::PLAY_FROM_START:
-				this->Player->Stop();
-				this->Player->Play();
-				break;
-			case ESequenceActionType::STOP: this->Player->Stop(); break;
-		}
-	}
+	USequencerBlueprintHelpers::ApplyAction(this->Player, this->ExitAction);
 }
