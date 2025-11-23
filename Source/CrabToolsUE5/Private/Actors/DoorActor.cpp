@@ -1,43 +1,32 @@
 #include "Actors/DoorActor.h"
 #include "Curves/CurveVector.h"
+#include "UObject/ConstructorHelpers.h"
 
 #pragma region Door Component
-TWeakObjectPtr<UCurveVector> UDoorActorMeshComponent::DefaultRotationCurve = nullptr;
-TWeakObjectPtr<UCurveVector> UDoorActorMeshComponent::DefaultTranslationCurve = nullptr;
-
-UCurveVector* UDoorActorMeshComponent::GetDefaultRotationCurve()
-{
-	if (!DefaultRotationCurve.IsValid())
-	{
-		DefaultRotationCurve = NewObject<UCurveVector>();
-		DefaultRotationCurve->Rename(TEXT("Default Rotation Curve"));
-
-		DefaultRotationCurve->FloatCurves[2].UpdateOrAddKey(0, 0);
-		DefaultRotationCurve->FloatCurves[2].UpdateOrAddKey(1, 90);
-
-		DefaultRotationCurve->AddToRoot();
-	}
-
-	return DefaultRotationCurve.Get();
-}
-
-UCurveVector* UDoorActorMeshComponent::GetDefaultTranslationCurve()
-{
-	if (!DefaultTranslationCurve.IsValid())
-	{
-		DefaultTranslationCurve = NewObject<UCurveVector>();
-		DefaultTranslationCurve->Rename(TEXT("Default Translation Curve"));
-
-		DefaultTranslationCurve->AddToRoot();
-	}
-
-	return DefaultTranslationCurve.Get();
-}
 
 UDoorActorMeshComponent::UDoorActorMeshComponent()
 {
-	this->Rotation = GetDefaultRotationCurve();
-	this->Translation = GetDefaultTranslationCurve();
+	ConstructorHelpers::FObjectFinder<UCurveVector> RotationFinder(TEXT("/CrabToolsUE5/Data/Curves/DefaultDoorRotationCurve_C.DefaultDoorRotationCurve_C"));
+
+	if (RotationFinder.Succeeded())
+	{
+		this->Rotation = RotationFinder.Object;
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("Failed to find default rotation curve for door mesh."));
+	}
+
+	ConstructorHelpers::FObjectFinder<UCurveVector> TranslationFinder(TEXT("/CrabToolsUE5/Data/Curves/DefaultDoorTranslationCurve_C.DefaultDoorTranslationCurve_C"));
+
+	if (TranslationFinder.Succeeded())
+	{
+		this->Translation = TranslationFinder.Object;
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("Failed to find default translation curve for door mesh."));
+	}
 }
 
 void UDoorActorMeshComponent::BeginPlay()
@@ -61,39 +50,6 @@ void UDoorActorMeshComponent::Update(float Alpha)
 
 #pragma region DoorActor
 
-TWeakObjectPtr<UCurveFloat> ADoorActor::DefaultForwardCurve = nullptr;
-TWeakObjectPtr<UCurveFloat> ADoorActor::DefaultReverseCurve = nullptr;
-
-UCurveFloat* ADoorActor::GetDefaultForwardCurve()
-{
-	if (!ADoorActor::DefaultForwardCurve.IsValid())
-	{
-		ADoorActor::DefaultForwardCurve = NewObject<UCurveFloat>();
-
-		DefaultForwardCurve->FloatCurve.UpdateOrAddKey(0.f, 0.f);
-		DefaultForwardCurve->FloatCurve.UpdateOrAddKey(1.f, 1.f);
-
-		ADoorActor::DefaultForwardCurve.Get()->AddToRoot();
-	}
-
-	return ADoorActor::DefaultForwardCurve.Get();
-}
-
-UCurveFloat* ADoorActor::GetDefaultReverseCurve()
-{
-	if (!ADoorActor::DefaultForwardCurve.IsValid())
-	{
-		ADoorActor::DefaultReverseCurve = NewObject<UCurveFloat>();
-
-		DefaultReverseCurve->FloatCurve.UpdateOrAddKey(0.f, 0.f);
-		DefaultReverseCurve->FloatCurve.UpdateOrAddKey(1.f, 1.f);
-
-		ADoorActor::DefaultReverseCurve.Get()->AddToRoot();
-	}
-
-	return ADoorActor::DefaultReverseCurve.Get();
-}
-
 ADoorActor::ADoorActor()
 : PlayRate(1),
 	CurrentAlpha(0)
@@ -108,6 +64,17 @@ ADoorActor::ADoorActor()
 	this->SetActorHiddenInGame(false);
 	this->SetActorEnableCollision(true);
 	
+
+	ConstructorHelpers::FObjectFinder<UCurveFloat> MovementFinder(TEXT("/CrabToolsUE5/Data/Curves/DefaultDoorMovementCurve_C.DefaultDoorMovementCurve_C"));
+
+	if (MovementFinder.Succeeded())
+	{
+		this->MovementCurve = MovementFinder.Object;
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("Failed to find default movement curve for door mesh."));
+	}
 }
 
 // Called when the game starts or when spawned
@@ -117,11 +84,6 @@ void ADoorActor::BeginPlay()
 
 	this->Axis = this->GetActorRotation().RotateVector(FVector::UpVector);
 	this->BaseRotation = this->GetActorRotation().Quaternion();
-
-	if (!this->MovementCurve)
-	{
-		this->MovementCurve = this->GetDefaultForwardCurve();
-	}	
 
 	this->MovementTimeline->SetPlayRate(this->PlayRate);
 	this->MovementTimeline->SetLooping(false);
@@ -138,18 +100,24 @@ void ADoorActor::BeginPlay()
 
 void ADoorActor::ActivateDoor(bool OpenQ)
 {
-	this->bOpen = OpenQ;
 	this->MovementTimeline->Stop();
 	this->MovementTimeline->SetNewTime(this->CurrentAlpha);
 
-	if (this->bOpen)
+	if (OpenQ)
 	{
+		this->OnDoorStateChanged(EDoorState::OPENING);
 		this->MovementTimeline->Play();
 	}
 	else
 	{
 		this->MovementTimeline->Reverse();
 	}
+}
+
+void ADoorActor::OnDoorStateChanged(EDoorState NewState)
+{
+	this->State = NewState;
+	this->OnDoorStateChanged_Inner();
 }
 
 void ADoorActor::UpdatePosition(float alpha) 
@@ -175,20 +143,58 @@ void ADoorActor::SetPlayRate(float NewPlayRate)
 
 void ADoorActor::ToggleDoorEditor()
 {
-	this->bOpen = !this->bOpen;
-
-	for (const auto& Doors : this->GetDoorComponents())
+	switch (this->State)
 	{
-		Doors->Update(this->bOpen ? 1.0 : 0.0);
-	}
+		case EDoorState::OPEN: 
+			this->OnDoorStateChanged(EDoorState::CLOSED);
+			this->MovementTimeline->SetNewTime(this->MovementTimeline->GetTimelineLength());
 
+			for (const auto& Doors : this->GetDoorComponents())
+			{
+				Doors->Update(0.0);
+			}
+			
+			break;
+		case EDoorState::OPENING:
+			this->OnDoorStateChanged(EDoorState::CLOSED);
+			this->MovementTimeline->SetNewTime(this->MovementTimeline->GetTimelineLength());
+
+			for (const auto& Doors : this->GetDoorComponents())
+			{
+				Doors->Update(0.0);
+			}
+			break;
+		case EDoorState::CLOSED:
+			this->OnDoorStateChanged(EDoorState::OPEN);
+			this->MovementTimeline->SetNewTime(0);
+
+			for (const auto& Doors : this->GetDoorComponents())
+			{
+				Doors->Update(1.0);
+			}
+			break;
+		case EDoorState::CLOSING:
+			this->OnDoorStateChanged(EDoorState::OPEN);
+			this->MovementTimeline->SetNewTime(0);
+
+			for (const auto& Doors : this->GetDoorComponents())
+			{
+				Doors->Update(1.0);
+			}
+			break;
+	}
 	this->MarkPackageDirty();
 }
 
 void ADoorActor::ToggleDoor()
 {
-	this->bOpen = !this->bOpen;
-	this->ActivateDoor(this->bOpen);
+	switch (this->State)
+	{
+		case EDoorState::OPEN: this->ActivateDoor(false); break; 
+		case EDoorState::OPENING: this->ActivateDoor(false); break;
+		case EDoorState::CLOSED: this->ActivateDoor(true); break;
+		case EDoorState::CLOSING: this->ActivateDoor(true); break; 
+	}
 }
 
 TArray<TObjectPtr<UDoorActorMeshComponent>>& ADoorActor::GetDoorComponents()

@@ -1,21 +1,24 @@
 #pragma once
 
-#include "CoreMinimal.h"
 #include "Components/TimelineComponent.h"
 #include "Navigation/NavLinkProxy.h"
 #include "Components/StaticMeshComponent.h"
 #include "UObject/WeakObjectPtrTemplates.h"
 #include "DoorActor.generated.h"
 
+UENUM(BlueprintType)
+enum class EDoorState: uint8
+{
+	OPEN    UMETA(DisplayName = "Open"),
+	OPENING UMETA(DisplayName = "Opening"),
+	CLOSED  UMETA(DisplayName = "Closed"),
+	CLOSING UMETA(DisplayName = "Closing"),
+};
+
 UCLASS(ClassGroup = (General), meta = (BlueprintSpawnableComponent))
 class CRABTOOLSUE5_API UDoorActorMeshComponent : public UStaticMeshComponent
 {
 	GENERATED_BODY()
-
-private:
-
-	static TWeakObjectPtr<UCurveVector> DefaultRotationCurve;
-	static TWeakObjectPtr<UCurveVector> DefaultTranslationCurve;
 
 private:
 	
@@ -30,11 +33,6 @@ private:
 
 	UPROPERTY()
 	FRotator InitRotation;
-
-public:
-
-	static UCurveVector* GetDefaultRotationCurve();
-	static UCurveVector* GetDefaultTranslationCurve();
 
 public:
 
@@ -54,23 +52,11 @@ class ADoorActor : public ANavLinkProxy
 
 private:
 
-	/* Dynamically created curve asset that is used as a default curve. */
-	static TWeakObjectPtr<UCurveFloat> DefaultForwardCurve;
-	static TWeakObjectPtr<UCurveFloat> DefaultReverseCurve;
-
-public:
-
-	static UCurveFloat* GetDefaultForwardCurve();
-	static UCurveFloat* GetDefaultReverseCurve();
-
-private:
-
 	UPROPERTY(Transient)
 	TArray<TObjectPtr<UDoorActorMeshComponent>> Components;
 
-public:	
-	
-	ADoorActor();
+	UPROPERTY(BlueprintReadOnly, Category="DoorActor", meta=(AllowPrivateAccess))
+	EDoorState State = EDoorState::CLOSED;
 
 protected:
 
@@ -84,10 +70,7 @@ protected:
 	FVector Axis;
 	FQuat BaseRotation;
 
-	UPROPERTY(VisibleAnywhere, Category="DoorActor")
-	bool bOpen = false;
-
-	UPROPERTY(BlueprintReadOnly, Category="DoorActor")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="DoorActor")
 	TObjectPtr<UTimelineComponent> MovementTimeline;
 	FOnTimelineFloat MovementTrack;
 	FOnTimelineEvent EndMovementTrack;	
@@ -97,17 +80,12 @@ public:
 	UPROPERTY(BlueprintReadWrite, Category = "DoorActor")
 	FFinishMovement OnFinishMovementEvent;
 
-protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
-	UFUNCTION()
-	void UpdatePosition(float alpha);
-
-	UFUNCTION()
-	void FinishMovement();
 
 public:
+
+	ADoorActor();
+
+	EDoorState GetDoorState() const { return this->State; }
 
 	UFUNCTION(BlueprintCallable, Category="DoorActor")
 	void ActivateDoor(bool OpenQ);
@@ -126,6 +104,23 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "DoorActor")
 	void ToggleDoor();
+
+protected:
+
+	void OnDoorStateChanged(EDoorState NewState);
+
+	UFUNCTION(BlueprintNativeEvent, Category="DoorActor", meta=(DisplayName="OnDoorStateChanged"))
+	void OnDoorStateChanged_Inner();
+	virtual void OnDoorStateChanged_Inner_Implementation() {}
+
+	// Called when the game starts or when spawned
+	virtual void BeginPlay() override;
+
+	UFUNCTION()
+	void UpdatePosition(float alpha);
+
+	UFUNCTION()
+	void FinishMovement();
 
 private:
 
