@@ -2,14 +2,6 @@
 #include "Utils/Enums.h"
 #include "Engine/InputDelegateBinding.h"
 
-void UUtilsLibrary::ActivateTimeGatedBool(FTimeGatedBool& input) {
-	input.Reset();
-}
-
-bool UUtilsLibrary::TimeGatedBoolConvert(const FTimeGatedBool& input) {
-	return input.GetValue();
-}
-
 float UUtilsLibrary::RotateAngleTo(float Base, float Goal, float Delta)
 {
 	bool Complete = false;
@@ -50,14 +42,6 @@ float UUtilsLibrary::RotateAngleToDelta(float Base, float Goal, float Delta, boo
 		Complete = false;
 		return FMath::Sign(Diff) * Delta;
 	}
-}
-
-bool UUtilsLibrary::Contains(const FSetGatedBool& Input, UObject* Obj) {
-	return Input.ContainsObj(Obj);
-}
-
-void UUtilsLibrary::GateObj(FSetGatedBool& Input, UObject* Obj) {
-	Input.AddObj(Obj);
 }
 
 UObject* UUtilsLibrary::GetOuterAs(UObject* Object, TSubclassOf<UObject> SClass, ESearchResult& Result)
@@ -107,16 +91,6 @@ UObject* UUtilsLibrary::GetOwnerAs(UActorComponent* Component, TSubclassOf<AActo
 
 	Result = ESearchResult::Found;
 	return nullptr;
-}
-
-void UUtilsLibrary::ActivateNAryGate(FNAryGate& Gate, ETriggerBranch& Result)
-{
-	Result = Gate.Activate();
-}
-
-void UUtilsLibrary::DeactivateNAryGate(FNAryGate& Gate, ETriggerBranch& Result)
-{
-	Result = Gate.Deactivate();
 }
 
 TSubclassOf<UObject> UUtilsLibrary::GenerateDynamicClass(TSubclassOf<UObject> Parent, UObject* Owner)

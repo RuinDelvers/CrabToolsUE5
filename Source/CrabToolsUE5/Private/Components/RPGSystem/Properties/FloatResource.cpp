@@ -46,7 +46,7 @@ void UFloatResource::SetValue(float UValue)
 
 	if (NewValue != this->Value)
 	{
-		this->Value = UValue;
+		this->Value = NewValue;
 		this->OnResourceChanged.Broadcast(this);
 	}
 }

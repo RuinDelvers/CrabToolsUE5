@@ -36,7 +36,7 @@ class ABaseTargetingActor : public AActor, public ITargetingControllerInterface,
 
 public:
 
-	UPROPERTY(BlueprintAssignable, Category="Targeting")
+	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category="Targeting")
 	FValidateTargeting OnValidateTargeting;
 
 	UPROPERTY(BlueprintAssignable, Category = "Targeting")
