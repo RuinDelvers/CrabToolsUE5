@@ -75,11 +75,6 @@ void FSMSchemaAction_NewExtensionNode::AddReferencedObjects(FReferenceCollector&
 	Collector.AddReferencedObject(NodeTemplate);
 }
 
-FString FSMSchemaAction_NewExtensionNode::GetReferencerName() const
-{
-	return "FSMSchemaAction_NewExtensionNode";
-}
-
 UEdGraphNode* FSMSchemaAction_NewAliasNode::PerformAction(
 	class UEdGraph* ParentGraph,
 	UEdGraphPin* FromPin,
@@ -122,11 +117,6 @@ void FSMSchemaAction_NewAliasNode::AddReferencedObjects(FReferenceCollector& Col
 {
 	FEdGraphSchemaAction::AddReferencedObjects(Collector);
 	Collector.AddReferencedObject(NodeTemplate);
-}
-
-FString FSMSchemaAction_NewAliasNode::GetReferencerName() const
-{
-	return "FSMSchemaAction_NewAliasNode";
 }
 
 UEdGraphNode* FSMSchemaAction_NewNode::PerformAction(
@@ -185,11 +175,6 @@ void FSMSchemaAction_NewNode::AddReferencedObjects(FReferenceCollector& Collecto
 	Collector.AddReferencedObject(NodeTemplate);
 }
 
-FString FSMSchemaAction_NewNode::GetReferencerName() const
-{
-	return "FSMSchemaAction_NewNode";
-}
-
 UEdGraphNode* FSMSchemaAction_NewEdge::PerformAction(
 	class UEdGraph* ParentGraph,
 	UEdGraphPin* FromPin,
@@ -233,11 +218,6 @@ void FSMSchemaAction_NewEdge::AddReferencedObjects(FReferenceCollector& Collecto
 {
 	FEdGraphSchemaAction::AddReferencedObjects(Collector);
 	Collector.AddReferencedObject(NodeTemplate);
-}
-
-FString FSMSchemaAction_NewEdge::GetReferencerName() const
-{
-	return "FSMSchemaAction_NewEdge";
 }
 
 #pragma region Schema

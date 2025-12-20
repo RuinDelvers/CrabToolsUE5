@@ -406,7 +406,7 @@ void UGenericPropertyBinding::CallFunction_Local(void* SourceObject)
 {
 	if (this->PropertyType == EGenericPropertyType::DELEGATE_TYPE)
 	{
-		auto& Delegate = CastChecked<FMulticastInlineDelegateProperty>(this->CachedProperty)
+		auto& Delegate = CastFieldChecked<FMulticastInlineDelegateProperty>(this->CachedProperty)
 			->GetPropertyValue(SourceObject);
 		Delegate.ProcessMulticastDelegate<UObject>(nullptr);
 	}

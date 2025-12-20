@@ -6,8 +6,6 @@
 #include "Widgets/SCompoundWidget.h"
 #include "Widgets/DeclarativeSyntaxSupport.h"
 #include "StateMachine/DataStructures.h"
-//#include "GameplayTagContainer.h"
-//#include "SGameplayTagChip.h"
 
 class IPropertyHandle;
 class SMenuAnchor;

@@ -114,9 +114,9 @@ const TArray<UTargetFilterComponent*>& ABaseTargetingActor::GetFilters() const
 		}
 
 		this->Filters.Sort([](
-			const TObjectPtr<UTargetFilterComponent>& A, const TObjectPtr<UTargetFilterComponent>& B)
+			const UTargetFilterComponent& A, const UTargetFilterComponent& B)
 			{
-				return A->GetPriority() > B->GetPriority();
+				return A.GetPriority() > B.GetPriority();
 			});
 
 		this->bFoundFilters = true;

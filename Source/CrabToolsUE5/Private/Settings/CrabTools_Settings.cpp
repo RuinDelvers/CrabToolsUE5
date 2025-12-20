@@ -26,11 +26,13 @@ static TSet<FKey> UINavigationToDefaultKey(EUINavigationAction Nav)
 		case EUINavigationAction::Accept: return {
 			EKeys::Enter,
 			EKeys::SpaceBar,
-			EKeys::Virtual_Accept,
+			// The below is deprecated past 5.7. Need to change to Virtual_Gamepad_Accept.GetVirtualKey()
+			//EKeys::Virtual_Accept,
 		};
 		case EUINavigationAction::Back: return {
 			EKeys::Escape,
-			EKeys::Virtual_Back,
+			// The below is deprecated past 5.7. Need to change to Virtual_Gamepad_Back.GetVirtualKey()
+			//EKeys::Virtual_Back,
 		};
 	}
 

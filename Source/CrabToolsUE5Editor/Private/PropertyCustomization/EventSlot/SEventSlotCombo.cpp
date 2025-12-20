@@ -1,16 +1,10 @@
 #include "PropertyCustomization/EventSlot/SEventSlotCombo.h"
 #include "PropertyCustomization/EventSlot/SEventSlotPicker.h"
 #include "Styles/EventSlotStyle.h"
-#include "DetailLayoutBuilder.h"
-#include "Framework/Application/SlateApplication.h"
-#include "ScopedTransaction.h"
-#include "Editor.h"
-#include "HAL/PlatformApplicationMisc.h"
 #include "Widgets/Input/SComboButton.h"
-#include "Framework/MultiBox/MultiBoxBuilder.h"
 
 
-#define LOCTEXT_NAMESPACE "GameplayTagCombo"
+#define LOCTEXT_NAMESPACE "EventSlotCombo"
 
 /*
 SLATE_IMPLEMENT_WIDGET(SEventSlotCombo)
@@ -183,8 +177,8 @@ void SEventSlotCombo::OnClearTag()
 {
 	if (this->PropertyHandle.IsValid())
 	{
-		PropertyHandle->SetValueFromFormattedString(
-			FString::Printf(TEXT("(EventName=\"%s\")"), ""));
+		FString ObjectString = FString::Printf(TEXT("(EventName=\"%s\")"), TEXT(""));
+		PropertyHandle->SetValueFromFormattedString(ObjectString);
 	}
 }
 
@@ -208,3 +202,5 @@ FReply SEventSlotCombo::OnTagMenu(const FPointerEvent& MouseEvent)
 {
 	return FReply::Handled();
 }
+
+#undef LOCTEXT_NAMESPACE

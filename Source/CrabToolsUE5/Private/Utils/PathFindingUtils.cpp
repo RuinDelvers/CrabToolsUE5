@@ -16,7 +16,7 @@ FVector UPathFindingUtilsLibrary::ChooseNearLocation(AAIController* Ctrl, TArray
 		const auto AgentLocation = Ctrl->GetNavAgentLocation();
 		const ANavigationData* NavData = NavSys->GetNavDataForProps(Ctrl->GetNavAgentPropertiesRef(), AgentLocation);
 		
-		FVector Dest;
+		FVector Dest = FVector::ZeroVector;
 		bool bFoundPath = false;
 		float PathLength = std::numeric_limits<float>::infinity();
 

@@ -11,8 +11,7 @@ class UEdExtension;
 class UEdTransition;
 
 USTRUCT()
-struct STATEMACHINEEDITOR_API FSMSchemaAction_NewExtensionNode
-	: public FEdGraphSchemaAction, public FGCObject
+struct STATEMACHINEEDITOR_API FSMSchemaAction_NewExtensionNode: public FEdGraphSchemaAction
 {
 	GENERATED_USTRUCT_BODY();
 
@@ -36,12 +35,10 @@ public:
 	void SetNodeTemplate(UEdStateNode* Template) { this->NodeTemplate = Template; }
 
 	virtual void AddReferencedObjects(FReferenceCollector& Collector) override;
-	virtual FString GetReferencerName() const override;
 };
 
 USTRUCT()
-struct STATEMACHINEEDITOR_API FSMSchemaAction_NewAliasNode
-	: public FEdGraphSchemaAction, public FGCObject
+struct STATEMACHINEEDITOR_API FSMSchemaAction_NewAliasNode: public FEdGraphSchemaAction
 {
 	GENERATED_USTRUCT_BODY();
 
@@ -65,12 +62,10 @@ public:
 	void SetNodeTemplate(UEdAliasNode* Template) { this->NodeTemplate = Template; }
 
 	virtual void AddReferencedObjects(FReferenceCollector& Collector) override;
-	virtual FString GetReferencerName() const override;
 };
 
 USTRUCT()
-struct STATEMACHINEEDITOR_API FSMSchemaAction_NewNode
-: public FEdGraphSchemaAction, public FGCObject
+struct STATEMACHINEEDITOR_API FSMSchemaAction_NewNode: public FEdGraphSchemaAction
 {
 	GENERATED_USTRUCT_BODY();
 
@@ -91,12 +86,10 @@ public:
 	void SetNodeTemplate(UEdStateNode* Template) { this->NodeTemplate = Template; }
 
 	virtual void AddReferencedObjects(FReferenceCollector& Collector) override;
-	virtual FString GetReferencerName() const override;
 };
 
 USTRUCT()
-struct STATEMACHINEEDITOR_API FSMSchemaAction_NewEdge 
-: public FEdGraphSchemaAction, public FGCObject
+struct STATEMACHINEEDITOR_API FSMSchemaAction_NewEdge: public FEdGraphSchemaAction
 {
 	GENERATED_USTRUCT_BODY();
 
@@ -118,7 +111,6 @@ public:
 	void SetNodeTemplate(UEdTransition* Template) { this->NodeTemplate = Template; }
 
 	virtual void AddReferencedObjects(FReferenceCollector& Collector) override;
-	virtual FString GetReferencerName() const override;
 };
 
 UCLASS(MinimalAPI)

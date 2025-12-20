@@ -66,15 +66,15 @@ void FStateMachineConnectionDrawingPolicy::Internal_DrawLineWithArrow(const FVec
 	//@TODO: Should this be scaled by zoom factor?
 	const float LineSeparationAmount = 4.5f;
 
-	const FVector2D DeltaPos = EndAnchorPoint - StartAnchorPoint;
-	const FVector2D UnitDelta = DeltaPos.GetSafeNormal();
-	const FVector2D Normal = FVector2D(DeltaPos.Y, -DeltaPos.X).GetSafeNormal();
+	const FVector2f DeltaPos = FVector2f(EndAnchorPoint) - FVector2f(StartAnchorPoint);
+	const FVector2f UnitDelta = DeltaPos.GetSafeNormal();
+	const FVector2f Normal = FVector2f(DeltaPos.Y, -DeltaPos.X).GetSafeNormal();
 
 	// Come up with the final start/end points
-	const FVector2D DirectionBias = Normal * LineSeparationAmount;
-	const FVector2D LengthBias = ArrowRadius.X * UnitDelta;
-	const FVector2D StartPoint = StartAnchorPoint + DirectionBias + LengthBias;
-	const FVector2D EndPoint = EndAnchorPoint + DirectionBias - LengthBias;
+	const FVector2f DirectionBias = Normal * LineSeparationAmount;
+	const FVector2f LengthBias = ArrowRadius.X * UnitDelta;
+	const FVector2f StartPoint = FVector2f(StartAnchorPoint) + DirectionBias + LengthBias;
+	const FVector2f EndPoint = FVector2f(EndAnchorPoint) + DirectionBias - LengthBias;
 
 	// Draw a line/spline
 	DrawConnection(WireLayerID, StartPoint, EndPoint, Params);
