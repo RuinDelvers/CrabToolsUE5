@@ -65,7 +65,7 @@ void UMouseOverComponent::DoTrace()
 
 	if (bSuccess)
 	{
-		FVector EndPoint = Position + MaxTraceDistance * Direction;
+		EndPoint = Position + MaxTraceDistance * Direction;
 
 		#if WITH_EDITORONLY_DATA
 			if (this->bDrawDebugLine)
@@ -79,8 +79,8 @@ void UMouseOverComponent::DoTrace()
 			bSuccess = this->GetWorld()->LineTraceMultiByChannel(
 				this->MultiResults,
 				Position,
-				EndPoint,
-				Channel,
+				this->EndPoint,
+				this->Channel,
 				this->Params);			
 
 			if (bSuccess)
@@ -100,6 +100,8 @@ void UMouseOverComponent::DoTrace()
 							break;
 						}
 					}
+
+					this->CurrentResultIndex += 1;
 				}
 
 				if (bDidPass)
@@ -118,17 +120,16 @@ void UMouseOverComponent::DoTrace()
 		}
 		else
 		{
-			FHitResult CheckResult;
 			bSuccess = this->GetWorld()->LineTraceSingleByChannel(
-				CheckResult,
+				this->CurrentCheckResult,
 				Position,
-				EndPoint,
-				Channel,
+				this->EndPoint,
+				this->Channel,
 				this->Params);
 
 			if (bSuccess)
 			{
-				this->ProcessResult(CheckResult);
+				this->ProcessResult(this->CurrentCheckResult);
 			}
 			else
 			{
@@ -144,6 +145,26 @@ void UMouseOverComponent::DoTrace()
 	this->UpdateMousePointActors();
 
 	this->OnMouseOverTick.Broadcast(this);
+
+	this->EndPoint = FVector::ZeroVector;
+	this->CurrentResultIndex = 0;
+}
+
+void UMouseOverComponent::SetTraceComplex(bool bTraceComplex)
+{
+	this->Params.bTraceComplex = bTraceComplex;
+}
+
+const FHitResult& UMouseOverComponent::GetCurrentCheckResult() const
+{
+	if (this->bDoMultiTrace)
+	{
+		return this->MultiResults[this->CurrentResultIndex];
+	}
+	else
+	{
+		return this->CurrentCheckResult;
+	}
 }
 
 void UMouseOverComponent::SetOverridePosition(const FPointerEvent& Ev, bool bShouldUpdateTraces)
@@ -261,11 +282,22 @@ bool UMouseOverComponent::ProcessResult(const FHitResult& CheckResult, bool bIsM
 {
 	if (CheckResult.bBlockingHit)
 	{
-		if (!bIsMulti)
+		if (this->ValidateActor(CheckResult.GetActor()))
 		{
-			this->UpdateResult(CheckResult);
+			if (!bIsMulti)
+			{
+				this->UpdateResult(CheckResult);
+			}
+			return true;
 		}
-		return true;
+		else
+		{
+			if (!bIsMulti)
+			{
+				this->ReplaceActors(nullptr);
+			}
+			return false;
+		}
 	}
 	else if (IsValid(CheckResult.GetActor()))
 	{
@@ -324,35 +356,98 @@ void UMouseOverComponent::ReplaceActors(AActor* NewActor)
 
 void UMouseOverComponent::UpdateMousePointActors()
 {
-	if (this->HasValidLocation())
+	for (const auto& Actor : this->MousePointActors)
 	{
-		for (const auto& Actor : this->MousePointActors)
-		{
-			Actor->SetActorTransform(this->GetPlacementTransform());
-			Actor->SetActorHiddenInGame(false);
-		}
-	}
-	else
-	{
-		FVector ActorLocation = this->GetOwner()->GetActorLocation();
+		IMousePointActorInterface::Execute_BeginPlacement(Actor);
 
-		for (const auto& Actor : this->MousePointActors)
+		FVector ActorLocation = this->GetOwner()->GetActorLocation();
+		FTransform PlaceTransform = this->GetPlacementTransform();
+		bool bHasValidLocation = this->HasValidLocation();
+
+		if (Actor->Implements<UMousePointActorInterface>())
 		{
-			Actor->SetActorLocation(ActorLocation);
-			Actor->SetActorHiddenInGame(true);
+			if (bHasValidLocation)
+			{
+				bool bReadjust = IMousePointActorInterface::Execute_ReadjustActor(Actor);
+
+				if (bReadjust)
+				{
+					FVector AdjustLocation = PlaceTransform.GetLocation() + (this->Result.Normal * this->AdjustBias);
+
+					if (GetWorld()->FindTeleportSpot(Actor, AdjustLocation, PlaceTransform.Rotator()))
+					{
+						PlaceTransform.SetLocation(AdjustLocation);
+						Actor->SetActorTransform(PlaceTransform);
+						Actor->SetActorHiddenInGame(false);
+					}
+					else
+					{
+						switch (IMousePointActorInterface::Execute_OnReadjustFailure(Actor))
+						{
+							case EMousePointActorPlacementAction::HIDDEN:
+								Actor->SetActorHiddenInGame(true);
+								break;
+							case EMousePointActorPlacementAction::HIDDEN_ATTACH:
+								Actor->SetActorHiddenInGame(true);
+								Actor->SetActorLocation(ActorLocation);
+								break;
+							case EMousePointActorPlacementAction::PLACE:
+								Actor->SetActorHiddenInGame(false);
+								Actor->SetActorTransform(PlaceTransform);
+								break;
+							default: break;
+						}
+					}					
+				}
+				else
+				{
+					Actor->SetActorTransform(PlaceTransform);
+					Actor->SetActorHiddenInGame(false);
+				}
+			}
+			else
+			{
+				switch (IMousePointActorInterface::Execute_OnInvalidLocation(Actor))
+				{
+					case EMousePointActorPlacementAction::HIDDEN:
+						Actor->SetActorHiddenInGame(true);
+						break;
+					case EMousePointActorPlacementAction::HIDDEN_ATTACH:
+						Actor->SetActorHiddenInGame(true);
+						Actor->SetActorLocation(ActorLocation);
+						break;
+					default: break;
+				}
+			}
+
+			IMousePointActorInterface::Execute_EndPlacement(Actor);
+		}
+		else
+		{
+			Actor->SetActorTransform(PlaceTransform);
+			Actor->SetActorHiddenInGame(false);
 		}
 	}
 }
 
 AActor* UMouseOverComponent::AddMousePointActor(TSubclassOf<AActor> ActorClass)
 {
-	if (!ActorClass) { return nullptr; }
+	if (!ActorClass)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("None passed to UMouseOverComponent::AddMousePointActor"));
+		return nullptr;
+	}
 
 	auto ActorLocation = this->GetOwner()->GetActorLocation();
 	auto NewActor = this->GetWorld()->SpawnActor(
 		ActorClass, 
 		this->HasValidLocation() ? &this->Result.ImpactPoint : &ActorLocation);
 	NewActor->SetHidden(!this->HasValidLocation());
+
+	if (NewActor->Implements<UMousePointActorInterface>())
+	{
+		IMousePointActorInterface::Execute_SetMouseOver(NewActor, this);
+	}
 
 	this->MousePointActors.Add(NewActor);
 

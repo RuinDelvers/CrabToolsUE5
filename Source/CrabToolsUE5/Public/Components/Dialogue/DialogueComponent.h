@@ -153,6 +153,12 @@ public:
 	template <class T>
 	void GetAllDataByClass(TArray<UObject*>& OutData) const { this->GetAllDataByClass(T::StaticClass(), OutData); }
 
+protected:
+
+	#if WITH_EDITOR
+		virtual void PostEditChangeProperty(FPropertyChangedEvent& Event) override;
+	#endif
+
 private:
 	
 	void StepHelper(bool bIncrement);

@@ -6,6 +6,59 @@
 
 class FViewport;
 class UDragDropOperation;
+class UMouseOverComponent;
+
+UENUM(BlueprintType)
+enum class EMousePointActorPlacementAction : uint8
+{
+	/* Hide the actor. */
+	HIDDEN        UMETA(DisplayName="Hidden"),
+	HIDDEN_ATTACH UMETA(DisplayName = "Hide and Attach"),
+	PLACE         UMETA(DisplayName = "Place"),
+	LEAVE         UMETA(DisplayName = "Leave"),
+};
+
+/*
+ * This interface is used by the MouseOverComponent to handle mouse point actors. Mouse point 
+ * actors can be used for a variety of applications, dragging objects for example. This interface
+ * defines the interface and behaviour that the MouseOverComponent will do for each actor.
+ */
+UINTERFACE(MinimalAPI, Blueprintable, BlueprintType)
+class UMousePointActorInterface : public UInterface
+{
+	GENERATED_BODY()
+};
+
+class IMousePointActorInterface
+{
+	GENERATED_BODY()
+
+public:
+
+	UFUNCTION(BlueprintNativeEvent, Category="MouseOver")
+	void SetMouseOver(UMouseOverComponent* Component);
+	virtual void SetMouseOver_Implementation(UMouseOverComponent* Component) {}
+
+	UFUNCTION(BlueprintNativeEvent, Category = "MouseOver")
+	void BeginPlacement();
+	virtual void BeginPlacement_Implementation() {}
+
+	UFUNCTION(BlueprintNativeEvent, Category = "MouseOver")
+	void EndPlacement();
+	virtual void EndPlacement_Implementation() {}
+
+	UFUNCTION(BlueprintNativeEvent, Category = "MouseOver")
+	bool ReadjustActor() const;
+	virtual bool ReadjustActor_Implementation() const { return false; }
+
+	UFUNCTION(BlueprintNativeEvent, Category = "MouseOver")
+	EMousePointActorPlacementAction OnInvalidLocation();
+	virtual EMousePointActorPlacementAction OnInvalidLocation_Implementation() { return EMousePointActorPlacementAction::HIDDEN; }
+
+	UFUNCTION(BlueprintNativeEvent, Category = "MouseOver")
+	EMousePointActorPlacementAction OnReadjustFailure();
+	virtual EMousePointActorPlacementAction OnReadjustFailure_Implementation() { return EMousePointActorPlacementAction::HIDDEN; }
+};
 
 UCLASS(Blueprintable, ClassGroup = (General),
 	meta = (BlueprintSpawnableComponent))
@@ -13,7 +66,7 @@ class CRABTOOLSUE5_API UMouseOverComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Trace", meta = (AllowPrivateAccess))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Trace", meta = (AllowPrivateAccess))
 	TEnumAsByte<ECollisionChannel> Channel = ECC_Visibility;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Trace", meta = (AllowPrivateAccess))
@@ -25,11 +78,20 @@ class CRABTOOLSUE5_API UMouseOverComponent : public UActorComponent
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Trace", meta = (AllowPrivateAccess))
 	TObjectPtr<AActor> MouseOverActor;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Trace", meta = (AllowPrivateAccess))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Trace", meta = (AllowPrivateAccess))
 	bool bDoMultiTrace = false;
 
 	UPROPERTY(VisibleAnywhere, Category="Actors")
 	TArray<TObjectPtr<AActor>> MousePointActors;
+
+	/* This will adjust the mouse point actor to prevent overlaps.*/
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Actors",
+		meta=(AllowPrivateAccess))
+	bool bAdjustMousePointActors = true;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Actors",
+		meta = (AllowPrivateAccess))
+	float AdjustBias = 0.f;
 
 	UPROPERTY(VisibleAnywhere, Category = "Actors")
 	bool bOverridePosition = false;
@@ -62,7 +124,8 @@ class CRABTOOLSUE5_API UMouseOverComponent : public UActorComponent
 	UPROPERTY()
 	TObjectPtr<APawn> PawnOwner;
 
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Trace",
+		meta=(AllowPrivateAccess))
 	TArray<FHitResult> MultiResults;
 
 	UPROPERTY()
@@ -70,6 +133,19 @@ class CRABTOOLSUE5_API UMouseOverComponent : public UActorComponent
 
 	FGeometry ViewportGeometry;
 	FVector2D ViewportSize;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Trace",
+		meta = (AllowPrivateAccess))
+	FVector EndPoint;
+
+	/* Current hit result that is being processed */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Trace",
+		meta=(AllowPrivateAccess))
+	FHitResult CurrentCheckResult;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Trace",
+		meta=(AllowPrivateAccess))
+	int CurrentResultIndex = 0;
 
 public:
 
@@ -145,6 +221,13 @@ public:
 	bool IsWithinDistance(float Distance) const;
 
 	virtual void SetComponentTickEnabled(bool bNewEnabled) override;
+
+	const TArray<FHitResult>& GetMultiResults() const { return this->MultiResults; }
+	const FHitResult& GetCurrentCheckResult() const;
+
+	UFUNCTION(BlueprintCallable, Category = "Trace")
+	void SetTraceComplex(bool bTraceComplex);
+
 protected:
 
 	UFUNCTION(BlueprintNativeEvent, Category = "Trace")

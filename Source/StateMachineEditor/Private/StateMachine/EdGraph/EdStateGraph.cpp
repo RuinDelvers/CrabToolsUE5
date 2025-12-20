@@ -1272,7 +1272,7 @@ void UEdStateGraph::PostEditChangeProperty(
 
 TArray<FString> UEdStateGraph::GetOverrideableMachines() const
 {
-	TArray<FString> Names;
+	TSet<FString> Names;
 
 	if (!this->IsMainGraph())
 	{
@@ -1291,9 +1291,10 @@ TArray<FString> UEdStateGraph::GetOverrideableMachines() const
 		}
 	}
 
-	Names.Sort([&](const FString& A, const FString& B) { return A < B; });
+	auto Array = Names.Array();
+	Array.Sort([&](const FString& A, const FString& B) { return A < B; });
 
-	return Names;
+	return Array;
 }
 
 void UEdStateGraph::PostLinkerChange()

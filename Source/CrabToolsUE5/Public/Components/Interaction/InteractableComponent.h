@@ -54,6 +54,9 @@ private:
 	TMap<FName, FActorInteractionData> Interactions;
 	TArray<TObjectPtr<UPrimitiveComponent>> InteractionPoints;
 
+	UPROPERTY(EditInstanceOnly, Category = "Interaction")
+	TObjectPtr<AActor> SourceActor;
+
 	UPROPERTY(EditAnywhere, Category = "Interaction")
 	FEventSlot MoveLogicEvent;
 

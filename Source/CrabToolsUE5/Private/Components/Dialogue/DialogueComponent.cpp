@@ -89,11 +89,14 @@ void UDialogueStateComponent::ClearCachedData()
 
 void UDialogueStateComponent::NullDialogue() const
 {
-	this->OnDialogueNull.Broadcast();
-
-	for (const auto& Part : this->Participants)
+	if (this->Participants.Num() > 0)
 	{
-		Part->OnDialogueNull.Broadcast();
+		this->OnDialogueNull.Broadcast();
+
+		for (const auto& Part : this->Participants)
+		{
+			Part->OnDialogueNull.Broadcast();
+		}
 	}
 }
 
@@ -246,3 +249,19 @@ void UMonologueData::GetAllDataByClass(UClass* DataClass, TArray<UObject*>& OutD
 		}
 	}
 }
+
+#if WITH_EDITOR
+void UMonologueData::PostEditChangeProperty(FPropertyChangedEvent& Event)
+{
+	Super::PostEditChangeProperty(Event);
+
+	for (auto& Data : this->MonologueText)
+	{
+		if (!Data.bApplySequenceAction)
+		{
+			Data.Action.Action.Empty();
+			Data.Action.TimeStep = FMovieSceneSequencePlaybackParams();
+		}
+	}
+}
+#endif

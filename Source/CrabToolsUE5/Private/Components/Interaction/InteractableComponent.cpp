@@ -205,7 +205,9 @@ TArray<FString> UInteractableComponent::GetDefaultOptions() const
 
 TArray<FString> UInteractableComponent::GetInteractionOptions() const
 {
-	if (auto Owner = Cast<UClass>(this->GetOuter()))
+	auto Owner = IsValid(this->SourceActor) ? this->SourceActor->GetClass() : Cast<UClass>(this->GetOuter());
+
+	if (Owner)
 	{
 		auto Names = GetActorInteractions(Owner);
 
