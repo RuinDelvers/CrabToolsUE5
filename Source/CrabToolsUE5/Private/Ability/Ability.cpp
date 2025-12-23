@@ -37,8 +37,9 @@ void UAbility::Start()
 void UAbility::Detach()
 {
 	this->Finish();
+	this->SetUseable(false);
 	this->Detach_Inner();
-	this->Owner = nullptr;
+	this->Owner = nullptr;	
 }
 
 UAbility* UAbility::GetParent() const

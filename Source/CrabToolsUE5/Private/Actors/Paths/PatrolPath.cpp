@@ -18,7 +18,7 @@ APatrolPath::APatrolPath(): bIsCycle(true)
 	#if WITH_EDITORONLY_DATA
 		this->EditorSprite = CreateEditorOnlyDefaultSubobject<UBillboardComponent>(TEXT("EditorSprite"));
 
-		ConstructorHelpers::FObjectFinderOptional<UTexture2D> Icon(
+		static ConstructorHelpers::FObjectFinderOptional<UTexture2D> Icon(
 			TEXT("/CrabToolsUE5/Icons/PatrolPathIcon.PatrolPathIcon"));
 		if (EditorSprite)
 		{

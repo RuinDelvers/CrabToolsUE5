@@ -12,7 +12,7 @@ ADynamicActorSpawner::ADynamicActorSpawner()
 	#if WITH_EDITORONLY_DATA
 		this->EditorSprite = CreateEditorOnlyDefaultSubobject<UBillboardComponent>(TEXT("EditorSprite"));
 
-		ConstructorHelpers::FObjectFinderOptional<UTexture2D> Icon(
+		static ConstructorHelpers::FObjectFinderOptional<UTexture2D> Icon(
 			TEXT("/CrabToolsUE5/Icons/ActorSpawnerIcon.ActorSpawnerIcon"));
 
 		if (EditorSprite)

@@ -6,7 +6,7 @@
 
 UDoorActorMeshComponent::UDoorActorMeshComponent()
 {
-	ConstructorHelpers::FObjectFinder<UCurveVector> RotationFinder(TEXT("/CrabToolsUE5/Data/Curves/DefaultDoorRotationCurve_C.DefaultDoorRotationCurve_C"));
+	static ConstructorHelpers::FObjectFinder<UCurveVector> RotationFinder(TEXT("/CrabToolsUE5/Data/Curves/DefaultDoorRotationCurve_C.DefaultDoorRotationCurve_C"));
 
 	if (RotationFinder.Succeeded())
 	{
@@ -17,7 +17,7 @@ UDoorActorMeshComponent::UDoorActorMeshComponent()
 		UE_LOG(LogTemp, Error, TEXT("Failed to find default rotation curve for door mesh."));
 	}
 
-	ConstructorHelpers::FObjectFinder<UCurveVector> TranslationFinder(TEXT("/CrabToolsUE5/Data/Curves/DefaultDoorTranslationCurve_C.DefaultDoorTranslationCurve_C"));
+	static ConstructorHelpers::FObjectFinder<UCurveVector> TranslationFinder(TEXT("/CrabToolsUE5/Data/Curves/DefaultDoorTranslationCurve_C.DefaultDoorTranslationCurve_C"));
 
 	if (TranslationFinder.Succeeded())
 	{
@@ -65,7 +65,7 @@ ADoorActor::ADoorActor()
 	this->SetActorEnableCollision(true);
 	
 
-	ConstructorHelpers::FObjectFinder<UCurveFloat> MovementFinder(TEXT("/CrabToolsUE5/Data/Curves/DefaultDoorMovementCurve_C.DefaultDoorMovementCurve_C"));
+	static ConstructorHelpers::FObjectFinder<UCurveFloat> MovementFinder(TEXT("/CrabToolsUE5/Data/Curves/DefaultDoorMovementCurve_C.DefaultDoorMovementCurve_C"));
 
 	if (MovementFinder.Succeeded())
 	{

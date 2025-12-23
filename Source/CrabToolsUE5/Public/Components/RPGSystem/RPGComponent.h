@@ -186,6 +186,13 @@ public:
 		return Status;
 	}
 
+	template <class T>
+	T* MakeStatus(UClass* StatusClass)
+	{
+		auto Status = NewObject<T>(this, StatusClass);
+		return Status;
+	}
+
 	UFUNCTION(BlueprintCallable, Category = "RPG|Status")
 	void GetStatus(FGameplayTag StatusID, UPARAM(Ref) TArray<UStatus*>& Found);
 
