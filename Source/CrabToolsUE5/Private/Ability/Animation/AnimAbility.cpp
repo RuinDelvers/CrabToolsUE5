@@ -2,7 +2,8 @@
 #include "GameFramework/Character.h"
 #include "Utils/UtilsLibrary.h"
 
-UAnimAbility::UAnimAbility()
+UAnimAbility::UAnimAbility(const FObjectInitializer& ObjectInitializer)
+: Super(ObjectInitializer)
 {
 	#if WITH_EDITORONLY_DATA
 		this->ActorClass = ACharacter::StaticClass();

@@ -34,7 +34,7 @@ protected:
 
 public:
 
-	UAnimAbility();
+	UAnimAbility(const FObjectInitializer& ObjectInitializer);
 
 protected:
 

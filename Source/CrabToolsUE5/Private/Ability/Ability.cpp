@@ -2,7 +2,7 @@
 
 DEFINE_LOG_CATEGORY(LogAbility);
 
-UAbility::UAbility()
+UAbility::UAbility(const FObjectInitializer& ObjInit)
 {
 	this->AbilityData = CreateDefaultSubobject<UInlineAbilityData>(TEXT("AbilityData"));
 }

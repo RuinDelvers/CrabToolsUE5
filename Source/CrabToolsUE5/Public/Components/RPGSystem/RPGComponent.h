@@ -170,13 +170,13 @@ public:
 
 	URPGComponent(const FObjectInitializer& ObjectInitializer);
 
-	UFUNCTION(BlueprintCallable, Category = "RPG")
+	UFUNCTION(BlueprintCallable, Category = "Tick")
 	void TurnStart();
 
-	UFUNCTION(BlueprintCallable, Category = "RPG")
+	UFUNCTION(BlueprintCallable, Category = "Tick")
 	void TurnEnd();
 
-	UFUNCTION(BlueprintCallable, Category = "RPG|Status", meta=(DeterminesOutputType="Status"))
+	UFUNCTION(BlueprintCallable, Category = "Status", meta=(DeterminesOutputType="Status"))
 	UStatus* MakeStatus(TSubclassOf<UStatus> Status);
 
 	template <class T>
@@ -193,16 +193,16 @@ public:
 		return Status;
 	}
 
-	UFUNCTION(BlueprintCallable, Category = "RPG|Status")
+	UFUNCTION(BlueprintCallable, Category = "Status")
 	void GetStatus(FGameplayTag StatusID, UPARAM(Ref) TArray<UStatus*>& Found);
 
-	UFUNCTION(BlueprintCallable, Category = "RPG|Status")
+	UFUNCTION(BlueprintCallable, Category = "Status")
 	URPGProperty* FindRPGPropertyByName(FName Ref, bool bRecurse=true) const;
 
-	UFUNCTION(BlueprintCallable, Category = "RPG|Status")
+	UFUNCTION(BlueprintCallable, Category = "Status")
 	void PauseStatus();
 
-	UFUNCTION(BlueprintCallable, Category = "RPG|Status")
+	UFUNCTION(BlueprintCallable, Category = "Status")
 	void UnpauseStatus();
 
 	const FStatusData* GetStatusGroupData(FGameplayTag Group) const;

@@ -85,6 +85,7 @@ public:
 	void Confirm();
 	virtual void Confirm_Implementation() {}
 
+	/* Add a listener to wait for a confirmation on the targets. */
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Targeting")
 	void AddListener(const FConfirmTargetsSingle& Callback);
 	virtual void AddListener_Implementation(const FConfirmTargetsSingle& Callback) {}

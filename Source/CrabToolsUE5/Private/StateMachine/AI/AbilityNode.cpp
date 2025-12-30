@@ -21,7 +21,6 @@ void UAbilityNode::Enter_Inner_Implementation()
 	if (IsValid(this->Selected))
 	{
 		this->Selected->OnAbilityFinished.AddDynamic(this, &UAbilityNode::HandleFinish);
-
 		this->Selected->Start();
 	}
 

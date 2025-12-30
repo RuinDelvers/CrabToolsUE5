@@ -162,7 +162,7 @@ public:
 
 public:
 
-	UAbility();
+	UAbility(const FObjectInitializer& ObjInit);
 
 	UFUNCTION(BlueprintCallable, Category = "Ability")
 	void Initialize(AActor* POwner);
