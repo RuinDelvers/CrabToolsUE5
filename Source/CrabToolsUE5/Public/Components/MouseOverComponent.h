@@ -152,9 +152,11 @@ public:
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FMouseOverActor, AActor*, Actor);
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FMouseOverTick, UMouseOverComponent*, Component);
 
+	/* Called when a new actor has been moused over. */
 	UPROPERTY(BlueprintAssignable, Category="MouseOver")
 	FMouseOverActor OnMouseOverActor;
 
+	/* Called whenever a trace is done. */
 	UPROPERTY(BlueprintAssignable, Category = "MouseOver")
 	FMouseOverTick OnMouseOverTick;
 
