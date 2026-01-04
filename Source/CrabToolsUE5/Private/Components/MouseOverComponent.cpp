@@ -4,7 +4,6 @@
 #include "Slate/SGameLayerManager.h"
 #include "Blueprint/DragDropOperation.h"
 
-
 UMouseOverComponent::UMouseOverComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
@@ -20,22 +19,24 @@ void UMouseOverComponent::BeginPlay()
 		this->PlayerController = Cast<APlayerController>(this->PawnOwner->GetController());
 		PawnOwner->ReceiveControllerChangedDelegate.AddDynamic(this, &UMouseOverComponent::OnControllerChanged);
 	}
-
+	
 	Params.AddIgnoredActor(this->GetOwner());
 
-	if (auto LocalPlayer = PlayerController->GetLocalPlayer())
+	if (this->PlayerController && this->PawnOwner && this->PawnOwner->IsLocallyControlled())
 	{
-		LocalPlayer->ViewportClient->Viewport->ViewportResizedEvent.AddUObject(this, &UMouseOverComponent::OnViewportResized);
-	}
+		if (auto LocalPlayer = PlayerController->GetLocalPlayer())
+		{
+			LocalPlayer->ViewportClient->Viewport->ViewportResizedEvent.AddUObject(this, &UMouseOverComponent::OnViewportResized);
+		}
 
-	this->UpdateViewportData();
+		this->UpdateViewportData();
+	}
 }
 
 void UMouseOverComponent::OnControllerChanged(APawn* Pawn, AController* OldController, AController* NewController)
 {
 	this->PlayerController = Cast<APlayerController>(NewController);
 }
-
 
 void UMouseOverComponent::TickComponent(
 	float DeltaTime,

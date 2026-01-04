@@ -219,7 +219,7 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Trace")
 	FVector GetNormal() const { return this->Result.ImpactNormal; }
 
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Items")
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Trace")
 	bool IsWithinDistance(float Distance) const;
 
 	virtual void SetComponentTickEnabled(bool bNewEnabled) override;
