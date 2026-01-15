@@ -50,6 +50,16 @@ void UBaseIntAttribute::Refresh()
 	this->OnAttributeChanged.Broadcast(this);
 }
 
+TSubclassOf<URPGSetter> UBaseIntAttribute::GetSetter_Implementation() const
+{
+	return UIntegerPropertySetter::StaticClass();
+}
+
+TSubclassOf<URPGCompare> UBaseIntAttribute::GetCompare_Implementation() const
+{
+	return UIntegerPropertyCompare::StaticClass();;
+}
+
 
 void UIntAttribute::SetBaseValue(int UValue)
 {
@@ -90,3 +100,54 @@ void UIntOperator::Remove()
 		App->UnOperate(this);
 	}
 }
+
+void UIntegerPropertySetter::Initialize_Inner_Implementation()
+{
+	if (this->bInline)
+	{
+		this->SourceProperty = this->Component->FindRPGPropertyByName(this->SourcePropertyName);
+	}
+}
+
+void UIntegerPropertySetter::ApplyValue_Implementation()
+{
+	if (this->bInline)
+	{
+		IIntegerRPGProperty::Execute_SetIntegerValue(this->Property, this->Value);
+	}
+	else
+	{
+		IIntegerRPGProperty::Execute_SetIntegerValue(
+			this->Property,
+			IIntegerRPGProperty::Execute_GetIntegerValue(this->SourceProperty));
+	}
+}
+
+void UIntegerPropertyCompare::Initialize_Inner_Implementation()
+{
+	if (this->bInline)
+	{
+		this->CompareProperty = this->Component->FindRPGPropertyByName(this->ComparePropertyName);
+		check(this->CompareProperty)
+	}
+}
+
+bool UIntegerPropertyCompare::Compare_Implementation()
+{
+	if (this->bInline)
+	{
+		return NumericComparison::Compare(
+			this->Comparison,
+			IIntegerRPGProperty::Execute_GetIntegerValue(this->Property),
+			this->Value);
+	}
+	else
+	{
+		return NumericComparison::Compare(
+			this->Comparison,
+			IIntegerRPGProperty::Execute_GetIntegerValue(this->Property),
+			IIntegerRPGProperty::Execute_GetIntegerValue(this->CompareProperty));
+	}
+}
+
+

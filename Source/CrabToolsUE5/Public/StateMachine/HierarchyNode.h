@@ -61,15 +61,17 @@ class CRABTOOLSUE5_API UHierarchyNode : public UStateNode
 	/*
 	 * The event to pass to the submachine when entering. Useful for when ResetOnEnter is false, but
 	 * work needs to be continued. Specifically, if ResetOnEnter is false, and nothing is done to transition 
-	 * the state, on the next tick or event the exist state will be detected again.
+	 * the state, on the next tick or event the exit state will be detected again.
 	 */
 	UPROPERTY(EditAnywhere, Category = "StateMachine",
-		meta = (AllowPrivateAccess = "true", GetOptions="GetSubMachineTransitionEvents"))
+		meta = (AllowPrivateAccess = "true", GetOptions="GetSubMachineTransitionEvents",
+			EditCondition="!ResetOnEnter", EditConditionHides))
 	FName EnterEventName;
 
 	/* Event used when exiting this node. Will pass this event to the submachine upon exiting.*/
 	UPROPERTY(EditAnywhere, Category = "StateMachine",
-		meta = (AllowPrivateAccess = "true", GetOptions = "GetSubMachineTransitionEvents"))
+		meta = (AllowPrivateAccess = "true", GetOptions = "GetSubMachineTransitionEvents",
+			EditCondition = "!ResetOnExit", EditConditionHides))
 	FName ExitEventName;
 
 public:

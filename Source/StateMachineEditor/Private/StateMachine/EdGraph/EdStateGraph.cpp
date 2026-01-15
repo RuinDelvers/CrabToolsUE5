@@ -86,6 +86,24 @@ void UEdStateGraph::NotifyGraphChanged(const FEdGraphEditAction& Action)
 	this->Modify();
 }
 
+bool UEdStateGraph::HasStateName(const FText& RequestedName) const
+{
+	for (const auto& Node : this->Nodes)
+	{
+		if (auto StateNode = Cast<UEdStateNode>(Node))
+		{
+			auto TextName = FText::FromName(StateNode->GetNodeName());
+
+			if (RequestedName.EqualTo(TextName))
+			{
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
 FName UEdStateGraph::GetNewStateName()
 {
 	FString DefaultName(DEFAULT_NODE_NAME);
@@ -365,6 +383,18 @@ bool UEdStateGraph::DoesEmitterHaveEvent(FName InEvent) const
 	}
 
 	return false;
+}
+
+IStateMachineLike* UEdStateGraph::GetSubMachineLike(FName SubMachine) const
+{
+	if (this->IsMainGraph())
+	{
+		return this->GetBlueprintOwner()->GetSubMachineLike(SubMachine);
+	}
+	else
+	{
+		return nullptr;
+	}
 }
 
 void UEdStateGraph::OnModify()

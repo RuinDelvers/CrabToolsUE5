@@ -4,10 +4,31 @@
 #include "Components/RPGSystem/RPGProperty.h"
 #include "FloatAttribute.generated.h"
 
-class UIntOperator;
+class UFloatOperator;
+
+UINTERFACE(Blueprintable)
+class UFloatRPGProperty : public UInterface
+{
+	GENERATED_BODY()
+};
+
+class IFloatRPGProperty
+{
+	GENERATED_BODY()
+
+public:
+
+	UFUNCTION(BlueprintNativeEvent, Category = "RPGProperty|Float")
+	float GetFloatValue() const;
+	virtual float GetFloatValue_Implementation() const { return 0; }
+
+	UFUNCTION(BlueprintNativeEvent, Category = "RPGProperty|Float")
+	void SetFloatValue(float NewValue);
+	virtual void SetFloatValue_Implementation(float NewValue) {}
+};
 
 UCLASS(Abstract, NotBlueprintType)
-class CRABTOOLSUE5_API UBaseFloatAttribute : public URPGProperty
+class CRABTOOLSUE5_API UBaseFloatAttribute : public URPGProperty, public IFloatRPGProperty
 {
 	GENERATED_BODY()
 
@@ -48,6 +69,10 @@ public:
 
 protected:
 
+	virtual TSubclassOf<URPGSetter> GetSetter_Implementation() const override;
+	virtual TSubclassOf<URPGCompare> GetCompare_Implementation() const override;
+
+	virtual float GetFloatValue_Implementation() const override { return this->GetValue(); }
 	virtual void Initialize_Inner_Implementation() override;
 	virtual FText GetDisplayText_Implementation() const override;
 
@@ -110,6 +135,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "RPGProperty")
 	void SetBaseValue(float UValue);
 
+protected:
+
+	virtual void SetFloatValue_Implementation(float NewValue) override { this->SetBaseValue(NewValue); }
 	virtual float GetBaseValue_Implementation() const override { return this->BaseValue; }
 };
 
@@ -140,4 +168,89 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "RPG|Operators")
 	URPGComponent* GetOwner() const { return this->Owner; }
+};
+
+
+/*
+ *  Operation for IntAttributes, Comparisons happen in the order Property OP Value.
+ */
+UCLASS(Blueprintable)
+class UFloatPropertySetter : public URPGSetter
+{
+	GENERATED_BODY()
+
+private:
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "RPGProperty",
+		meta = (AllowPrivateAccess))
+	bool bInline = true;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "RPGProperty",
+		meta = (AllowPrivateAccess, EditCondition = "bInline", EditConditionHides))
+	float Value = 0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "RPGProperty",
+		meta = (AllowPrivateAccess, EditCondition = "bInline", EditConditionHides,
+			GetOptions = "GetPropertyNames"))
+	FName SourcePropertyName;
+
+	UPROPERTY()
+	TObjectPtr<URPGProperty> SourceProperty;
+
+public:
+
+	virtual void ApplyValue_Implementation() override;
+	virtual UClass* GetPropertySearchType_Implementation() const override
+	{
+		return UFloatRPGProperty::StaticClass();
+	}
+
+protected:
+
+	virtual void Initialize_Inner_Implementation() override;
+
+};
+
+/*
+ *  Operation for IntAttributes, Comparisons happen in the order Property OP Value.
+ */
+UCLASS(Blueprintable)
+class UFloatPropertyCompare : public URPGCompare
+{
+	GENERATED_BODY()
+
+private:
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "RPGProperty",
+		meta = (AllowPrivateAccess))
+	ENumericComparison Comparison;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "RPGProperty",
+		meta = (AllowPrivateAccess))
+	bool bInline = true;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "RPGProperty",
+		meta = (AllowPrivateAccess, EditCondition = "bInline", EditConditionHides))
+	float Value = 0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "RPGProperty",
+		meta = (AllowPrivateAccess, EditCondition = "!bInline", EditConditionHides,
+			GetOptions = "GetPropertyNames"))
+	FName ComparePropertyName;
+
+	UPROPERTY()
+	TObjectPtr<URPGProperty> CompareProperty;
+
+public:
+
+	virtual bool Compare_Implementation() override;
+	virtual UClass* GetPropertySearchType_Implementation() const override
+	{
+		return UFloatRPGProperty::StaticClass();
+	}
+
+protected:
+
+	virtual void Initialize_Inner_Implementation() override;
+
 };

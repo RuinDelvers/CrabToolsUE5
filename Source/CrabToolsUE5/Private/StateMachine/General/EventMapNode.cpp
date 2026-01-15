@@ -1,82 +1,71 @@
 #include "StateMachine/General/EventMapNode.h"
-#include "Utils/UtilsLibrary.h"
 
 void UEventMapNode::Event_Inner_Implementation(FName Event)
 {
-	if (this->EventMapInternal.Contains(Event))
+	if (auto Handle = this->EventMapInternal.Find(Event))
 	{
-		auto h = this->EventMapInternal[Event];
-
-		if (h.IsBound())
-		{
-			h.Execute();
-		}
+		Handle->ExecuteIfBound();
 	}
 }
 
 void UEventMapNode::EventWithData_Inner_Implementation(FName Event, UObject* Data)
 {
-	if (this->EventWithDataMapInternal.Contains(Event))
+	if (auto Handle = this->EventWithDataMapInternal.Find(Event))
 	{
-		auto h = this->EventWithDataMapInternal[Event];
-
-		if (h.IsBound())
-		{
-			h.Execute(Data);
-		}
+		Handle->ExecuteIfBound(Data);
 	}
 }
 
 void UEventMapNode::Initialize_Inner_Implementation() 
 {
-	/*
 	for (const auto& Pair : this->EventMap) 
 	{
 		FEventHandler f;
 		f.BindUFunction(this, Pair.Value);
 		this->EventMapInternal.Add(Pair.Key, f);
 	}
-	*/
 }
 
 TArray<FString> UEventMapNode::HandlerNameOptions() const
 {
 	TArray<FString> Names;
-
-	/*
-	auto base = this->FindFunction("HandlerPrototype");
-
+	auto Base = this->FindFunction("HandlerPrototype");
 
 	for (TFieldIterator<UFunction> FIT(this->GetClass(), EFieldIteratorFlags::IncludeSuper); FIT; ++FIT)
 	{
 		UFunction* f = *FIT;
 
-		auto prop = f->GetReturnProperty();
-		if (!prop) {
-			TArray<FProperty*> Params;
-			for (auto PIT = TFieldIterator<FProperty>(f); PIT; ++PIT) {
-				Params.Add(*PIT);
-			}		
-
-			if (Params.Num() == 1) {
-				bool c1 = Params[0]->IsA(FNameProperty::StaticClass());
-				bool c2 = f->GetName() != "GoTo";
-				bool c3 = f->GetName() != "Event";
-
-				if (c1 && c2 && c3) {
-					Names.Add(f->GetName());
-				}
+		if (f->IsSignatureCompatibleWith(Base))
+		{
+			if (f->GetName() != "EmitEvent" && f->GetName() != "Event_Inner")
+			{
+				Names.Add(f->GetName());
 			}
-		}		
+		}	
 	}
-	*/
 
+	Names.Sort([](const FString& A, const FString& B) { return A < B; });
 	return Names;
 }
 
 TArray<FString> UEventMapNode::HandlerWithDataNameOptions() const
 {
 	TArray<FString> Names;
+	auto Base = this->FindFunction("HandlerWithDataPrototype");
 
+	for (TFieldIterator<UFunction> FIT(this->GetClass(), EFieldIteratorFlags::IncludeSuper); FIT; ++FIT)
+	{
+		UFunction* f = *FIT;
+
+		if (f->IsSignatureCompatibleWith(Base))
+		{
+			if (f->GetName() != "EmitEvent" && f->GetName() != "Event_Inner")
+			{
+				Names.Add(f->GetName());
+			}
+		}
+	}
+
+	Names.Sort([](const FString& A, const FString& B) { return A < B; });
 	return Names;
 }

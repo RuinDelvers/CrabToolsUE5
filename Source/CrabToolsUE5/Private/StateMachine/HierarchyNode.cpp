@@ -7,23 +7,6 @@ void UHierarchyNode::Initialize_Inner_Implementation()
 	UStateNode::Initialize_Inner_Implementation();
 
 	this->Slot.Initialize(this->GetMachine());
-	/*
-	if (this->SubMachine)
-	{
-		switch (this->StateMachineSource)
-		{
-			case EHierarchyInputType::INLINED:
-				this->SubMachine->SetParentMachine(this->GetMachine());
-				break;
-			case EHierarchyInputType::DEFINED: break;
-		}
-		this->SubMachine->Initialize(this->GetMachine()->GetOwner());
-	}
-	else if (auto Machine = this->GetMachine()->GetSubMachine(this->Slot))
-	{
-		this->SubMachine = Machine;
-	}
-	*/
 
 	if (this->Slot)
 	{
@@ -203,19 +186,33 @@ TArray<FString> UHierarchyNode::GetSubMachineTransitionEvents() const
 {
 	TArray<FString> Names;
 
-	if (IsValid(this->Slot))
+	switch (this->Slot.StateMachineSource)
 	{
-		for (const auto& Name : this->Slot->GetEvents())
-		{
-			Names.Add(Name.ToString());
-		}
+		case EHierarchyInputType::INLINED:
+			if (IsValid(this->Slot))
+			{
+				for (const auto& Name : this->Slot->GetEvents())
+				{
+					Names.Add(Name.ToString());
+				}
+			}
+			break;
+		case EHierarchyInputType::DEFINED:
+			if (auto StateLike = UtilsFunctions::GetOuterAs<IStateLike>(this))
+			{
+				if (auto SubMachine = StateLike->GetMachineLike()->GetSubMachineLike(this->Slot.MachineName))
+				{
+					Names.Append(SubMachine->GetEventOptions());
+				}
+			}
+			break;
 	}
+	
 
 	Names.Sort([&](const FString& A, const FString& B) { return A < B; });
 
 	return Names;
 }
-
 
 TArray<FString> UHierarchyNode::GetStateEventOptions() const
 {

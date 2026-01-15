@@ -208,6 +208,7 @@ public:
 
 	UEdStateNode* GetStateNodeByName(FName Name) const;
 
+	/* Returns the name of this graph when compiled. */
 	FName GetGraphName() const;
 	FORCEINLINE void SetGraphType(EStateMachineGraphType GType) { this->GraphType = GType; }
 	FORCEINLINE EStateMachineGraphType GetGraphType() const { return this->GraphType; }
@@ -228,7 +229,9 @@ public:
 
 		UFUNCTION()
 		TArray<FString> GetOverrideableMachines() const;
-	#endif	
+	#endif
+
+	bool HasStateName(const FText& RequestedName) const;
 
 	// IStateMachineLike Interface
 	virtual TArray<FString> GetMachineOptions() const override;
@@ -236,6 +239,7 @@ public:
 	virtual TArray<FString> GetEventOptions() const override;
 	virtual TArray<FString> GetConditionOptions() const override;
 	virtual TArray<FString> GetDataConditionOptions() const override;
+	virtual IStateMachineLike* GetSubMachineLike(FName SubMachine) const override;
 	virtual void OnModify() override;
 	
 	TArray<FString> GetInheritableStates(EStateNodeType NodeType) const;

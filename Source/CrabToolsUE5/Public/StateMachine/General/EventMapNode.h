@@ -1,6 +1,5 @@
 #pragma once
 
-#include "CoreMinimal.h"
 #include "StateMachine/StateMachine.h"
 #include "EventMapNode.generated.h"
 

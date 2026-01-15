@@ -3,6 +3,7 @@
 #include "StateMachine/Colors/StateMachineColors.h"
 #include "Widgets/Text/SInlineEditableTextBlock.h"
 #include "StateMachine/EdGraph/EdAliasNode.h"
+#include "StateMachine/EdGraph/EdStateGraph.h"
 
 #define LOCTEXT_NAMESPACE "SEdStateNode"
 
@@ -149,6 +150,25 @@ void SEdStateNode::UpdateGraphNode()
 		];
 
 	this->CreatePinWidgets();
+}
+
+bool SEdStateNode::OnVerifyNameTextChanged(const FText& InText, FText& ErrorMessage)
+{
+	if (auto Node = this->GetStateNode())
+	{
+		if (Node->GetStateGraph()->HasStateName(InText))
+		{
+			ErrorMessage = LOCTEXT("RenameErrorNameInUse", "Error: State name in use.");
+			return false;
+		}
+	}
+	else
+	{
+		ErrorMessage = LOCTEXT("RenameErrorNullNode", "Error: Invalid state node to rename.");
+		return false;
+	}
+
+	return true;
 }
 
 void SEdStateNode::OnErrorTextUpdate(FText ErrText)

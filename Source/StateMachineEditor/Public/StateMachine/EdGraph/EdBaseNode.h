@@ -70,5 +70,7 @@ public:
 	virtual TArray<FString> GetEnterStates() const override;
 	virtual TArray<FString> GetExitStates() const override;
 	virtual void OnModify() override;
+
+	virtual IStateMachineLike* GetMachineLike() const override;
 	/* End IStateLike Interface */
 };

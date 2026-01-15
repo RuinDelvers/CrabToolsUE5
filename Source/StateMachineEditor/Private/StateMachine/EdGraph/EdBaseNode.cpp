@@ -30,6 +30,11 @@ void UEdBaseStateNode::AutowireNewNode(UEdGraphPin* FromPin)
 	}
 }
 
+IStateMachineLike* UEdBaseStateNode::GetMachineLike() const
+{
+	return this->GetStateGraph();
+}
+
 void UEdBaseNode::ClearEvents()
 {
 	this->Events.OnNameChanged.Clear();

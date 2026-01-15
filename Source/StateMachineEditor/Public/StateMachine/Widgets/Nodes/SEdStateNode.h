@@ -35,6 +35,9 @@ public:
 	UEdBaseStateNode* GetStateNode() const { return Cast<UEdBaseStateNode>(this->GraphNode); }
 
 private:
+
+	bool OnVerifyNameTextChanged(const FText& InText, FText& ErrorMessage);
+
 	//bool OnVerifyNameTextChanged(const FText& InText, FText& OutErrorMessage);
 	void OnNameTextCommited(const FText& InText, ETextCommit::Type CommitInfo);
 	void OnNodeNameChanged(FName OldName, FName Name);

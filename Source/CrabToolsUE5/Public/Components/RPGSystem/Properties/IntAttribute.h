@@ -1,13 +1,34 @@
 #pragma once
 
-//#include <limits>
+#include "Utils/Enums.h"
 #include "Components/RPGSystem/RPGProperty.h"
 #include "IntAttribute.generated.h"
 
 class UIntOperator;
 
+UINTERFACE(Blueprintable)
+class UIntegerRPGProperty : public UInterface
+{
+	GENERATED_BODY()
+};
+
+class IIntegerRPGProperty
+{
+	GENERATED_BODY()
+
+public:
+
+	UFUNCTION(BlueprintNativeEvent, Category="RPGProperty|Integer")
+	int GetIntegerValue() const;
+	virtual int GetIntegerValue_Implementation() const { return 0; }
+
+	UFUNCTION(BlueprintNativeEvent, Category = "RPGProperty|Integer")
+	void SetIntegerValue(int NewValue);
+	virtual void SetIntegerValue_Implementation(int NewValue) {}
+};
+
 UCLASS(Abstract, NotBlueprintType)
-class CRABTOOLSUE5_API UBaseIntAttribute: public URPGProperty
+class CRABTOOLSUE5_API UBaseIntAttribute: public URPGProperty, public IIntegerRPGProperty
 {
 	GENERATED_BODY()
 
@@ -36,7 +57,6 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "RPGProperty")
 	int GetBaseValue() const;
 	virtual int GetBaseValue_Implementation() const { return 0; }
-
 	
 
 	UFUNCTION(BlueprintCallable, Category = "RPGProperty")
@@ -47,6 +67,10 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "RPGProperty")
 	void Refresh();
+
+	virtual TSubclassOf<URPGSetter> GetSetter_Implementation() const override;
+	virtual TSubclassOf<URPGCompare> GetCompare_Implementation() const override;
+	virtual int GetIntegerValue_Implementation() const override { return this->GetValue(); }
 
 protected:
 
@@ -112,7 +136,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category="RPGProperty")
 	void SetBaseValue(int UValue);
 
+protected:
+
 	virtual int GetBaseValue_Implementation() const override { return this->BaseValue; }
+	virtual void SetIntegerValue_Implementation(int NewValue) override { this->SetBaseValue(NewValue); }
 };
 
 UCLASS(Blueprintable, DefaultToInstanced, CollapseCategories, EditInlineNew)
@@ -147,4 +174,90 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category="RPG|Operators")
 	void Refresh();
+};
+
+/*
+ *  Operation for IntAttributes, Comparisons happen in the order Property OP Value.
+ */
+UCLASS(Blueprintable)
+class UIntegerPropertySetter : public URPGSetter
+{
+	GENERATED_BODY()
+
+private:
+
+	/* Whether to set the value of the property to the inline Value, or to use a property. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "RPGProperty",
+		meta = (AllowPrivateAccess))
+	bool bInline = true;
+
+	/* The inline Value to set the property to. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "RPGProperty",
+		meta = (AllowPrivateAccess, EditCondition="bInline", EditConditionHides))
+	int Value = 0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "RPGProperty",
+		meta = (AllowPrivateAccess, EditCondition = "!bInline", EditConditionHides,
+			GetOptions="GetPropertyNames"))
+	FName SourcePropertyName;
+
+	UPROPERTY()
+	TObjectPtr<URPGProperty> SourceProperty;
+
+public:
+
+	virtual void ApplyValue_Implementation() override;
+	virtual UClass* GetPropertySearchType_Implementation() const override
+	{
+		return UIntegerRPGProperty::StaticClass();
+	}
+
+protected:
+
+	virtual void Initialize_Inner_Implementation() override;
+
+};
+
+/*
+ *  Operation for IntAttributes, Comparisons happen in the order Property OP Value.
+ */
+UCLASS(Blueprintable)
+class UIntegerPropertyCompare : public URPGCompare
+{
+	GENERATED_BODY()
+
+private:
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "RPGProperty",
+		meta = (AllowPrivateAccess))
+	ENumericComparison Comparison;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "RPGProperty",
+		meta = (AllowPrivateAccess))
+	bool bInline = true;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "RPGProperty",
+		meta = (AllowPrivateAccess, EditCondition = "bInline", EditConditionHides))
+	int Value = 0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "RPGProperty",
+		meta = (AllowPrivateAccess, EditCondition = "!bInline", EditConditionHides,
+			GetOptions = "GetPropertyNames"))
+	FName ComparePropertyName;
+
+	UPROPERTY()
+	TObjectPtr<URPGProperty> CompareProperty;
+
+public:
+
+	virtual bool Compare_Implementation() override;
+	virtual UClass* GetPropertySearchType_Implementation() const override
+	{
+		return UIntegerRPGProperty::StaticClass();
+	}
+
+protected:
+
+	virtual void Initialize_Inner_Implementation() override;
+
 };

@@ -4,7 +4,6 @@
 #include "Components/RPGSystem/Properties/FloatAttribute.h"
 #include "FloatResource.generated.h"
 
-
 UCLASS(Blueprintable, BlueprintType)
 class CRABTOOLSUE5_API UFloatResource : public URPGResource
 {
@@ -55,6 +54,9 @@ public:
 	virtual void SetMaxProp(URPGProperty* Prop) override;
 
 protected:
+
+	virtual TSubclassOf<URPGSetter> GetSetter_Implementation() const override { return UFloatPropertySetter::StaticClass(); }
+	virtual TSubclassOf<URPGCompare> GetCompare_Implementation() const override { return UFloatPropertyCompare::StaticClass(); }
 
 	virtual FText GetDisplayText_Implementation() const override;
 	virtual void Initialize_Inner_Implementation() override;

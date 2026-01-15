@@ -75,6 +75,9 @@ protected:
 		OnResourceChanged.RemoveAll(Obj);
 	}
 
+	virtual TSubclassOf<URPGSetter> GetSetter_Implementation() const override { return UIntegerPropertySetter::StaticClass(); }
+	virtual TSubclassOf<URPGCompare> GetCompare_Implementation() const override { return UIntegerPropertyCompare::StaticClass(); }
+
 private:
 
 	UFUNCTION()

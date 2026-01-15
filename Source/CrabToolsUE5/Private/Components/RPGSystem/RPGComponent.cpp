@@ -86,13 +86,23 @@ void URPGComponent::TurnEnd()
 
 TArray<FString> URPGComponent::GetRPGPropertyNames(TSubclassOf<URPGProperty> Props, bool bRecurse) const
 {
+	return this->GetRPGPropertyNames(Props.Get(), bRecurse, false);
+}
+TArray<FString> URPGComponent::GetRPGPropertyNamesFromInterface(TSubclassOf<UInterface> Props, bool bRecurse) const
+{
+	return this->GetRPGPropertyNames(Props.Get(), bRecurse, true);
+}
+
+
+TArray<FString> URPGComponent::GetRPGPropertyNames(UClass* Props, bool bRecurse, bool bIsInterface) const
+{
 	TArray<FString> Names;
 
 	for (TFieldIterator<FObjectProperty> FIT(this->GetClass(), EFieldIteratorFlags::IncludeSuper); FIT; ++FIT)
 	{
 		FObjectProperty* f = *FIT;
 
-		if (f->PropertyClass->IsChildOf(Props))
+		if (bIsInterface ? f->PropertyClass->ImplementsInterface(Props) : f->PropertyClass->IsChildOf(Props))
 		{
 			Names.Add(f->GetName());
 		}
@@ -116,7 +126,7 @@ TArray<FString> URPGComponent::GetRPGPropertyNames(TSubclassOf<URPGProperty> Pro
 					{
 						if (Prop != this)
 						{
-							auto OtherNames = Prop->GetRPGPropertyNames(Props, false);
+							auto OtherNames = Prop->GetRPGPropertyNames(Props, false, bIsInterface);
 
 							for (int i = 0; i < OtherNames.Num(); ++i)
 							{
@@ -269,14 +279,26 @@ void URPGComponent::RemoveStatus(FGameplayTag StatusID, bool bAllInstances)
 
 void URPGComponent::GetStatus(FGameplayTag StatusID, TArray<UStatus*>& Found)
 {
-	if (auto Data = this->Statuses.Find(StatusID))
+	if (StatusID.IsValid())
 	{
-		Found.Append(Data->Instances);
+		if (auto Data = this->Statuses.Find(StatusID))
+		{
+			Found.Append(Data->Instances);
+		}
+	}
+	else
+	{
+		for (const auto& Status : this->Statuses)
+		{
+			Found.Append(Status.Value.Instances);
+		}
 	}
 }
 
 URPGProperty* URPGComponent::FindRPGPropertyByName(FName Ref, bool bRecurse) const
 {
+	if (Ref.IsNone()) { return nullptr; }
+
 	auto Prop = this->GetClass()->FindPropertyByName(Ref);
 
 	if (Prop)
@@ -320,6 +342,11 @@ URPGProperty* URPGComponent::FindRPGPropertyByName(FName Ref, bool bRecurse) con
 	}
 
 	return nullptr;
+}
+
+URPGProperty* URPGComponent::FindDefaultRPGPropertyByName(FName Ref) const
+{
+	return this->FindRPGPropertyByName(Ref, false);
 }
 
 void URPGComponent::PauseStatus()

@@ -177,6 +177,19 @@ bool UStateMachineBlueprint::IsMainGraph(const UEdStateGraph* Graph) const
 	return this->MainGraph == Graph;
 }
 
+IStateMachineLike* UStateMachineBlueprint::GetSubMachineLike(FName SubMachine) const
+{
+	for (const auto& SubGraph : this->SubGraphs)
+	{
+		if (SubGraph->GetGraphName() == SubMachine)
+		{
+			return SubGraph;
+		}
+	}
+ 
+	return nullptr;
+}
+
 void UStateMachineBlueprint::RenameGraph(UEdStateGraph* Graph, FName Name)
 {
 	auto Renamed = this->SubGraphs.Find(Graph);

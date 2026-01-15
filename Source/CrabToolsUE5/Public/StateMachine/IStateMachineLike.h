@@ -28,6 +28,8 @@ public:
     virtual IStateMachineLike* GetSubMachine(FString& Address) const { return nullptr; }
     virtual TArray<FString> GetSubMachineStateOptions(FName SMName) const { return {}; };
 
+    virtual IStateMachineLike* GetSubMachineLike(FName SubMachine) const { return nullptr; }
+
     // Editor Functions
     virtual void OnModify() {}
 };
@@ -54,6 +56,8 @@ public:
 
     /* Returns the list of states that this state can enter. */
     virtual TArray<FString> GetExitStates() const { return {}; }
+
+    virtual IStateMachineLike* GetMachineLike() const { return nullptr; }
 
     // Editor Functions
     virtual void OnModify() {}

@@ -88,6 +88,7 @@ public:
 	// IStateMachineLike Interface
 	virtual TArray<FString> GetMachineOptions() const override;
 	virtual void OnModify() override;
+	virtual IStateMachineLike* GetSubMachineLike(FName SubMachine) const override;
 
 	UStateMachineBlueprintGeneratedClass* GetStateMachineGeneratedClass() const;
 

@@ -54,3 +54,62 @@ void UFloatAttribute::SetBaseValue(float UValue)
 	this->BaseValue = UValue;
 	this->Refresh();
 }
+
+TSubclassOf<URPGSetter> UBaseFloatAttribute::GetSetter_Implementation() const
+{
+	return UFloatPropertySetter::StaticClass();
+}
+
+TSubclassOf<URPGCompare> UBaseFloatAttribute::GetCompare_Implementation() const
+{
+	return UFloatPropertyCompare::StaticClass();;
+}
+
+
+void UFloatPropertySetter::Initialize_Inner_Implementation()
+{
+	if (this->bInline)
+	{
+		this->SourceProperty = this->Component->FindRPGPropertyByName(this->SourcePropertyName);
+	}
+}
+
+void UFloatPropertySetter::ApplyValue_Implementation()
+{
+	if (this->bInline)
+	{
+		IFloatRPGProperty::Execute_SetFloatValue(this->Property, this->Value);
+	}
+	else
+	{
+		IFloatRPGProperty::Execute_SetFloatValue(
+			this->Property,
+			IFloatRPGProperty::Execute_GetFloatValue(this->SourceProperty));
+	}
+}
+
+void UFloatPropertyCompare::Initialize_Inner_Implementation()
+{
+	if (this->bInline)
+	{
+		this->CompareProperty = this->Component->FindRPGPropertyByName(this->ComparePropertyName);
+	}
+}
+
+bool UFloatPropertyCompare::Compare_Implementation()
+{
+	if (this->bInline)
+	{
+		return NumericComparison::Compare(
+			this->Comparison,
+			IFloatRPGProperty::Execute_GetFloatValue(this->Property),
+			this->Value);
+	}
+	else
+	{
+		return NumericComparison::Compare(
+			this->Comparison,
+			IFloatRPGProperty::Execute_GetFloatValue(this->Property),
+			IFloatRPGProperty::Execute_GetFloatValue(this->CompareProperty));
+	}
+}

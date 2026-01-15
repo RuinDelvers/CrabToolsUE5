@@ -194,10 +194,11 @@ public:
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "Status")
-	void GetStatus(FGameplayTag StatusID, UPARAM(Ref) TArray<UStatus*>& Found);
+	void GetStatus(FGameplayTag StatusID, TArray<UStatus*>& Found);
 
 	UFUNCTION(BlueprintCallable, Category = "Status")
 	URPGProperty* FindRPGPropertyByName(FName Ref, bool bRecurse=true) const;
+	URPGProperty* FindDefaultRPGPropertyByName(FName Ref) const;
 
 	UFUNCTION(BlueprintCallable, Category = "Status")
 	void PauseStatus();
@@ -209,7 +210,8 @@ public:
 
 	UStatus* GetStatusInstanceFromGroup(FGameplayTag Group) const;
 
-	TArray<FString> GetRPGPropertyNames(TSubclassOf<URPGProperty> Props, bool bRecurse=true) const;
+	TArray<FString> GetRPGPropertyNames(TSubclassOf<URPGProperty> Props, bool bRecurse = true) const;
+	TArray<FString> GetRPGPropertyNamesFromInterface(TSubclassOf<UInterface> Props, bool bRecurse = true) const;
 
 protected:
 
@@ -258,6 +260,8 @@ protected:
 		FActorComponentTickFunction* ThisTickFunction) override;
 
 private:
+
+	TArray<FString> GetRPGPropertyNames(UClass* Props, bool bRecurse, bool bIsInterface) const;
 
 	UFUNCTION()
 	void OnStatusExpiredCallback(UStatus* Status);
