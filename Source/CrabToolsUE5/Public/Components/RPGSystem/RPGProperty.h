@@ -59,7 +59,7 @@ protected:
  * and will be kept within those bounds.
  */
 UCLASS(Abstract, NotBlueprintType, Blueprintable, DefaultToInstanced, EditInlineNew)
-class URPGResource : public URPGProperty
+class CRABTOOLSUE5_API URPGResource : public URPGProperty
 {
 	GENERATED_BODY()
 
@@ -74,6 +74,22 @@ protected:
 	FName MaximumRef;
 
 public:
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Resource")
+	void UseResourceInt(int Amount);
+	virtual void UseResourceInt_Implementation(int Amount) {}
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Resource")
+	void UseResourceFloat(float Amount);
+	virtual void UseResourceFloat_Implementation(float Amount) {}
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category="Resource")
+	bool HasResourceInt(int Compare) const;
+	virtual bool HasResourceInt_Implementation(int Compare) const { return false; }
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Resource")
+	bool HasResourceFloat(float Compare) const;
+	virtual bool HasResourceFloat_Implementation(float Compare) const { return false; }
 
 	void SetMinRef(FName Ref) { this->MinimumRef = Ref; }
 	void SetMaxRef(FName Ref) { this->MaximumRef = Ref; }

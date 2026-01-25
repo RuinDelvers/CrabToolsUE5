@@ -4,7 +4,7 @@
 #include "GameplayTagContainer.h"
 #include "TagProperty.generated.h"
 
-UCLASS(BlueprintType)
+UCLASS(BlueprintType, CollapseCategories)
 class CRABTOOLSUE5_API UTagProperty: public URPGProperty
 {
 	GENERATED_BODY()
@@ -17,11 +17,14 @@ private:
 
 public:
 
+	UFUNCTION(BlueprintCallable, Category = "Property")
 	void SetTag(FGameplayTag NewTag) { this->Tag = NewTag; }
+
+	UFUNCTION(BlueprintCallable, Category = "Property")
 	FGameplayTag GetTag() const { return this->Tag; }
 };
 
-UCLASS(BlueprintType)
+UCLASS(BlueprintType, CollapseCategories)
 class CRABTOOLSUE5_API UTagSetProperty : public URPGProperty
 {
 	GENERATED_BODY()
@@ -34,7 +37,15 @@ private:
 
 public:
 
+	UFUNCTION(BlueprintCallable, Category="Property")
 	void AddTag(FGameplayTag NewTag) { this->Tags.AddTag(NewTag); }
+
+	UFUNCTION(BlueprintCallable, Category = "Property")
+	void AppendTags(const FGameplayTagContainer& Cont) { this->Tags.AppendTags(Cont); }
+
+	UFUNCTION(BlueprintCallable, Category = "Property")
 	void RemoveTag(FGameplayTag NewTag) { this->Tags.RemoveTag(NewTag); }
+
+	UFUNCTION(BlueprintCallable, Category = "Property")
 	const FGameplayTagContainer& GetTags() const { return this->Tags; }
 };

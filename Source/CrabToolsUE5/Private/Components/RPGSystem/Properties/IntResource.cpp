@@ -66,6 +66,26 @@ void UIntResource::Decrement()
 	this->SetValue(this->GetValue() - 1);
 }
 
+void UIntResource::UseResourceInt_Implementation(int Amount)
+{
+	this->SetValue(this->GetValue() - Amount);
+}
+
+void UIntResource::UseResourceFloat_Implementation(float Amount)
+{
+	this->SetValue(this->GetValue() - Amount);
+}
+
+bool UIntResource::HasResourceInt_Implementation(int Compare) const
+{
+	return Compare <= this->GetValue();
+}
+
+bool UIntResource::HasResourceFloat_Implementation(float Compare) const
+{
+	return Compare <= this->GetValue();
+}
+
 void UIntResource::SetMinProp(URPGProperty* Prop)
 {
 	this->Minimum = CastChecked<UBaseIntAttribute>(Prop);

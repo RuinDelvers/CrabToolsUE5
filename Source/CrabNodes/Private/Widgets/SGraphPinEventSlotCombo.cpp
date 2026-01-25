@@ -1,5 +1,5 @@
 #include "Widgets/SGraphPinEventSlotCombo.h"
-#include "Kismet/K2Node_EmitEventFromInterface.h"
+#include "EdGraph/EdGraphPin.h"
 #include "PropertyCustomization/EventSlot/SEventSlotCombo.h"
 
 SGraphPinEventSlotCombo::SGraphPinEventSlotCombo()
@@ -9,22 +9,24 @@ SGraphPinEventSlotCombo::SGraphPinEventSlotCombo()
 
 void SGraphPinEventSlotCombo::Construct(
 	const FArguments& InArgs,
-	UK2Node_EmitEventFromInterface* InNode)
+	UEdGraphPin* InPin)
 {
-	this->Node = InNode;
-	SGraphPin::Construct(SGraphPin::FArguments(), InNode->GetEventPin());	
+	SGraphPin::Construct(SGraphPin::FArguments(), InPin);	
 }
 
 TSharedRef<SWidget> SGraphPinEventSlotCombo::GetDefaultValueWidget()
 {
-	if (this->Node.IsValid())
-	{
-		return SNew(SEventSlotCombo)
-			.OnSlotChanged_UObject(this->Node.Get(), &UK2Node_EmitEventFromInterface::UpdateSlotExtern)
-			.Slot(this->Node->GetSlot());
-	}	
-	else
-	{
-		return SGraphPin::GetDefaultValueWidget();
-	}
+	FString StructName;
+	FEventSlot TestSlot;
+
+	FEventSlot::StaticStruct()->ImportText(*this->GraphPinObj->DefaultValue, &TestSlot, nullptr, 0, nullptr, StructName);
+
+	return SNew(SEventSlotCombo)
+		.Slot(TestSlot)
+		.OnSlotChanged_Lambda([this](const FEventSlot Event)
+			{
+				FString Output;
+				FEventSlot::StaticStruct()->ExportText(Output, &Event, nullptr, nullptr, 0, nullptr);
+				this->GraphPinObj->DefaultValue = Output;
+			});
 }

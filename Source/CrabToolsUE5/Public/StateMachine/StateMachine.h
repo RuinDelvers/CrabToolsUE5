@@ -655,11 +655,11 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "StateMachine")
 	FName GetCurrentEvent() const { return this->Queue.CurrentEvent; }
 
-	UFUNCTION(BlueprintCallable, Category = "StateMachine")
+	UFUNCTION(BlueprintCallable, BlueprintInternalUseOnly, Category = "StateMachine")
 	void SendEvent(FName InEvent);
 	virtual void Event_Implementation(FName InEvent) override final { this->SendEvent(InEvent); }
 
-	UFUNCTION(BlueprintCallable, Category = "StateMachine")
+	UFUNCTION(BlueprintCallable, BlueprintInternalUseOnly, Category = "StateMachine")
 	void SendEventWithData(FName InEvent, UObject* Data);
 	void EventWithData_Implementation(FName InEvent, UObject* Data) override final { this->SendEventWithData(InEvent, Data); }
 

@@ -1,20 +1,18 @@
 #pragma once
 
 #include "SGraphPin.h"
+#include "EdGraph/EdGraphPin.h"
 #include "Widgets/DeclarativeSyntaxSupport.h"
 
 class UStateMachineInterface;
 class UEdGraphPin;
 class UStateMachine;
 class UStateNode;
-class UK2Node_EmitEventFromInterface;
 
 class CRABNODES_API SGraphPinEventSlotCombo : public SGraphPin
 {
 
 private:
-
-	TWeakObjectPtr<UK2Node_EmitEventFromInterface> Node;
 
 public:
 	SLATE_BEGIN_ARGS(SGraphPinSMEventName) {}
@@ -22,7 +20,7 @@ public:
 
 	void Construct(
 		const FArguments& InArgs,
-		UK2Node_EmitEventFromInterface* InNode);
+		UEdGraphPin* InPin);
 
 	SGraphPinEventSlotCombo();
 	virtual ~SGraphPinEventSlotCombo() {}

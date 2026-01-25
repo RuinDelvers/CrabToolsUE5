@@ -197,6 +197,9 @@ public:
 	void GetStatus(FGameplayTag StatusID, TArray<UStatus*>& Found);
 
 	UFUNCTION(BlueprintCallable, Category = "Status")
+	bool HasStatus(FGameplayTag StatusID) const;
+
+	UFUNCTION(BlueprintCallable, Category = "Status")
 	URPGProperty* FindRPGPropertyByName(FName Ref, bool bRecurse=true) const;
 	URPGProperty* FindDefaultRPGPropertyByName(FName Ref) const;
 

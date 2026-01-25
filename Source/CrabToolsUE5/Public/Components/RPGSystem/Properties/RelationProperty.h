@@ -34,8 +34,8 @@ struct FRelationPropertyPair
 };
 
 
-UCLASS(Blueprintable)
-class CRABTOOLSUE5_API URelationProperty : public URPGProperty
+UCLASS(Blueprintable, CollapseCategories)
+class CRABTOOLSUE5_API UTernaryRelationProperty : public URPGProperty
 {
 	GENERATED_BODY()
 
@@ -60,6 +60,7 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Relations")
 	FGameplayTag GetRelation(UTagProperty* TagOne, UTagProperty* TagTwo) const;
 
+	/* Gets the relations (Tag, T, Relation) where T is in TagProp */
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Relations")
 	FGameplayTagContainer GetRelations(UTagProperty* Tag, UTagSetProperty* TagProp) const;
 
@@ -69,4 +70,44 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Relations")
 	void SetRelation(FGameplayTag TagOne, FGameplayTag TagTwo, FGameplayTag Relation);
+};
+
+
+UCLASS(Blueprintable, CollapseCategories)
+class CRABTOOLSUE5_API UBinaryRelationProperty : public URPGProperty
+{
+	GENERATED_BODY()
+
+private:
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Property",
+		meta = (AllowPrivateAccess))
+	FGameplayTag DefaultRelation;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Property",
+		meta = (AllowPrivateAccess))
+	TMap<FGameplayTag, FGameplayTag> Relations;
+
+public:
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Relations")
+	FGameplayTag GetDefaultRelation() const { return this->DefaultRelation; }
+
+	UFUNCTION(BlueprintCallable, Category = "Relations")
+	void SetDefaultRelation(FGameplayTag NewDefault) { this->DefaultRelation = NewDefault; }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Relations")
+	FGameplayTag GetRelation(UTagProperty* Tag) const;
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Relations")
+	FGameplayTagContainer GetRelations(UTagSetProperty* TagProp) const;
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Relations")
+	FGameplayTag GetRelationFromTags(FGameplayTag Tag) const;
+
+	UFUNCTION(BlueprintCallable, Category = "Relations")
+	void AppendRelations(const TMap<FGameplayTag, FGameplayTag>& NewRelations);
+
+	UFUNCTION(BlueprintCallable, Category = "Relations")
+	void SetRelation(FGameplayTag Tag, FGameplayTag Relation);
 };

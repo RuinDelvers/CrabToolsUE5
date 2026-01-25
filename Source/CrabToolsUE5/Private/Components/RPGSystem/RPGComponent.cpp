@@ -120,7 +120,7 @@ TArray<FString> URPGComponent::GetRPGPropertyNames(UClass* Props, bool bRecurse,
 
 				if (f->PropertyClass->IsChildOf<URPGComponent>())
 				{
-					f->GetValue_InContainer(this, &Value);
+					f->GetValue_InContainer(this->GetOuter(), &Value);
 
 					if (auto Prop = Cast<URPGComponent>(Value))
 					{
@@ -293,6 +293,11 @@ void URPGComponent::GetStatus(FGameplayTag StatusID, TArray<UStatus*>& Found)
 			Found.Append(Status.Value.Instances);
 		}
 	}
+}
+
+bool URPGComponent::HasStatus(FGameplayTag StatusID) const
+{
+	return this->Statuses.Contains(StatusID);
 }
 
 URPGProperty* URPGComponent::FindRPGPropertyByName(FName Ref, bool bRecurse) const

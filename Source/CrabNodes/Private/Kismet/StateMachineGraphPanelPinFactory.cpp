@@ -3,7 +3,6 @@
 #include "Widgets/SGraphPinSMEventName.h"
 #include "Widgets/SGraphPinEventSlotCombo.h"
 #include "StateMachine/DataStructures.h"
-#include "Kismet/K2Node_EmitEventFromInterface.h"
 #include "Kismet/K2Node_EmitEventFromNodeList.h"
 
 TSharedPtr<class SGraphPin> FStateMachineGraphPanelPinFactory::CreatePin(class UEdGraphPin* InPin) const
@@ -21,14 +20,13 @@ TSharedPtr<class SGraphPin> FStateMachineGraphPanelPinFactory::CreatePin(class U
 			}
 		}
 	}
-
-	if (auto EventNode = Cast<UK2Node_EmitEventFromInterface>(InPin->GetOuter()))
+	else
 	{
 		if (InPin->PinType.PinCategory == UEdGraphSchema_K2::PC_Struct)
 		{
 			if (InPin->PinType.PinSubCategoryObject == FEventSlot::StaticStruct())
 			{
-				OutPin = SNew(SGraphPinEventSlotCombo, EventNode);
+				OutPin = SNew(SGraphPinEventSlotCombo, InPin);
 			}
 		}
 	}

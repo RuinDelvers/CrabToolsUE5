@@ -78,7 +78,7 @@ void SEventSlotPicker::Construct(const FArguments& InArgs)
 						.Padding(0, 1, 5, 1)
 						[
 							SAssignNew(SearchTagBox, SSearchBox)
-								.HintText(LOCTEXT("GameplayTagPicker_SearchBoxHint", "Search Gameplay Tags"))
+								.HintText(LOCTEXT("GameplayTagPicker_SearchBoxHint", "Search State Machine Events"))
 								.OnTextChanged(this, &SEventSlotPicker::OnFilterTextChanged)
 						]
 
@@ -110,8 +110,6 @@ void SEventSlotPicker::Construct(const FArguments& InArgs)
 						]
 				]
 		];
-
-	
 
 	if (InArgs._ShowMenuItems)
 	{
@@ -149,9 +147,6 @@ void SEventSlotPicker::Construct(const FArguments& InArgs)
 				Picker
 			];
 	}
-
-	// Force the entire tree collapsed to start
-	SetTagTreeItemExpansion(false, false);
 
 	this->TagTreeWidget->RequestTreeRefresh();
 	this->InitRoot();
@@ -198,34 +193,6 @@ void SEventSlotPicker::OnTreeSelectionChanged(TSharedPtr<FEventSlotNode> Selecte
 
 FReply SEventSlotPicker::OnTreeKeyDown(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent)
 {
-	if (FSlateApplication::Get().GetNavigationActionFromKey(InKeyEvent) == EUINavigationAction::Accept)
-	{
-		TArray<TSharedPtr<FEventSlotNode>> Selection = TagTreeWidget->GetSelectedItems();
-		TSharedPtr<FEventSlotNode> SelectedItem;
-		if (!Selection.IsEmpty())
-		{
-			SelectedItem = Selection[0];
-		}
-
-		if (SelectedItem.IsValid())
-		{
-			TGuardValue<bool> PersistExpansionChangeGuard(bInSelectionChanged, true);
-
-			// Toggle selection
-			const ECheckBoxState State = IsTagChecked(SelectedItem);
-			if (State == ECheckBoxState::Unchecked)
-			{
-				//OnTagChecked(SelectedItem);
-			}
-			else if (State == ECheckBoxState::Checked)
-			{
-				//OnTagUnchecked(SelectedItem);
-			}
-
-			return FReply::Handled();
-		}
-	}
-
 	return SCompoundWidget::OnKeyDown(InGeometry, InKeyEvent);
 }
 
@@ -254,8 +221,20 @@ void SEventSlotPicker::OnFilterTextChanged(const FText& InFilterText)
 
 void SEventSlotPicker::FilterTagTree()
 {
+	
 	TagTreeWidget->SetTreeItemsSource(&this->Root->GetFilteredChildNodes(this->FilterString));
+	this->ExpandFullTree(this->Root, !this->FilterString.IsEmpty());
 	TagTreeWidget->RequestTreeRefresh();
+}
+
+void SEventSlotPicker::ExpandFullTree(const TSharedPtr<FEventSlotNode>& Item, bool bExpansion)
+{
+	this->TagTreeWidget->SetItemExpansion(Item, bExpansion);
+
+	for (const auto& Child : Item->GetFilteredChildren())
+	{
+		ExpandFullTree(Child, bExpansion);
+	}
 }
 
 FText SEventSlotPicker::GetHighlightText() const
@@ -360,7 +339,7 @@ FSlateColor SEventSlotPicker::GetTagTextColour(TSharedPtr<FEventSlotNode> Node) 
 
 void SEventSlotPicker::OnExpandAllClicked(TSharedPtr<SComboButton> OwnerCombo)
 {
-	SetTagTreeItemExpansion(true, true);
+	this->ExpandFullTree(this->Root, true);
 
 	if (OwnerCombo.IsValid())
 	{
@@ -370,7 +349,8 @@ void SEventSlotPicker::OnExpandAllClicked(TSharedPtr<SComboButton> OwnerCombo)
 
 void SEventSlotPicker::OnCollapseAllClicked(TSharedPtr<SComboButton> OwnerCombo)
 {
-	SetTagTreeItemExpansion(false, true);
+	this->ExpandFullTree(this->Root, false);
+
 	if (OwnerCombo.IsValid())
 	{
 		OwnerCombo->SetIsOpen(false);
@@ -440,31 +420,6 @@ void SEventSlotPicker::OnCopyTagNameToClipboard(TSharedPtr<FEventSlotNode> InTag
 	if (OwnerCombo.IsValid())
 	{
 		OwnerCombo->SetIsOpen(false);
-	}
-}
-
-void SEventSlotPicker::SetTagTreeItemExpansion(bool bExpand, bool bPersistExpansion)
-{
-	TArray<TSharedPtr<FEventSlotNode>> TagArray;
-	//UGameplayTagsManager::Get().GetFilteredGameplayRootTags(TEXT(""), TagArray);
-	for (int32 TagIdx = 0; TagIdx < TagArray.Num(); ++TagIdx)
-	{
-		SetTagNodeItemExpansion(TagArray[TagIdx], bExpand, bPersistExpansion);
-	}
-}
-
-void SEventSlotPicker::SetTagNodeItemExpansion(TSharedPtr<FEventSlotNode> Node, bool bExpand, bool bPersistExpansion)
-{
-	TGuardValue<bool> PersistExpansionChangeGuard(bPersistExpansionChange, bPersistExpansion);
-	if (Node.IsValid() && TagTreeWidget.IsValid())
-	{
-		TagTreeWidget->SetItemExpansion(Node, bExpand);
-
-		const TArray<TSharedPtr<FEventSlotNode>>& ChildTags = Node->GetChildNodes();
-		for (int32 ChildIdx = 0; ChildIdx < ChildTags.Num(); ++ChildIdx)
-		{
-			SetTagNodeItemExpansion(ChildTags[ChildIdx], bExpand, bPersistExpansion);
-		}
 	}
 }
 

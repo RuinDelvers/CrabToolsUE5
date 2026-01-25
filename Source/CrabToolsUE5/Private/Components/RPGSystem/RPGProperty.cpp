@@ -24,7 +24,6 @@ void URPGOperation::Initialize(URPGComponent* InitComponent)
 		check(InitComponent->IsA(this->PropertySource.LoadSynchronous()));
 	#endif
 
-	UE_LOG(LogTemp, Warning, TEXT("Property Name: %s"), *this->PropertyName.ToString());
 	this->Component = Component;
 	this->Property = InitComponent->FindRPGPropertyByName(this->PropertyName);
 

@@ -22,7 +22,7 @@ class CRABTOOLSUE5EDITOR_API SEventSlotCombo : public SCompoundWidget
 
 public:
 
-	DECLARE_DELEGATE_OneParam(FOnSlotChanged, const FEventSlot /*Tag*/)
+	DECLARE_DELEGATE_OneParam(FOnSlotChanged, const FEventSlot)
 
 private:
 

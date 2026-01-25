@@ -46,6 +46,7 @@ public:
 
 	void SetSelected(const TSharedPtr<FEventSlotNode>& Selected);
 	virtual void ClearNodeSelection();
+	const TArray<TSharedPtr<FEventSlotNode>> GetFilteredChildren() const { return this->FilteredChildren; }
 
 protected:
 	
@@ -360,23 +361,6 @@ private:
 	/** Called when the user clicks the "Collapse All" button; Collapses the entire tag tree */
 	void OnCollapseAllClicked(TSharedPtr<SComboButton> OwnerCombo);
 
-	/**
-	 * Helper function to set the expansion state of the tree widget
-	 *
-	 * @param bExpand If true, expand the entire tree; Otherwise, collapse the entire tree
-	 * @param bPersistExpansion If true, persist the expansion state.
-	 */
-	void SetTagTreeItemExpansion(bool bExpand, bool bPersistExpansion = false);
-
-	/**
-	 * Helper function to set the expansion state of a specific node
-	 *
-	 * @param Node		Node to set the expansion state of
-	 * @param bExpand	If true, expand the node; Otherwise, collapse the node
-	 * @param bPersistExpansion If true, persist the expansion state.
-	 */
-	void SetTagNodeItemExpansion(TSharedPtr<FEventSlotNode> Node, bool bExpand, bool bPersistExpansion = false);
-
 	/** Recursive function to go through all tags in the tree and set the expansion to default*/
 	void SetDefaultTagNodeItemExpansion(TSharedPtr<FEventSlotNode> Node);
 
@@ -415,4 +399,6 @@ private:
 	void InitRoot();
 
 	void SetEventName(FName InEvent);
+
+	void ExpandFullTree(const TSharedPtr<FEventSlotNode>& Item, bool bExpansion);
 };

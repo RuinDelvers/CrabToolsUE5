@@ -20,8 +20,6 @@ bool URPGCompareTransitionCondition::Check() const
 	}
 }
 
-
-
 #if WITH_EDITOR
 void URPGCompareTransitionCondition::PostEditChangeProperty(FPropertyChangedEvent& Event)
 {
@@ -54,13 +52,10 @@ void URPGCompareTransitionCondition::UpdateCompareObject()
 	{
 		if (auto Prop = this->RPGClass->GetDefaultObject<URPGComponent>()->FindDefaultRPGPropertyByName(this->PropertyName))
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Found property from name %s"), *this->PropertyName.ToString());
 			if (auto SetterClass = Prop->GetCompare())
 			{
-				UE_LOG(LogTemp, Warning, TEXT("- Found property Compare from name %s"), *this->PropertyName.ToString());
 				if (!(this->Compare && this->Compare->GetClass() == SetterClass))
 				{
-					UE_LOG(LogTemp, Warning, TEXT("- - Setting compare"));
 					this->Compare = NewObject<URPGCompare>(this, SetterClass);
 					this->Compare->SetExternalControl(true, this->RPGClass, this->PropertyName);
 				}

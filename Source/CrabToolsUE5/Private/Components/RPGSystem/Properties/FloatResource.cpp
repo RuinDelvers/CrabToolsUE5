@@ -89,6 +89,26 @@ void UFloatResource::Refresh()
 	}
 }
 
+void UFloatResource::UseResourceInt_Implementation(int Amount)
+{
+	this->SetValue(this->GetValue() - Amount);
+}
+
+void UFloatResource::UseResourceFloat_Implementation(float Amount)
+{
+	this->SetValue(this->GetValue() - Amount);
+}
+
+bool UFloatResource::HasResourceInt_Implementation(int Compare) const
+{
+	return Compare <= this->GetValue();
+}
+
+bool UFloatResource::HasResourceFloat_Implementation(float Compare) const
+{
+	return Compare <= this->GetValue();
+}
+
 FText UFloatResource::GetDisplayText_Implementation() const
 {
 	return FText::AsNumber(this->GetValue());

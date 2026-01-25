@@ -1,12 +1,12 @@
 #include "Components/RPGSystem/Properties/RelationProperty.h"
 #include "Components/RPGSystem/Properties/TagProperty.h"
 
-FGameplayTag URelationProperty::GetRelation(UTagProperty* TagOne, UTagProperty* TagTwo) const
+FGameplayTag UTernaryRelationProperty::GetRelation(UTagProperty* TagOne, UTagProperty* TagTwo) const
 {
 	return this->GetRelationFromTags(TagOne->GetTag(), TagTwo->GetTag());
 }
 
-FGameplayTagContainer URelationProperty::GetRelations(UTagProperty* Tag, UTagSetProperty* TagProp) const
+FGameplayTagContainer UTernaryRelationProperty::GetRelations(UTagProperty* Tag, UTagSetProperty* TagProp) const
 {
 	auto ComputedRelations = FGameplayTagContainer();
 	auto SelfTag = Tag->GetTag();
@@ -20,7 +20,7 @@ FGameplayTagContainer URelationProperty::GetRelations(UTagProperty* Tag, UTagSet
 }
 
 
-FGameplayTag URelationProperty::GetRelationFromTags(FGameplayTag One, FGameplayTag Two) const
+FGameplayTag UTernaryRelationProperty::GetRelationFromTags(FGameplayTag One, FGameplayTag Two) const
 {
 	auto Pair = FRelationPropertyPair(One, Two);
 
@@ -34,9 +34,55 @@ FGameplayTag URelationProperty::GetRelationFromTags(FGameplayTag One, FGameplayT
 	}
 }
 
-void URelationProperty::SetRelation(FGameplayTag TagOne, FGameplayTag TagTwo, FGameplayTag Relation)
+void UTernaryRelationProperty::SetRelation(FGameplayTag TagOne, FGameplayTag TagTwo, FGameplayTag Relation)
 {
 	auto Pair = FRelationPropertyPair(TagOne, TagTwo);
 
 	this->Relations.Add(Pair, Relation);
+}
+
+FGameplayTag UBinaryRelationProperty::GetRelation(UTagProperty* Tag) const
+{
+	if (auto Relation = this->Relations.Find(Tag->GetTag()))
+	{
+		return *Relation;
+	}
+	else
+	{
+		return this->DefaultRelation;
+	}
+}
+
+FGameplayTagContainer UBinaryRelationProperty::GetRelations(UTagSetProperty* TagProp) const
+{
+	auto ComputedRelations = FGameplayTagContainer();
+
+	for (auto& Tags : TagProp->GetTags())
+	{
+		ComputedRelations.AddTag(this->GetRelationFromTags(Tags));
+	}
+
+	return ComputedRelations;
+}
+
+FGameplayTag UBinaryRelationProperty::GetRelationFromTags(FGameplayTag Tag) const
+{
+	if (auto Relation = this->Relations.Find(Tag))
+	{
+		return *Relation;
+	}
+	else
+	{
+		return this->DefaultRelation;
+	}
+}
+
+void UBinaryRelationProperty::AppendRelations(const TMap<FGameplayTag, FGameplayTag>& NewRelations)
+{
+	this->Relations.Append(NewRelations);
+}
+
+void UBinaryRelationProperty::SetRelation(FGameplayTag Tag, FGameplayTag Relation)
+{
+	this->Relations.Add(Tag, Relation);
 }
