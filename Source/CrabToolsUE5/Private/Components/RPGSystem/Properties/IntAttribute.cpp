@@ -47,7 +47,7 @@ void UBaseIntAttribute::Refresh()
 
 	this->CompValue = Value;
 
-	this->OnAttributeChanged.Broadcast(this);
+	this->OnPropertyChanged.Broadcast(this);
 }
 
 TSubclassOf<URPGSetter> UBaseIntAttribute::GetSetter_Implementation() const

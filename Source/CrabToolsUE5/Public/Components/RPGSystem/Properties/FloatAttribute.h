@@ -44,13 +44,6 @@ protected:
 
 public:
 
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FAttributeChanged, UBaseFloatAttribute*, Attribute);
-
-	UPROPERTY(BlueprintAssignable, Category = "RPGProperty")
-	FAttributeChanged OnAttributeChanged;
-
-public:
-
 	UFUNCTION(BlueprintCallable, Category = "RPGProperty", meta = (CompactNodeTitle = "->"))
 	float GetValue() const;
 
@@ -75,16 +68,6 @@ protected:
 	virtual float GetFloatValue_Implementation() const override { return this->GetValue(); }
 	virtual void Initialize_Inner_Implementation() override;
 	virtual FText GetDisplayText_Implementation() const override;
-
-	virtual void ListenToProperty_Implementation(const FRPGPropertyChanged& Callback) override
-	{
-		OnAttributeChanged.Add(Callback);
-	}
-
-	virtual void StopListeningToProperty_Implementation(UObject* Obj) override
-	{
-		OnAttributeChanged.RemoveAll(Obj);
-	}
 };
 
 UCLASS(NotBlueprintable, DisplayName = "Zero")

@@ -35,9 +35,8 @@ void UFloatResource::Initialize_Inner_Implementation()
 
 	this->Minimum->Initialize(this->GetOwner());
 	this->Maximum->Initialize(this->GetOwner());
-
-	this->Minimum->OnAttributeChanged.AddDynamic(this, &UFloatResource::OnAttributeChanged);
-	this->Maximum->OnAttributeChanged.AddDynamic(this, &UFloatResource::OnAttributeChanged);
+	this->Minimum->OnPropertyChanged.AddDynamic(this, &UFloatResource::OnAttributeChanged);
+	this->Maximum->OnPropertyChanged.AddDynamic(this, &UFloatResource::OnAttributeChanged);
 }
 
 void UFloatResource::SetValue(float UValue)
@@ -47,7 +46,7 @@ void UFloatResource::SetValue(float UValue)
 	if (NewValue != this->Value)
 	{
 		this->Value = NewValue;
-		this->OnResourceChanged.Broadcast(this);
+		this->OnPropertyChanged.Broadcast(this);
 	}
 }
 
@@ -85,7 +84,7 @@ void UFloatResource::Refresh()
 	if (NewValue != this->Value)
 	{
 		this->Value = NewValue;
-		this->OnResourceChanged.Broadcast(this);
+		this->OnPropertyChanged.Broadcast(this);
 	}
 }
 
@@ -114,7 +113,7 @@ FText UFloatResource::GetDisplayText_Implementation() const
 	return FText::AsNumber(this->GetValue());
 }
 
-void UFloatResource::OnAttributeChanged(UBaseFloatAttribute* Attr)
+void UFloatResource::OnAttributeChanged(URPGProperty* Attr)
 {
 	this->Refresh();
 }

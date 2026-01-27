@@ -45,7 +45,7 @@ void UBaseFloatAttribute::Refresh()
 
 	this->CompValue = Value;
 
-	this->OnAttributeChanged.Broadcast(this);
+	this->OnPropertyChanged.Broadcast(this);
 }
 
 

@@ -12,21 +12,8 @@ class CRABTOOLSUE5_API UIntResource : public URPGResource
 
 private:
 
-	UPROPERTY(EditAnywhere, Instanced, Category="Resources")
-	TObjectPtr<UBaseIntAttribute> Minimum;
-
-	UPROPERTY(EditAnywhere, Instanced, Category = "Resources")
-	TObjectPtr<UBaseIntAttribute> Maximum;
-
 	UPROPERTY(EditAnywhere, Category="Resources")
 	int Value = 0;
-
-public:
-
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FResourceChanged, UIntResource*, Resource);
-
-	UPROPERTY(BlueprintAssignable, Category="Resources")
-	FResourceChanged OnResourceChanged;
 
 public:
 
@@ -40,10 +27,10 @@ public:
 	void SetValue(int UValue);
 
 	UFUNCTION(BlueprintCallable, Category = "RPGProperty")
-	int GetMin() const { return this->Minimum->GetValue(); }
+	int GetMin() const { return IIntegerRPGProperty::Execute_GetIntegerValue(this->Minimum); }
 
 	UFUNCTION(BlueprintCallable, Category = "RPGProperty")
-	int GetMax() const { return this->Maximum->GetValue(); }
+	int GetMax() const { return IIntegerRPGProperty::Execute_GetIntegerValue(this->Maximum); }
 
 	virtual float GetPercent_Implementation() const override;
 
@@ -70,16 +57,6 @@ protected:
 	virtual FText GetDisplayText_Implementation() const override;
 	virtual void Initialize_Inner_Implementation() override;
 
-	virtual void ListenToProperty_Implementation(const FRPGPropertyChanged& Callback) override
-	{
-		OnResourceChanged.Add(Callback);
-	}
-
-	virtual void StopListeningToProperty_Implementation(UObject* Obj) override
-	{
-		OnResourceChanged.RemoveAll(Obj);
-	}
-
 	virtual TSubclassOf<URPGSetter> GetSetter_Implementation() const override { return UIntegerPropertySetter::StaticClass(); }
 	virtual TSubclassOf<URPGCompare> GetCompare_Implementation() const override { return UIntegerPropertyCompare::StaticClass(); }
 	virtual TSubclassOf<URPGProperty> GetBoundsType_Implementation() const override { return UIntegerRPGProperty::StaticClass(); }
@@ -87,5 +64,5 @@ protected:
 private:
 
 	UFUNCTION()
-	void OnAttributeChanged(UBaseIntAttribute* Attr);
+	void OnAttributeChanged(URPGProperty* Attr);
 };

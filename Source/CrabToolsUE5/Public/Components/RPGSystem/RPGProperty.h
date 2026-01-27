@@ -6,7 +6,7 @@
 class URPGComponent;
 class URPGOperation;
 
-DECLARE_DYNAMIC_DELEGATE_OneParam(FRPGPropertyChanged, URPGProperty*, Prop);
+
 
 /* Base class for all RPG type properties.*/
 UCLASS(Abstract, NotBlueprintType, Blueprintable, DefaultToInstanced, EditInlineNew)
@@ -21,6 +21,13 @@ private:
 
 public:
 
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FRPGPropertyChanged, URPGProperty*, Prop);
+
+	UPROPERTY(BlueprintAssignable, Category="RPGProperty")
+	FRPGPropertyChanged OnPropertyChanged;
+
+public:
+
 	void Initialize(URPGComponent* Component);
 
 	UFUNCTION(BlueprintCallable, Category="RPGProperty")
@@ -31,14 +38,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "RPGProperty")
 	FText GetDisplayText() const;
-
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "RPGProperty")
-	void ListenToProperty(const FRPGPropertyChanged& Callback);
-	virtual void ListenToProperty_Implementation(const FRPGPropertyChanged& Callback) {}
-
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "RPGProperty")
-	void StopListeningToProperty(UObject* Obj);
-	virtual void StopListeningToProperty_Implementation(UObject* Obj) {}
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, BlueprintPure, Category="Getter")
 	TSubclassOf<URPGSetter> GetSetter() const;
@@ -65,13 +64,19 @@ class CRABTOOLSUE5_API URPGResource : public URPGProperty
 
 protected:
 
-	UPROPERTY(EditAnywhere, Category = "Resources",
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Resources",
 		meta = (GetOptions = "GetAttributeOptions"))
 	FName MinimumRef;
 
-	UPROPERTY(EditAnywhere, Category = "Resources",
+	UPROPERTY(EditAnywhere, Instanced, BlueprintReadOnly, Category = "Resources")
+	TObjectPtr<URPGProperty> Minimum;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Resources",
 		meta = (GetOptions = "GetAttributeOptions"))
 	FName MaximumRef;
+
+	UPROPERTY(EditAnywhere, Instanced, BlueprintReadOnly, Category = "Resources")
+	TObjectPtr<URPGProperty> Maximum;
 
 public:
 

@@ -36,8 +36,8 @@ void UIntResource::Initialize_Inner_Implementation()
 	this->Minimum->Initialize(this->GetOwner());
 	this->Maximum->Initialize(this->GetOwner());
 
-	this->Minimum->OnAttributeChanged.AddDynamic(this, &UIntResource::OnAttributeChanged);
-	this->Maximum->OnAttributeChanged.AddDynamic(this, &UIntResource::OnAttributeChanged);
+	this->Minimum->OnPropertyChanged.AddDynamic(this, &UIntResource::OnAttributeChanged);
+	this->Maximum->OnPropertyChanged.AddDynamic(this, &UIntResource::OnAttributeChanged);
 }
 
 FText UIntResource::GetDisplayText_Implementation() const
@@ -52,7 +52,7 @@ void UIntResource::SetValue(int UValue)
 	if (NewValue != this->Value)
 	{
 		this->Value = NewValue;
-		this->OnResourceChanged.Broadcast(this);
+		this->OnPropertyChanged.Broadcast(this);
 	}
 }
 
@@ -88,12 +88,18 @@ bool UIntResource::HasResourceFloat_Implementation(float Compare) const
 
 void UIntResource::SetMinProp(URPGProperty* Prop)
 {
-	this->Minimum = CastChecked<UBaseIntAttribute>(Prop);
+	if (IsValid(Prop) && Prop->Implements<UIntegerRPGProperty>())
+	{
+		this->Minimum = Prop;
+	}	
 }
 
 void UIntResource::SetMaxProp(URPGProperty* Prop)
 {
-	this->Maximum = CastChecked<UBaseIntAttribute>(Prop);
+	if (IsValid(Prop) && Prop->Implements<UIntegerRPGProperty>())
+	{
+		this->Maximum = Prop;
+	}
 }
 
 float UIntResource::GetPercent_Implementation() const
@@ -122,11 +128,11 @@ void UIntResource::Refresh()
 	if (NewValue != this->Value)
 	{
 		this->Value = NewValue;
-		this->OnResourceChanged.Broadcast(this);
+		this->OnPropertyChanged.Broadcast(this);
 	}	
 }
 
-void UIntResource::OnAttributeChanged(UBaseIntAttribute* Attr)
+void UIntResource::OnAttributeChanged(URPGProperty* Attr)
 {
 	this->Refresh();
 }

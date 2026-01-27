@@ -5,18 +5,14 @@ void URPGPropertyTextBlock::SetProperty(URPGProperty* Prop)
 {
 	if (this->Property)
 	{
-		Property->StopListeningToProperty(this);
+		Property->OnPropertyChanged.RemoveAll(this);
 	}
 
 	this->Property = Prop;
 
 	if (this->Property)
 	{
-		FRPGPropertyChanged Event;
-		Event.BindDynamic(this, &URPGPropertyTextBlock::OnPropertyChanged);
-
-		this->Property->ListenToProperty(Event);
-
+		this->Property->OnPropertyChanged.AddDynamic(this, &URPGPropertyTextBlock::OnPropertyChanged);
 		this->OnPropertyChanged(Prop);
 	}
 }

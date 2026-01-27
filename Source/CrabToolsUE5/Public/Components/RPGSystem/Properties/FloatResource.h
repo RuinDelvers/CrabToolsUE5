@@ -11,21 +11,8 @@ class CRABTOOLSUE5_API UFloatResource : public URPGResource
 
 private:
 
-	UPROPERTY(EditAnywhere, Instanced, Category = "Resources")
-	TObjectPtr<UBaseFloatAttribute> Minimum;
-
-	UPROPERTY(EditAnywhere, Instanced, Category = "Resources")
-	TObjectPtr<UBaseFloatAttribute> Maximum;
-
 	UPROPERTY(EditAnywhere, Category = "Resources")
 	float Value = 0;
-
-public:
-
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FResourceChanged, UFloatResource*, Resource);
-
-	UPROPERTY(BlueprintAssignable, Category = "Resources")
-	FResourceChanged OnResourceChanged;
 
 public:
 
@@ -39,10 +26,10 @@ public:
 	void SetValue(float UValue);
 
 	UFUNCTION(BlueprintCallable, Category = "RPGProperty")
-	float GetMin() const { return this->Minimum->GetValue(); }
+	float GetMin() const { return IFloatRPGProperty::Execute_GetFloatValue(this->Minimum); }
 
 	UFUNCTION(BlueprintCallable, Category = "RPGProperty")
-	float GetMax() const { return this->Maximum->GetValue(); }
+	float GetMax() const { return IFloatRPGProperty::Execute_GetFloatValue(this->Maximum); }
 
 	virtual float GetPercent_Implementation() const override;
 
@@ -67,18 +54,8 @@ protected:
 	virtual FText GetDisplayText_Implementation() const override;
 	virtual void Initialize_Inner_Implementation() override;
 
-	virtual void ListenToProperty_Implementation(const FRPGPropertyChanged& Callback) override
-	{
-		OnResourceChanged.Add(Callback);
-	}
-
-	virtual void StopListeningToProperty_Implementation(UObject* Obj) override
-	{
-		OnResourceChanged.RemoveAll(Obj);
-	}
-
 private:
 
 	UFUNCTION()
-	void OnAttributeChanged(UBaseFloatAttribute* Attr);
+	void OnAttributeChanged(URPGProperty* Attr);
 };
