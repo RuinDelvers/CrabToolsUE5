@@ -157,6 +157,14 @@ private:
 
 public:
 
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FTurnChangedEvent, URPGComponent*, Comp);
+
+	UPROPERTY(BlueprintAssignable, Category = "Turns")
+	FTurnChangedEvent OnTurnStart;
+
+	UPROPERTY(BlueprintAssignable, Category = "Turns")
+	FTurnChangedEvent OnTurnEnd;
+
 	UPROPERTY(BlueprintAssignable, Category = "Status")
 	FStatusEvent OnStatusExpired;
 

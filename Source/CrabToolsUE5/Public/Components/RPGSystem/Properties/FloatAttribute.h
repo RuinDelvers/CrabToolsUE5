@@ -36,7 +36,7 @@ private:
 
 protected:
 
-	UPROPERTY(EditDefaultsOnly, Instanced, Category = "RPG|Attributes", meta = (AllowPrivateAccess = true))
+	UPROPERTY(EditDefaultsOnly, Instanced, Category = "Attributes", meta = (AllowPrivateAccess = true))
 	TArray<TObjectPtr<UFloatOperator>> Operators;
 
 	UPROPERTY()
@@ -127,7 +127,7 @@ class CRABTOOLSUE5_API UFloatAttribute : public UBaseFloatAttribute
 
 private:
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "RPG|Attributes", meta = (AllowPrivateAccess = true))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attributes", meta = (AllowPrivateAccess = true))
 	float BaseValue = 0;
 
 public:

@@ -96,7 +96,7 @@ void UIntResource::SetMaxProp(URPGProperty* Prop)
 	this->Maximum = CastChecked<UBaseIntAttribute>(Prop);
 }
 
-float UIntResource::GetPercent() const
+float UIntResource::GetPercent_Implementation() const
 {
 	int Min = this->GetMin();
 	int Max = this->GetMax();
@@ -129,14 +129,4 @@ void UIntResource::Refresh()
 void UIntResource::OnAttributeChanged(UBaseIntAttribute* Attr)
 {
 	this->Refresh();
-}
-
-TArray<FString> UIntResource::GetAttributeOptions() const
-{
-	if (auto Outer = UtilsFunctions::GetOuterAs<URPGComponent>(this))
-	{
-		return Outer->GetRPGPropertyNames(UIntAttribute::StaticClass());
-	}
-
-	return {};
 }

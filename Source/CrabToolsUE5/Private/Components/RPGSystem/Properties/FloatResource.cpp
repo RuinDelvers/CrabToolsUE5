@@ -51,7 +51,7 @@ void UFloatResource::SetValue(float UValue)
 	}
 }
 
-float UFloatResource::GetPercent() const
+float UFloatResource::GetPercent_Implementation() const
 {
 	float Min = this->GetMin();
 	float Max = this->GetMax();
@@ -117,15 +117,4 @@ FText UFloatResource::GetDisplayText_Implementation() const
 void UFloatResource::OnAttributeChanged(UBaseFloatAttribute* Attr)
 {
 	this->Refresh();
-}
-
-TArray<FString> UFloatResource::GetAttributeOptions() const
-{
-
-	if (auto Outer = UtilsFunctions::GetOuterAs<URPGComponent>(this))
-	{
-		return Outer->GetRPGPropertyNames(UFloatAttribute::StaticClass());
-	}
-
-	return {};
 }

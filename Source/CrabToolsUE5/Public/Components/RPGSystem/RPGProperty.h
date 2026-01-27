@@ -65,15 +65,19 @@ class CRABTOOLSUE5_API URPGResource : public URPGProperty
 
 protected:
 
-	UPROPERTY(EditAnywhere, Category = "RPGProperty",
+	UPROPERTY(EditAnywhere, Category = "Resources",
 		meta = (GetOptions = "GetAttributeOptions"))
 	FName MinimumRef;
 
-	UPROPERTY(EditAnywhere, Category = "RPGProperty",
+	UPROPERTY(EditAnywhere, Category = "Resources",
 		meta = (GetOptions = "GetAttributeOptions"))
 	FName MaximumRef;
 
 public:
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Resource")
+	float GetPercent() const;
+	virtual float GetPercent_Implementation() const { return 0.0f; }
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Resource")
 	void UseResourceInt(int Amount);
@@ -96,6 +100,15 @@ public:
 
 	virtual void SetMinProp(URPGProperty* Prop) {}
 	virtual void SetMaxProp(URPGProperty* Prop) {}
+
+protected:
+
+	UFUNCTION()
+	TArray<FString> GetAttributeOptions() const;
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, BlueprintPure, Category = "Getter")
+	TSubclassOf<URPGProperty> GetBoundsType() const;
+	virtual TSubclassOf<URPGProperty> GetBoundsType_Implementation() const { return nullptr; }
 };
 
 /*

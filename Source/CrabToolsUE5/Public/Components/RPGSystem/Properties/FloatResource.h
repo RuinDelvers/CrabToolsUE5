@@ -11,20 +11,20 @@ class CRABTOOLSUE5_API UFloatResource : public URPGResource
 
 private:
 
-	UPROPERTY(EditAnywhere, Instanced, Category = "RPGProperty")
+	UPROPERTY(EditAnywhere, Instanced, Category = "Resources")
 	TObjectPtr<UBaseFloatAttribute> Minimum;
 
-	UPROPERTY(EditAnywhere, Instanced, Category = "RPGProperty")
+	UPROPERTY(EditAnywhere, Instanced, Category = "Resources")
 	TObjectPtr<UBaseFloatAttribute> Maximum;
 
-	UPROPERTY(EditAnywhere, Category = "RPGProperty")
+	UPROPERTY(EditAnywhere, Category = "Resources")
 	float Value = 0;
 
 public:
 
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FResourceChanged, UFloatResource*, Resource);
 
-	UPROPERTY(BlueprintAssignable, Category = "RPGProperty")
+	UPROPERTY(BlueprintAssignable, Category = "Resources")
 	FResourceChanged OnResourceChanged;
 
 public:
@@ -44,8 +44,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "RPGProperty")
 	float GetMax() const { return this->Maximum->GetValue(); }
 
-	UFUNCTION(BlueprintCallable, Category = "RPGProperty")
-	float GetPercent() const;
+	virtual float GetPercent_Implementation() const override;
 
 	UFUNCTION(BlueprintCallable, Category = "RPGProperty")
 	void Refresh();
@@ -63,6 +62,7 @@ protected:
 
 	virtual TSubclassOf<URPGSetter> GetSetter_Implementation() const override { return UFloatPropertySetter::StaticClass(); }
 	virtual TSubclassOf<URPGCompare> GetCompare_Implementation() const override { return UFloatPropertyCompare::StaticClass(); }
+	virtual TSubclassOf<URPGProperty> GetBoundsType_Implementation() const override { return UFloatRPGProperty::StaticClass(); }
 
 	virtual FText GetDisplayText_Implementation() const override;
 	virtual void Initialize_Inner_Implementation() override;
@@ -81,7 +81,4 @@ private:
 
 	UFUNCTION()
 	void OnAttributeChanged(UBaseFloatAttribute* Attr);
-
-	UFUNCTION()
-	TArray<FString> GetAttributeOptions() const;
 };

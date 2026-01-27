@@ -12,20 +12,20 @@ class CRABTOOLSUE5_API UIntResource : public URPGResource
 
 private:
 
-	UPROPERTY(EditAnywhere, Instanced, Category="RPGProperty")
+	UPROPERTY(EditAnywhere, Instanced, Category="Resources")
 	TObjectPtr<UBaseIntAttribute> Minimum;
 
-	UPROPERTY(EditAnywhere, Instanced, Category = "RPGProperty")
+	UPROPERTY(EditAnywhere, Instanced, Category = "Resources")
 	TObjectPtr<UBaseIntAttribute> Maximum;
 
-	UPROPERTY(EditAnywhere, Category="RPGProperty")
+	UPROPERTY(EditAnywhere, Category="Resources")
 	int Value = 0;
 
 public:
 
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FResourceChanged, UIntResource*, Resource);
 
-	UPROPERTY(BlueprintAssignable, Category="RPGProperty")
+	UPROPERTY(BlueprintAssignable, Category="Resources")
 	FResourceChanged OnResourceChanged;
 
 public:
@@ -45,8 +45,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "RPGProperty")
 	int GetMax() const { return this->Maximum->GetValue(); }
 
-	UFUNCTION(BlueprintCallable, Category = "RPGProperty")
-	float GetPercent() const;
+	virtual float GetPercent_Implementation() const override;
 
 	UFUNCTION(BlueprintCallable, Category = "RPGProperty")
 	void Refresh();
@@ -83,12 +82,10 @@ protected:
 
 	virtual TSubclassOf<URPGSetter> GetSetter_Implementation() const override { return UIntegerPropertySetter::StaticClass(); }
 	virtual TSubclassOf<URPGCompare> GetCompare_Implementation() const override { return UIntegerPropertyCompare::StaticClass(); }
+	virtual TSubclassOf<URPGProperty> GetBoundsType_Implementation() const override { return UIntegerRPGProperty::StaticClass(); }
 
 private:
 
 	UFUNCTION()
 	void OnAttributeChanged(UBaseIntAttribute* Attr);
-
-	UFUNCTION()
-	TArray<FString> GetAttributeOptions() const;
 };

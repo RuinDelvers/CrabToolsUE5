@@ -1,5 +1,6 @@
 #include "Components/RPGSystem/RPGProperty.h"
 #include "Components/RPGSystem/RPGComponent.h"
+#include "Utils/UtilsLibrary.h"
 
 void URPGProperty::Initialize(URPGComponent* InitOwner)
 {
@@ -69,4 +70,14 @@ TArray<FString> URPGOperation::GetPropertyNames() const
 
 	Names.Sort([](const FString& A, const FString& B) { return A < B; });
 	return Names;
+}
+
+TArray<FString> URPGResource::GetAttributeOptions() const
+{
+	if (auto Outer = UtilsFunctions::GetOuterAs<URPGComponent>(this))
+	{
+		return Outer->GetRPGPropertyNames(this->GetBoundsType());
+	}
+
+	return {};
 }

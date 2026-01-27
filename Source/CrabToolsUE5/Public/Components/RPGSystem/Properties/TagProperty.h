@@ -11,7 +11,7 @@ class CRABTOOLSUE5_API UTagProperty: public URPGProperty
 
 private:
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Property",
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Relations",
 		meta=(AllowPrivateAccess))
 	FGameplayTag Tag;
 
@@ -31,7 +31,7 @@ class CRABTOOLSUE5_API UTagSetProperty : public URPGProperty
 
 private:
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Property",
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Relations",
 		meta = (AllowPrivateAccess))
 	FGameplayTagContainer Tags;
 

@@ -12,10 +12,10 @@ struct FRelationPropertyPair
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Relation")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Relations")
 	FGameplayTag TagOne;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Relation")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Relations")
 	FGameplayTag TagTwo;
 
 
@@ -41,11 +41,11 @@ class CRABTOOLSUE5_API UTernaryRelationProperty : public URPGProperty
 
 private:
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Property",
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Relations",
 		meta = (AllowPrivateAccess))
 	FGameplayTag DefaultRelation;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Property",
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Relations",
 		meta = (AllowPrivateAccess))
 	TMap<FRelationPropertyPair, FGameplayTag> Relations;
 
@@ -80,11 +80,11 @@ class CRABTOOLSUE5_API UBinaryRelationProperty : public URPGProperty
 
 private:
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Property",
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Relations",
 		meta = (AllowPrivateAccess))
 	FGameplayTag DefaultRelation;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Property",
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Relations",
 		meta = (AllowPrivateAccess))
 	TMap<FGameplayTag, FGameplayTag> Relations;
 

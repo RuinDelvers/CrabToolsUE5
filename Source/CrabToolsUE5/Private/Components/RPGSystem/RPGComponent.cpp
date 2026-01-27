@@ -71,6 +71,8 @@ void URPGComponent::TurnStart()
 			Status->TurnStart();
 		}
 	}
+
+	this->OnTurnStart.Broadcast(this);
 }
 
 void URPGComponent::TurnEnd()
@@ -82,6 +84,8 @@ void URPGComponent::TurnEnd()
 			Status->TurnEnd();
 		}
 	}
+
+	this->OnTurnEnd.Broadcast(this);
 }
 
 TArray<FString> URPGComponent::GetRPGPropertyNames(TSubclassOf<URPGProperty> Props, bool bRecurse) const
