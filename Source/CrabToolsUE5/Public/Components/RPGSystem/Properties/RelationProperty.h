@@ -110,4 +110,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Relations")
 	void SetRelation(FGameplayTag Tag, FGameplayTag Relation);
+
+	const TMap<FGameplayTag, FGameplayTag>& GetRelations() const { return this->Relations; }
 };

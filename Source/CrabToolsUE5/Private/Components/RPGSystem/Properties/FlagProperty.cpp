@@ -3,7 +3,7 @@
 void UFlagProperty::SetFlag(bool bNewFlag)
 {
 	this->bFlag = bNewFlag;
-	this->OnFlagChanged.Broadcast(this);
+	this->OnPropertyChanged.Broadcast(this);
 }
 
 bool UFlagProperty::GetFlag() const

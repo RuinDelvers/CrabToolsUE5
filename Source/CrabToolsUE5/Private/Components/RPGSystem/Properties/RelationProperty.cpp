@@ -80,9 +80,11 @@ FGameplayTag UBinaryRelationProperty::GetRelationFromTags(FGameplayTag Tag) cons
 void UBinaryRelationProperty::AppendRelations(const TMap<FGameplayTag, FGameplayTag>& NewRelations)
 {
 	this->Relations.Append(NewRelations);
+	this->OnPropertyChanged.Broadcast(this);
 }
 
 void UBinaryRelationProperty::SetRelation(FGameplayTag Tag, FGameplayTag Relation)
 {
 	this->Relations.Add(Tag, Relation);
+	this->OnPropertyChanged.Broadcast(this);
 }

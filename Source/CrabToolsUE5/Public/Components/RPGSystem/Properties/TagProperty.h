@@ -18,7 +18,7 @@ private:
 public:
 
 	UFUNCTION(BlueprintCallable, Category = "Property")
-	void SetTag(FGameplayTag NewTag) { this->Tag = NewTag; }
+	void SetTag(FGameplayTag NewTag);
 
 	UFUNCTION(BlueprintCallable, Category = "Property")
 	FGameplayTag GetTag() const { return this->Tag; }
@@ -38,13 +38,13 @@ private:
 public:
 
 	UFUNCTION(BlueprintCallable, Category="Property")
-	void AddTag(FGameplayTag NewTag) { this->Tags.AddTag(NewTag); }
+	void AddTag(FGameplayTag NewTag);
 
 	UFUNCTION(BlueprintCallable, Category = "Property")
-	void AppendTags(const FGameplayTagContainer& Cont) { this->Tags.AppendTags(Cont); }
+	void AppendTags(const FGameplayTagContainer& Cont);
 
 	UFUNCTION(BlueprintCallable, Category = "Property")
-	void RemoveTag(FGameplayTag NewTag) { this->Tags.RemoveTag(NewTag); }
+	void RemoveTag(FGameplayTag NewTag);
 
 	UFUNCTION(BlueprintCallable, Category = "Property")
 	const FGameplayTagContainer& GetTags() const { return this->Tags; }

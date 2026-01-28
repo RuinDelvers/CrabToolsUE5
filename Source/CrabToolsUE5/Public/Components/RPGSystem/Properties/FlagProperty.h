@@ -38,13 +38,6 @@ private:
 
 public:
 
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FFlagChanged, UFlagProperty*, Flag);
-
-	UPROPERTY(BlueprintAssignable, Category = "RPGProperty")
-	FFlagChanged OnFlagChanged;
-
-public:
-
 	UFUNCTION(BlueprintCallable, Category="RPGProperty")
 	void SetFlag(bool bNewFlag);
 
