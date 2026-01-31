@@ -125,6 +125,26 @@ enum class EHierarchyInputType : uint8
 	DEFINED       UMETA(DisplayName = "Defined"),
 	/* Use an event or state machine that is inlined in this slot. */
 	INLINED       UMETA(DisplayName = "Inlined"),
+	/* Use a machine class to dynamically make a state machine*/
+	CUSTOM        UMETA(DisplayName="Custom")
+};
+
+/*
+ * This class is used to dynamically select state machine classes for custom hierarchy slots.
+ * An example usage would be dynamic AIs used for a submachine, and instead of creating new 
+ * State Machines for each AI slot, we could use this to return a class to dynamically instantiate
+ * one to use.
+ */
+UCLASS(Blueprintable)
+class UStateMachineClassGenerator : public UObject
+{
+	GENERATED_BODY()
+
+public:
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="StateMachine")
+	TSoftClassPtr<UStateMachine> GetMachineClass() const;
+	virtual TSoftClassPtr<UStateMachine> GetMachineClass_Implementation() const { return nullptr; }
 };
 
 /* Structure used to store a reference to a submachine. */
@@ -132,7 +152,6 @@ USTRUCT(BlueprintType)
 struct FSubMachineSlot
 {
 	GENERATED_USTRUCT_BODY()
-
 
 public:
 
@@ -143,6 +162,11 @@ public:
 		meta = (ShowInnerProperties, ShowOnlyInnerProperties,
 			EditCondition = "StateMachineSource == EHierarchyInputType::INLINED", EditConditionHides))
 	TObjectPtr<UStateMachine> SubMachine;
+
+	UPROPERTY(EditAnywhere, Instanced, Category = "StateMachine",
+		meta = (ShowInnerProperties, ShowOnlyInnerProperties,
+			EditCondition = "StateMachineSource == EHierarchyInputType::CUSTOM", EditConditionHides))
+	TObjectPtr<UStateMachineClassGenerator> MachineClass;
 
 
 	UPROPERTY(EditAnywhere, Category = "StateMachine",

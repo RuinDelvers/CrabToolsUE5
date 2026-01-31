@@ -34,6 +34,7 @@ public class CrabToolsUE5Editor : ModuleRules
 				"SlateCore",
 				"InputCore",
 				"AssetRegistry",
+				"GameplayTags",
 				"Blutility",
 				"UMG",
 				// ... add other public dependencies that you statically link with here ...
