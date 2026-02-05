@@ -185,7 +185,10 @@ void UEdStateNode::GetLocalEventOptions(TArray<FString>& Names) const
 
 	for (const auto& Node : this->Nodes)
 	{
-		Node->GetEmittedEvents(PerNodeNames);
+		if (Node)
+		{
+			Node->GetEmittedEvents(PerNodeNames);
+		}
 	}
 
 	for (const auto& Name : PerNodeNames)

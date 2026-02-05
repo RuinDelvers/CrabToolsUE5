@@ -32,8 +32,20 @@ void UInteractableComponent::BeginPlay()
 		}
 	}
 
-	this->GetOwner()->OnActorBeginOverlap.AddDynamic(this, &UInteractableComponent::OnBeginActorOverlap);
-	this->GetOwner()->OnActorEndOverlap.AddDynamic(this, &UInteractableComponent::OnEndActorOverlap);
+	//this->GetOwner()->OnActorBeginOverlap.AddDynamic(this, &UInteractableComponent::OnBeginActorOverlap);
+	//this->GetOwner()->OnActorEndOverlap.AddDynamic(this, &UInteractableComponent::OnEndActorOverlap);
+
+	TArray<USceneComponent*> Children;
+	this->GetChildrenComponents(true, Children);
+
+	for (const auto& Child : Children)
+	{
+		if (auto PrimComp = Cast<UPrimitiveComponent>(Child))
+		{
+			PrimComp->OnComponentBeginOverlap.AddDynamic(this, &UInteractableComponent::OnComponentBeginOverlap);
+			PrimComp->OnComponentEndOverlap.AddDynamic(this, &UInteractableComponent::OnComponentEndOverlap);
+		}
+	}
 }
 
 void UInteractableComponent::InteractDefault(AActor* Interactor, UObject* Data)
@@ -111,6 +123,30 @@ void UInteractableComponent::OnBeginActorOverlap(AActor* OverlappedActor, AActor
 }
 
 void UInteractableComponent::OnEndActorOverlap(AActor* OverlappedActor, AActor* OtherActor)
+{
+	if (auto IntSys = OtherActor->GetComponentByClass<UInteractionSystem>())
+	{
+		this->ValidActors.Remove(OtherActor);
+		IntSys->RemoveInteractable(this);
+	}
+}
+
+void UInteractableComponent::OnComponentBeginOverlap(
+	UPrimitiveComponent* OverlappedComponent,
+	AActor* OtherActor,
+	UPrimitiveComponent* OtherComp,
+	int32 OtherBodyIndex,
+	bool bFromSweep,
+	const FHitResult& SweepResult)
+{
+	if (auto IntSys = OtherActor->GetComponentByClass<UInteractionSystem>())
+	{
+		this->ValidActors.Add(OtherActor);
+		IntSys->AddInteractable(this);
+	}
+}
+
+void UInteractableComponent::OnComponentEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
 	if (auto IntSys = OtherActor->GetComponentByClass<UInteractionSystem>())
 	{

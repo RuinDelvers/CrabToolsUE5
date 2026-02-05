@@ -7,6 +7,8 @@
 
 #include "GameFramework/InputSettings.h"
 
+enum class EDEfaultStateMachineEvents;
+
 namespace Events::Input::Devices
 {
 	// See EHardwareDevicePrimaryType in InputSettings.h for the device types.
@@ -44,6 +46,14 @@ namespace Events::Input::Devices
 			default: return INPUT_DEVICE_UNSPECIFIED;
 		}
 	}
+}
+
+namespace Events::Default
+{
+	constexpr char MACHINE_ACTIVATED[] = "MACHINE_ACTIVATED";
+	constexpr char MACHINE_DEACTIVATED[] = "MACHINE_DEACTIVATED";
+
+	CRABTOOLSUE5_API FName DefaultEventToName(EDefaultStateMachineEvents Event);
 }
 
 namespace Events::AI

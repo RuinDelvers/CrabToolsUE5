@@ -6,7 +6,6 @@
 #include "Widgets/Layout/SScrollBox.h"
 #include "Widgets/Layout/SScrollBorder.h"
 #include "Widgets/Text/SRichTextBlock.h"
-
 #include "StateMachine/EdGraph/EdTransition.h"
 #include "StateMachine/EdGraph/EdEventObject.h"
 #include "GraphEditAction.h"
@@ -571,6 +570,18 @@ void FStateMachineItem::AddState(UEdStateNode* State, bool DeferRefresh)
 
 }
 
+bool FStateMachineItem::RepresentsMainGraph() const
+{
+	if (this->GraphRef.IsValid())
+	{
+		return this->GraphRef->IsMainGraph();
+	}
+	else
+	{
+		return false;
+	}
+}
+
 bool FStateMachineItem::OnVerifyNameTextChanged(const FText& InText, FText& OutErrorMessage)
 {
 	FName NewName(InText.ToString());
@@ -812,8 +823,8 @@ void SSubGraphDetails::Construct(const FArguments& InArgs, UEdStateGraph* GraphP
 		.OnGenerateRow(this, &SSubGraphDetails::OnGenerateRow, false)
 		.SelectionMode(ESelectionMode::Single)
 		.OnSelectionChanged(this, &SSubGraphDetails::OnSelectionChanged)
+		.OnContextMenuOpening(this, &SSubGraphDetails::OnContextMenuOpening)
 		.OnMouseButtonDoubleClick(this, &SSubGraphDetails::OnItemDoubleClicked)
-		//.OnContextMenuOpening(InArgs._OnContextMenuOpening)
 		.OnGetChildren(this, &SSubGraphDetails::OnGetChildrenForCategory)
 		.OnItemScrolledIntoView(this, &SSubGraphDetails::OnItemScrolledIntoView)
 		.OnSetExpansionRecursive(this, &SSubGraphDetails::OnSetExpansionRecursive)
@@ -903,6 +914,49 @@ void SSubGraphDetails::OnGetChildrenForCategory(
 	InItem->GetChildren(OutChildren);
 }
 
+TSharedPtr<SWidget> SSubGraphDetails::OnContextMenuOpening()
+{
+	auto Selected = this->TreeView->GetSelectedItems();
+
+	if (Selected.Num() == 0)
+	{
+		return nullptr;
+	}
+	else
+	{
+		FMenuBuilder ContextMenu(true, nullptr);
+
+		ContextMenu.BeginSection("Editing");
+		{
+			ContextMenu.AddWidget(
+				SNew(STextBlock)
+					.Text(FText::FromString("Edit"))
+					.Margin(FMargin(10, 0, 10, 5)),
+				FText(),
+				true);
+
+			ContextMenu.AddMenuEntry(
+				FText::FromString("Delete"),
+				FText::FromString("Delete this machine element."),
+				FSlateIcon(FAppStyle::GetAppStyleSetName(), "ContentBrowser.AssetActions.Delete"),
+				FUIAction(FExecuteAction::CreateSP(this, &SSubGraphDetails::DeleteActionSelected)));
+		}
+		ContextMenu.EndSection();
+
+		return ContextMenu.MakeWidget();
+	}
+}
+
+void SSubGraphDetails::DeleteActionSelected()
+{
+	for (const auto& Item : this->TreeView->GetSelectedItems())
+	{
+		Item->Delete(true);
+	}
+
+	this->TreeView->RequestTreeRefresh();
+}
+
 TSharedRef<ITableRow> SSubGraphDetails::OnGenerateRow(
 	ItemPtr InItem,
 	const TSharedRef<STableViewBase>& OwnerTable,
@@ -962,7 +1016,7 @@ void SGraphDetailsView::Construct(
 		.SelectionMode(ESelectionMode::Single)
 		.OnSelectionChanged(this, &SGraphDetailsView::OnSelectionChanged)
 		.OnMouseButtonDoubleClick(this, &SGraphDetailsView::OnItemDoubleClicked)
-		//.OnContextMenuOpening(InArgs._OnContextMenuOpening)
+		.OnContextMenuOpening(this, &SGraphDetailsView::OnContextMenuOpening)
 		.OnGetChildren(this, &SGraphDetailsView::OnGetChildrenForCategory)
 		.OnItemScrolledIntoView(this, &SGraphDetailsView::OnItemScrolledIntoView)
 		.OnSetExpansionRecursive(this, &SGraphDetailsView::OnSetExpansionRecursive)
@@ -1137,6 +1191,54 @@ void SGraphDetailsView::OnGetChildrenForCategory(
 	TArray< ItemPtr >& OutChildren)
 {
 	InItem->GetChildren(OutChildren);
+}
+
+TSharedPtr<SWidget> SGraphDetailsView::OnContextMenuOpening()
+{
+	auto Selected = this->TreeView->GetSelectedItems();
+
+	if (Selected.Num() == 0)
+	{
+		return nullptr;
+	}
+	else
+	{
+
+		FMenuBuilder ContextMenu(true, nullptr);
+
+		ContextMenu.BeginSection("Editing");
+		{
+			ContextMenu.AddWidget(
+				SNew(STextBlock)
+					.Text(FText::FromString("Edit"))
+					.Margin(FMargin(10, 0, 10, 5)),
+				FText(),
+				true);
+
+			// Do not add the delete action to the main graph.
+			if (Selected.Num() > 1 || (Selected.Num() == 1 && !Selected[0]->RepresentsMainGraph()))
+			{
+				ContextMenu.AddMenuEntry(
+					FText::FromString("Delete"),
+					FText::FromString("Delete this state machine."),
+					FSlateIcon(FAppStyle::GetAppStyleSetName(), "ContentBrowser.AssetActions.Delete"),
+					FUIAction(FExecuteAction::CreateSP(this, &SGraphDetailsView::DeleteActionSelected)));
+			}
+		}
+		ContextMenu.EndSection();
+
+		return ContextMenu.MakeWidget();
+	}	
+}
+
+void SGraphDetailsView::DeleteActionSelected()
+{
+	for (const auto& Selected : this->TreeView->GetSelectedItems())
+	{
+		Selected->Delete(true);
+	}
+
+	this->TreeView->RequestTreeRefresh();
 }
 
 void FGraphDetailsViewItem::GetChildren(TArray< ItemPtr >& OutChildren) const

@@ -62,11 +62,20 @@ private:
 
 	UPROPERTY()
 	TSet<TObjectPtr<AActor>> ValidActors;
-	
+
 public:
 
 	UPROPERTY(BlueprintAssignable, Category="Interaction")
 	FActorInteraction OnInteractionEnded;
+
+	/*
+	 * If this is set, this means that the actor is intended to move. This flag isn't used by this
+	 * component, but rather by other systems which read from this component. If this flag is set,
+	 * this means that the points set by the child components of this should be ignored, and any pathing
+	 * should be done to the actor instead.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interaction")
+	bool bTravelToActor = false;
 
 public:
 
@@ -109,6 +118,22 @@ protected:
 
 	UFUNCTION()
 	void MoveToInteract(FName Interaction, AActor* Interactor, UObject* Data);
+
+	UFUNCTION()
+	void OnComponentBeginOverlap(
+		UPrimitiveComponent* OverlappedComponent,
+		AActor* OtherActor,
+		UPrimitiveComponent* OtherComp,
+		int32 OtherBodyIndex,
+		bool bFromSweep,
+		const FHitResult& SweepResult);
+
+	UFUNCTION()
+	void OnComponentEndOverlap(
+		UPrimitiveComponent* OverlappedComponent,
+		AActor* OtherActor,
+		UPrimitiveComponent* OtherComp,
+		int32 OtherBodyIndex);
 
 private:
 

@@ -19,7 +19,7 @@ void FSubMachineSlot::Initialize(UStateMachine* MachineSource)
 			{
 				this->SubMachine = NewObject<UStateMachine>(
 					MachineSource,
-					this->MachineClass->GetMachineClass().LoadSynchronous());
+					this->MachineClass->GetMachineClass(MachineSource).LoadSynchronous());
 
 				if (this->SubMachine)
 				{

@@ -29,18 +29,6 @@ public:
 
 	virtual UEdGraphPin* GetEventPin() const { return nullptr; }
 
-	virtual void AutowireNewNode(UEdGraphPin* FromPin) override
-	{
-		UE_LOG(LogTemp, Warning, TEXT("AutowireNewNode called"));
-		Super::AutowireNewNode(FromPin);		
-	}
-
-	virtual void ReconstructNode() override
-	{
-		UE_LOG(LogTemp, Warning, TEXT("ReconstructNode called"));
-		Super::ReconstructNode();
-	}
-
 private:
 
 };

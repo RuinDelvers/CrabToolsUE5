@@ -20,8 +20,8 @@ private:
 
 public:
 
-	FPatrolPathState& GetPathState() { return State; }
+	bool HasPathState(FName PathKey) const {  return PathKey.IsNone() || this->States.Contains(PathKey); }
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category="Path")
-	FPatrolPathState& GetPathState(FName PathKey);
+	FPatrolPathState& GetPathState(FName PathKey=NAME_None);
 };

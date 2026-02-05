@@ -1,13 +1,13 @@
 #pragma once
 
 #include "StateMachine/StateMachine.h"
-#include "SequenceNode.generated.h"
+#include "SequentialNode.generated.h"
 
 /**
  * Node that sequentially moves through node behaviours each time it is visited.
  */
 UCLASS(Blueprintable, Category = "StateMachine")
-class CRABTOOLSUE5_API USequenceNode : public UStateNode
+class CRABTOOLSUE5_API USequentialNode : public UStateNode
 {
 	GENERATED_BODY()
 

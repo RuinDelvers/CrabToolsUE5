@@ -1,27 +1,25 @@
 #pragma once
 
-#include "StateMachine/StateMachineInterface.h"
 #include "StateMachine/StateMachine.h"
 #include "StateMachine/DataStructures.h"
 #include "HierarchyNode.generated.h"
 
-
 USTRUCT(BlueprintType)
 struct FHierarchyEventValue
 {
-	GENERATED_USTRUCT_BODY()
+	GENERATED_BODY()
 
 	/* Use custom inlined event? */
 	UPROPERTY(EditDefaultsOnly, Category = "StateMachine")
 	EHierarchyInputType EventType = EHierarchyInputType::INLINED;
 
-	UPROPERTY(EditDefaultsOnly, Category="Events",
-		meta=(EditCondition="EventType == EHierarchyInputType::INLINED", EditConditionHides))
+	UPROPERTY(EditDefaultsOnly, Category = "Events",
+		meta = (EditCondition = "EventType == EHierarchyInputType::INLINED", EditConditionHides))
 	FName InlinedEvent;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Events",
 		meta = (EditCondition = "EventType == EHierarchyInputType::DEFINED", EditConditionHides,
-			GetOptions="GetStateEventOptions"))
+			GetOptions = "GetStateEventOptions"))
 	FName DefinedEvent;
 
 	FName GetEvent() const;
@@ -50,29 +48,33 @@ class CRABTOOLSUE5_API UHierarchyNode : public UStateNode
 	UPROPERTY(EditAnywhere, Category = "StateMachine", meta = (AllowPrivateAccess = "true"))
 	bool ResetOnEnter = true;
 
-	/* Whether or not the submachine should be reset when this node is exited. */
-	UPROPERTY(EditAnywhere, Category = "StateMachine", meta = (AllowPrivateAccess = "true"))
-	bool ResetOnExit = true;
-
-	/* Whether or not to pass the event which activated this state to the submachine. */
-	UPROPERTY(EditAnywhere, Category = "StateMachine", meta = (AllowPrivateAccess = "true"))
-	bool bPropagateEnterEvent = false;
-
 	/*
 	 * The event to pass to the submachine when entering. Useful for when ResetOnEnter is false, but
-	 * work needs to be continued. Specifically, if ResetOnEnter is false, and nothing is done to transition 
+	 * work needs to be continued. Specifically, if ResetOnEnter is false, and nothing is done to transition
 	 * the state, on the next tick or event the exit state will be detected again.
 	 */
 	UPROPERTY(EditAnywhere, Category = "StateMachine",
-		meta = (AllowPrivateAccess = "true", GetOptions="GetSubMachineTransitionEvents",
-			EditCondition="!ResetOnEnter", EditConditionHides))
+		meta = (AllowPrivateAccess = "true", GetOptions = "GetSubMachineTransitionEvents",
+			EditCondition = "!ResetOnEnter", EditConditionHides))
 	FName EnterEventName;
+
+	/* Whether or not the submachine should be reset when this node is exited. */
+	UPROPERTY(EditAnywhere, Category = "StateMachine", meta = (AllowPrivateAccess = "true"))
+	bool ResetOnExit = true;
 
 	/* Event used when exiting this node. Will pass this event to the submachine upon exiting.*/
 	UPROPERTY(EditAnywhere, Category = "StateMachine",
 		meta = (AllowPrivateAccess = "true", GetOptions = "GetSubMachineTransitionEvents",
 			EditCondition = "!ResetOnExit", EditConditionHides))
 	FName ExitEventName;
+
+	/* Whether or not to pass the event which activated this state to the submachine. */
+	UPROPERTY(EditAnywhere, Category = "StateMachine", meta = (AllowPrivateAccess = "true"))
+	bool bPropagateEnterEvent = false;
+
+	/* If this is true, then the child machine will never be turned inactive. */
+	UPROPERTY(EditAnywhere, Category = "StateMachine", meta = (AllowPrivateAccess = "true"))
+	bool bMachineAlwaysActive = false;
 
 public:
 
@@ -83,6 +85,7 @@ public:
 	virtual void Tick_Inner_Implementation(float DeltaTime) override;
 	virtual void Exit_Inner_Implementation() override;
 	virtual bool RequiresTick_Implementation() const override;
+	virtual void SetActive_Inner_Implementation(bool bNewActive) override;
 
 	virtual bool DoesReferenceMachine_Inner_Implementation(FName MachineName) const override;
 

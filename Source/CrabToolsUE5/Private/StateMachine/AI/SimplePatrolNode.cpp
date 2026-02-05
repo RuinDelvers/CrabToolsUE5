@@ -21,32 +21,70 @@ UAISimplePatrolNode::UAISimplePatrolNode()
 void UAISimplePatrolNode::Initialize_Inner_Implementation()
 {
 	Super::Initialize_Inner_Implementation();
+}
 
-	check(this->GetAIController());
+void UAISimplePatrolNode::SetActive_Inner_Implementation(bool bNewActive)
+{
+	if (bNewActive)
+	{
+		this->GetAIController()->ResumeMove(this->Result.MoveId);
+	}
+	else
+	{
+		this->GetAIController()->PauseMove(this->Result.MoveId);
+	}
 }
 
 void UAISimplePatrolNode::Enter_Inner_Implementation()
 {
-	bool bDoReset = true;
-
-	for (auto& IncState : this->NonResetStates)
+	// If the path doesn't exist, then don't attempt work.
+	if (!this->GetPath())
 	{
-		if (IncState.StateName == this->GetMachine()->GetPreviousStateName())
+		this->EmitEvent(Events::AI::LOST);
+	}
+	// If the path key exists, make sure it has it. 
+	else if (this->PathKey.IsNone() && !this->GetPath()->HasPathState(this->PathKey))
+	{
+		this->EmitEvent(Events::AI::LOST);
+	}
+	else
+	{
+		bool bDoReset = true;
+
+		for (auto& IncState : this->NonResetStates)
 		{
-			bDoReset = false;
+			if (IncState.StateName == this->GetMachine()->GetPreviousStateName())
+			{
+				bDoReset = false;
+			}
 		}
-	}
 
-	if (bDoReset)
+		if (bDoReset)
+		{
+			auto& State = this->GetState();
+			State.Reset();
+		}
+
+		this->BindCallback();
+		this->MoveToNext();
+	}
+}
+
+UPatrolPathFollowingComponent* UAISimplePatrolNode::GetPath() const
+{
+	if (this->bCacheComponent)
 	{
-		bool bFound = false;
-		auto& State = this->GetState();
+		if (!this->CachedComp)
+		{
+			this->CachedComp = this->ComponentPattern->FindComponentByClass<UPatrolPathFollowingComponent>(this->GetActorOwner());
+		}
 
-		if (bFound) { State.Reset(); }
+		return this->CachedComp;
 	}
-
-	this->BindCallback();	
-	this->MoveToNext();
+	else
+	{
+		return this->ComponentPattern->FindComponentByClass<UPatrolPathFollowingComponent>(this->GetActorOwner());
+	}
 }
 
 FPatrolPathState& UAISimplePatrolNode::GetState() const
@@ -73,12 +111,12 @@ void UAISimplePatrolNode::Exit_Inner_Implementation()
 	this->GetAIController()->StopMovement();
 }
 
-void UAISimplePatrolNode::OnMoveCompleted(FAIRequestID RequestID, EPathFollowingResult::Type Result)
+void UAISimplePatrolNode::OnMoveCompleted(FAIRequestID RequestID, EPathFollowingResult::Type MoveResult)
 {
 	auto& State = this->GetState();
 	State.Step();
 
-	switch (Result)
+	switch (MoveResult)
 	{
 		case EPathFollowingResult::Success:
 			this->EmitEvent(Events::AI::ARRIVE);
@@ -94,7 +132,6 @@ void UAISimplePatrolNode::OnMoveCompleted(FAIRequestID RequestID, EPathFollowing
 			this->EmitEvent(Events::AI::LOST);
 			break;
 	}
-
 }
 
 void UAISimplePatrolNode::MoveToNext()
@@ -110,11 +147,13 @@ void UAISimplePatrolNode::MoveToNext()
 	{
 		// If we've recursed too many times, then remove the call back.
 		this->GetAIController()->ReceiveMoveCompleted.RemoveAll(this);
+		this->EmitEvent(Events::AI::LOST);
 	}
-
-	Ctrl->MoveToLocation(Goal);
-
-	this->RecurseGuard = 0;
+	else
+	{
+		this->Result = Ctrl->MoveTo(Goal);
+		this->RecurseGuard = 0;
+	}
 }
 
 void UAISimplePatrolNode::BindCallback()

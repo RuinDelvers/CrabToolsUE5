@@ -40,15 +40,7 @@ void UCrabToolsEditorSettings::SyncTables(UDataTable* SourceTable, UDataTable* T
 
 	for (const auto& RowKey : SourceTable->GetRowNames())
 	{
-		if (RootTag.IsValid())
-		{
-			if (!FGameplayTag::RequestGameplayTag(RowKey).MatchesTag(RootTag))
-			{
-				UE_LOG(LogTemp, Error, TEXT("Found invalid row key %s in table %s"),
-					*RowKey.ToString(),
-					*SourceTable->GetName());
-			}
-		}
+		
 
 		if (TagTable->FindRowUnchecked(RowKey))
 		{
@@ -60,6 +52,16 @@ void UCrabToolsEditorSettings::SyncTables(UDataTable* SourceTable, UDataTable* T
 			Row.Tag = RowKey;
 			TagTable->AddRow(RowKey, Row);
 			TagTable->Modify();
+		}
+
+		if (RootTag.IsValid())
+		{
+			if (!FGameplayTag::RequestGameplayTag(RowKey).MatchesTag(RootTag))
+			{
+				UE_LOG(LogTemp, Error, TEXT("Found invalid row key %s in table %s"),
+					*RowKey.ToString(),
+					*SourceTable->GetName());
+			}
 		}
 	}
 }

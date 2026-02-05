@@ -135,7 +135,7 @@ enum class EHierarchyInputType : uint8
  * State Machines for each AI slot, we could use this to return a class to dynamically instantiate
  * one to use.
  */
-UCLASS(Blueprintable)
+UCLASS(Abstract, Blueprintable, EditInlineNew, DefaultToInstanced)
 class UStateMachineClassGenerator : public UObject
 {
 	GENERATED_BODY()
@@ -143,8 +143,8 @@ class UStateMachineClassGenerator : public UObject
 public:
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="StateMachine")
-	TSoftClassPtr<UStateMachine> GetMachineClass() const;
-	virtual TSoftClassPtr<UStateMachine> GetMachineClass_Implementation() const { return nullptr; }
+	TSoftClassPtr<UStateMachine> GetMachineClass(UStateMachine* OwnerMachine) const;
+	virtual TSoftClassPtr<UStateMachine> GetMachineClass_Implementation(UStateMachine* OwnerMachine) const { return nullptr; }
 };
 
 /* Structure used to store a reference to a submachine. */

@@ -8,6 +8,8 @@ void UAIBaseNode::Initialize_Inner_Implementation()
 	if (PawnQ)
 	{
 		this->PawnRef = PawnQ;
-		this->AICtrl = CastChecked<AAIController>(PawnQ->GetController());		
+		this->AICtrl = CastChecked<AAIController>(PawnQ->GetController());
+
+		check(this->AICtrl.Get());
 	}
 }

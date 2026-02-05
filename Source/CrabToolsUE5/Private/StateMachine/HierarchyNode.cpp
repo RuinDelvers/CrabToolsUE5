@@ -146,6 +146,22 @@ bool UHierarchyNode::RequiresTick_Implementation() const
 	}
 }
 
+void UHierarchyNode::SetActive_Inner_Implementation(bool bNewActive)
+{
+	
+	if (this->Slot)
+	{
+		if (this->bMachineAlwaysActive)
+		{
+			this->Slot->SetActive(true);
+		}
+		else
+		{
+			this->Slot->SetActive(bNewActive);
+		}
+	}
+}
+
 // Editor helper functions.
 #if WITH_EDITOR
 void UHierarchyNode::GetEmittedEvents(TSet<FName>& Events) const

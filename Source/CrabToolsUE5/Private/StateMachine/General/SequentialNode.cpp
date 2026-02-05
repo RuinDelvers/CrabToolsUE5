@@ -1,6 +1,6 @@
-#include "StateMachine/General/SequenceNode.h"
+#include "StateMachine/General/SequentialNode.h"
 
-void USequenceNode::Initialize_Inner_Implementation()
+void USequentialNode::Initialize_Inner_Implementation()
 {
 	for (const auto& Node : this->Nodes)
 	{
@@ -11,7 +11,7 @@ void USequenceNode::Initialize_Inner_Implementation()
 	}
 }
 
-void USequenceNode::Tick_Inner_Implementation(float DeltaTime)
+void USequentialNode::Tick_Inner_Implementation(float DeltaTime)
 {
 	if (this->CurrentNode)
 	{
@@ -19,7 +19,7 @@ void USequenceNode::Tick_Inner_Implementation(float DeltaTime)
 	}
 }
 
-void USequenceNode::Enter_Inner_Implementation()
+void USequentialNode::Enter_Inner_Implementation()
 {
 	this->Increment();
 	if (this->CurrentNode)
@@ -28,7 +28,7 @@ void USequenceNode::Enter_Inner_Implementation()
 	}
 }
 
-void USequenceNode::EnterWithData_Inner_Implementation(UObject* Data)
+void USequentialNode::EnterWithData_Inner_Implementation(UObject* Data)
 {
 	this->Increment();
 	if (this->CurrentNode)
@@ -37,7 +37,7 @@ void USequenceNode::EnterWithData_Inner_Implementation(UObject* Data)
 	}
 }
 
-void USequenceNode::Event_Inner_Implementation(FName InEvent)
+void USequentialNode::Event_Inner_Implementation(FName InEvent)
 {
 	if (this->CurrentNode)
 	{
@@ -45,7 +45,7 @@ void USequenceNode::Event_Inner_Implementation(FName InEvent)
 	}
 }
 
-void USequenceNode::EventWithData_Inner_Implementation(FName InEvent, UObject* Data)
+void USequentialNode::EventWithData_Inner_Implementation(FName InEvent, UObject* Data)
 {
 	if (this->CurrentNode)
 	{
@@ -53,7 +53,7 @@ void USequenceNode::EventWithData_Inner_Implementation(FName InEvent, UObject* D
 	}
 }
 
-void USequenceNode::SetActive_Inner_Implementation(bool bNewActive)
+void USequentialNode::SetActive_Inner_Implementation(bool bNewActive)
 {
 	if (this->CurrentNode)
 	{
@@ -61,7 +61,7 @@ void USequenceNode::SetActive_Inner_Implementation(bool bNewActive)
 	}
 }
 
-void USequenceNode::Exit_Inner_Implementation()
+void USequentialNode::Exit_Inner_Implementation()
 {
 	if (this->CurrentNode)
 	{
@@ -69,7 +69,7 @@ void USequenceNode::Exit_Inner_Implementation()
 	}
 }
 
-bool USequenceNode::RequiresTick_Implementation() const
+bool USequentialNode::RequiresTick_Implementation() const
 {
 	
 	if (this->CurrentNode)
@@ -82,7 +82,7 @@ bool USequenceNode::RequiresTick_Implementation() const
 	}
 }
 
-bool USequenceNode::HasPipedData_Implementation() const
+bool USequentialNode::HasPipedData_Implementation() const
 {
 
 	if (this->CurrentNode)
@@ -95,7 +95,7 @@ bool USequenceNode::HasPipedData_Implementation() const
 	}
 }
 
-UObject* USequenceNode::GetPipedData_Implementation()
+UObject* USequentialNode::GetPipedData_Implementation()
 {
 
 	if (this->CurrentNode)
@@ -108,7 +108,7 @@ UObject* USequenceNode::GetPipedData_Implementation()
 	}
 }
 
-void USequenceNode::Increment()
+void USequentialNode::Increment()
 {
 	if (this->CurrentNode)
 	{
@@ -133,7 +133,7 @@ void USequenceNode::Increment()
 }
 
 #if WITH_EDITOR
-void USequenceNode::GetNotifies(TSet<FName>& Events) const
+void USequentialNode::GetNotifies(TSet<FName>& Events) const
 {
 	for (const auto& Node : this->Nodes)
 	{
@@ -144,7 +144,7 @@ void USequenceNode::GetNotifies(TSet<FName>& Events) const
 	}
 }
 
-void USequenceNode::GetEmittedEvents(TSet<FName>& Events) const
+void USequentialNode::GetEmittedEvents(TSet<FName>& Events) const
 {
 	for (const auto& Node : this->Nodes)
 	{

@@ -92,17 +92,20 @@ bool UAIMoveToInteractNode::HasInteractable() const
 void UAIMoveToInteractNode::ComputeTarget()
 {
 	if (IsValid(this->CurrentData))
-	{		
+	{	
 		if (auto Interactable = this->GetInteractable())
 		{
 			TArray<FVector> Locations;
 			Interactable->GetInteractionPoints(Locations);
 
-			if (Locations.Num() > 0)
+			if (Locations.Num() > 0 && !Interactable->bTravelToActor)
 			{
 				auto Dest = UPathFindingUtilsLibrary::ChooseNearLocation(this->GetAIController(), Locations);
-
 				this->SetOverrideLocation(Dest);
+			}
+			else
+			{
+				this->MoveData.DestinationActor = this->CurrentData->Interactable;
 			}
 		}
 		else
@@ -142,7 +145,9 @@ UInteractionSystem* UAIMoveToInteractNode::GetInteractionComponent() const
 
 void UAIMoveToInteractNode::BindEvents()
 {
-	this->GetInteractionComponent()->OnInteractableAddedEvent.AddDynamic(this, &UAIMoveToInteractNode::OnInteractableAdded);
+	this->GetInteractionComponent()->OnInteractableAddedEvent.AddDynamic(
+		this,
+		&UAIMoveToInteractNode::OnInteractableAdded);
 }
 
 void UAIMoveToInteractNode::OnInteractableAdded(UInteractableComponent* Interactable)

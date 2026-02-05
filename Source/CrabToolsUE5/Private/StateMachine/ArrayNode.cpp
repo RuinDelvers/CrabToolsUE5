@@ -62,6 +62,7 @@ void UArrayNode::EnterWithData_Inner_Implementation(UObject* Data)
 	{
 		if (Node)
 		{
+			//UE_LOG(LogTemp, Warning, TEXT("Array entering: %s with state"), *Node->GetClass()->GetName());
 			Node->EnterWithData(Data);
 		}
 	}
@@ -117,12 +118,34 @@ bool UArrayNode::HasPipedData_Implementation() const
 
 void UArrayNode::SetActive_Inner_Implementation(bool bNewActive)
 {
-	/*
+	if (this->GetNodeState() == EStateNodeState::ENTERED)
+	{
+		for (const auto& Child : this->Nodes)
+		{
+			Child->SetActive(bNewActive);
+		}
+	}
+}
+
+bool UArrayNode::Verify_Inner(FNodeVerificationContext& Context) const
+{
 	for (const auto& Child : this->Nodes)
 	{
-		Child->SetActive(bNewActive);
+		if (Child)
+		{
+			if (!Child->Verify(Context))
+			{
+				return false;
+			}
+		}
+		else
+		{
+			static FString Msg = "Null node found in ArrayNode";
+			Context.Error(Msg, this);
+		}
 	}
-	*/
+
+	return true;
 }
 
 UObject* UArrayNode::GetPipedData_Implementation()

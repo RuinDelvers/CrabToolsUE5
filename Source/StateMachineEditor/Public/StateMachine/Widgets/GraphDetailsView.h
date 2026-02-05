@@ -49,6 +49,9 @@ public:
 
 	virtual void Sort();
 	virtual FString SortKey() const { return ""; }
+
+	/* Whether or not this node represents a state machine & the main graph. */
+	virtual bool RepresentsMainGraph() const { return false; }
 };
 
 class FHeaderItem : public FGraphDetailsViewItem
@@ -162,6 +165,8 @@ public:
 
 	void AddState(UEdStateNode* State, bool DeferRefresh);
 
+	virtual bool RepresentsMainGraph() const override;
+
 private:
 
 	bool OnVerifyNameTextChanged(const FText& InText, FText& OutErrorMessage);
@@ -177,6 +182,7 @@ private:
 	virtual void Delete(bool DeferRefresh = false) override;
 
 	virtual FString SortKey() const override;
+
 };
 
 class FEventItem : public FBaseEditableTextItem
@@ -257,12 +263,17 @@ public:
 	void Refresh();
 
 private:
+
 	void OnGraphDataReverted();
 	void OnItemSelected(TSharedPtr< FGraphDetailsViewItem > InSelectedItem, ESelectInfo::Type SelectInfo) {}
 	void OnItemDoubleClicked(TSharedPtr< FGraphDetailsViewItem > InClickedItem) {}
 	void OnGetChildrenForCategory(ItemPtr InItem, TArray< ItemPtr >& OutChildren);
 	void OnItemScrolledIntoView(ItemPtr InActionNode, const TSharedPtr<ITableRow>& InWidget) {}
 	void OnSetExpansionRecursive(ItemPtr InTreeNode, bool bInIsItemExpanded) {}
+	TSharedPtr<SWidget> OnContextMenuOpening();
+
+	void DeleteActionSelected();
+
 	TSharedRef<ITableRow> OnGenerateRow(
 		ItemPtr InItem,
 		const TSharedRef<STableViewBase>& OwnerTable,
@@ -327,7 +338,9 @@ private:
 	void OnGetChildrenForCategory(ItemPtr InItem, TArray< ItemPtr >& OutChildren);
 	void OnItemScrolledIntoView(ItemPtr InActionNode, const TSharedPtr<ITableRow>& InWidget) {}
 	void OnSetExpansionRecursive(ItemPtr InTreeNode, bool bInIsItemExpanded) {}
-
+	TSharedPtr<SWidget> OnContextMenuOpening();
+	
+	void DeleteActionSelected();
 
 	// Section Functions.
 	TSharedRef<ITableRow> OnGenerateRow(

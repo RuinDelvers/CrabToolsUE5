@@ -9,11 +9,13 @@ UInteractionSystem::UInteractionSystem()
 
 void UInteractionSystem::AddInteractable(UInteractableComponent* Obj)
 {
-	if (IsValid(Obj)) {
-		this->InteractableObjects.Add(Obj);
+	if (IsValid(Obj))
+	{
+		this->InteractableObjects.AddUnique(Obj);
 		this->OnInteractableAddedEvent.Broadcast(Obj);
 
-		if (this->InteractableObjects.Num() == 1) {
+		if (this->InteractableObjects.Num() == 1)
+		{
 			this->OnInteractableSelectedEvent.Broadcast(Obj);
 		}
 	}
@@ -63,14 +65,17 @@ void UInteractionSystem::InteractWith(AActor* Redirect,UObject* Data)
 	}
 }
 
-void UInteractionSystem::Cycle() {
+void UInteractionSystem::Cycle()
+{
 	if (this->InteractableObjects.Num() == 0) { return; }
+
 	this->SelectedIndex = (this->SelectedIndex + 1) % this->InteractableObjects.Num();
 
 	this->OnInteractableSelectedEvent.Broadcast(this->GetSelected());
 }
 
-UInteractableComponent* UInteractionSystem::GetSelected() {
+UInteractableComponent* UInteractionSystem::GetSelected()
+{
 	if (this->InteractableObjects.Num() > 0)
 	{
 		auto& WeakVar = this->InteractableObjects[this->SelectedIndex];

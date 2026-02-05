@@ -261,7 +261,7 @@ void FStateMachineBlueprintCompilerContext::CopyTermDefaultsToDefaultObject(UObj
 		{
 			if (auto SMBP = this->StateMachineBlueprint())
 			{
-
+				StateMachine->AppendDefaultEvents(SMBP->GetMainGraph()->GetDefaultEvents());
 			}
 		}
 	}	

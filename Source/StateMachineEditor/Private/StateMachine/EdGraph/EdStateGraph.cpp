@@ -8,6 +8,7 @@
 #include "StateMachine/StateMachineBlueprint.h"
 #include "StateMachine/StateMachineBlueprintGeneratedClass.h"
 #include "KismetCompiler.h"
+#include "StateMachine/Events.h"
 #include "StateMachine/Logging.h"
 #include "Engine/DataTable.h"
 #include "Utils/PropertyManagement.h"
@@ -291,7 +292,19 @@ bool UEdStateGraph::HasEvent(FName InEvent) const
 				|| this->DoesArchetypeHaveEvent(InEvent)
 				|| this->DoesHierarchyProvideEvent(InEvent);
 		}
-	}	
+
+		if (!bHasEvent)
+		{
+			for (auto DEv : this->ActiveDefaultEvents)
+			{
+				if (InEvent == Events::Default::DefaultEventToName(DEv))
+				{
+					bHasEvent = true;
+					break;
+				}
+			}
+		}
+	}
 
 	return bHasEvent;;
 }
@@ -609,7 +622,8 @@ FStateMachineArchetypeData UEdStateGraph::CompileStateMachine(FNodeVerificationC
 	}
 
 	//Data.GetArchetype()->StartState = this->GetStartStateName();
-	Data.StartState = this->GetStartStateName();	
+	Data.StartState = this->GetStartStateName();
+	Data.GetArchetype()->AppendDefaultEvents(this->ActiveDefaultEvents);
 
 	return Data;
 }
@@ -808,6 +822,11 @@ TArray<FString> UEdStateGraph::GetEventOptions() const
 				}
 			}
 		}
+	}
+
+	for (auto Event : this->ActiveDefaultEvents)
+	{
+		Names.Add(Events::Default::DefaultEventToName(Event).ToString());
 	}
 
 	Names.Sort([&](const FString& A, const FString& B) { return A < B; });

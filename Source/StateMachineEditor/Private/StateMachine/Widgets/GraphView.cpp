@@ -62,7 +62,6 @@ void SGraphView::AddGraphToEditor(UEdGraph* Graph)
 
 void SGraphView::AddReferencedObjects(FReferenceCollector& Collector)
 {
-
 }
 
 void SGraphView::BindEvents(UStateMachineBlueprint* Blueprint)

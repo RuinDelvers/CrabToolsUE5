@@ -39,15 +39,18 @@ class CRABTOOLSUE5_API UAISimplePatrolNode : public UAIBaseNode
 	UPROPERTY(EditDefaultsOnly, Category = "StateMachine|AI", meta=(ShowOnlyInnerProperties))
 	TSet<FIncomingStateSlot> NonResetStates;
 
+	FPathFollowingRequestResult Result;
+
 public:
 	UAISimplePatrolNode();
 
 	virtual void Enter_Inner_Implementation() override;
 	virtual void Exit_Inner_Implementation() override;
 	virtual void Initialize_Inner_Implementation() override;
+	virtual void SetActive_Inner_Implementation(bool bNewActive) override;
 	
 	UFUNCTION()
-	void OnMoveCompleted(FAIRequestID RequestID, EPathFollowingResult::Type Result);
+	void OnMoveCompleted(FAIRequestID RequestID, EPathFollowingResult::Type MoveResult);
 
 	#if WITH_EDITOR
 		virtual void PostLinkerChange() override;
@@ -58,7 +61,7 @@ public:
 
 private:
 
-
+	UPatrolPathFollowingComponent* GetPath() const;
 	FPatrolPathState& GetState() const;
 
 	void MoveToNext();

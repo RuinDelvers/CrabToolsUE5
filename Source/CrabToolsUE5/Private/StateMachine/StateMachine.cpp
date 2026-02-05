@@ -6,6 +6,7 @@
 #include "StateMachine/Logging.h"
 #include "StateMachine/IStateMachineLike.h"
 #include "StateMachine/DataStructures.h"
+#include "StateMachine/Events.h"
 #include "StateMachine/Transitions/BaseTransitions.h"
 #include "Utils/UtilsLibrary.h"
 
@@ -302,14 +303,17 @@ void UStateMachine::GetPreemptTransition(FTransitionQueue& Cached) const
 
 void UStateMachine::Tick(float DeltaTime)
 {
-	auto State = this->GetCurrentState();
-
-	if (State)
+	if (this->bIsActive)
 	{
-		State->Tick(DeltaTime);
-	}
+		auto State = this->GetCurrentState();
 
-	this->UpdateState();
+		if (State)
+		{
+			State->Tick(DeltaTime);
+		}
+
+		this->UpdateState();
+	}
 }
 
 
@@ -341,6 +345,7 @@ void UStateMachine::SendEvent(FName InEvent)
 		}
 	#endif
 
+	if (!this->bIsActive) { return; }
 	if (InEvent.IsNone()) { return; }
 
 	auto CurrentState = this->GetCurrentState();
@@ -387,6 +392,7 @@ void UStateMachine::SendEventWithData(FName InEvent, UObject* Data)
 		}
 	#endif
 
+	if (!this->bIsActive) { return; }
 	if (InEvent.IsNone()) { return; }
 
 	auto CurrentState = this->GetCurrentState();
@@ -434,11 +440,26 @@ void UStateMachine::UpdateTickRequirements(bool NeedsTick)
 
 void UStateMachine::SetActive(bool bNewActive)
 {
-	if (auto State = this->GetCurrentState())
+	if (this->TransPhase == TransitionPhase::None)
 	{
-		if (State->GetNode())
+		if (!bNewActive && this->ActiveDefaultEvents.Contains(EDefaultStateMachineEvents::ON_MACHINE_DEACTIVATE))
 		{
-			State->GetNode()->SetActive(bNewActive);
+			this->SendEvent(Events::Default::MACHINE_DEACTIVATED);
+		}
+
+		this->bIsActive = bNewActive;
+
+		if (auto State = this->GetCurrentState())
+		{
+			if (State->GetNode())
+			{
+				State->GetNode()->SetActive(bNewActive);
+			}
+		}
+
+		if (bNewActive && this->ActiveDefaultEvents.Contains(EDefaultStateMachineEvents::ON_MACHINE_ACTIVATE))
+		{
+			this->SendEvent(Events::Default::MACHINE_ACTIVATED);
 		}
 	}
 }
@@ -467,6 +488,11 @@ void UStateMachine::PostEditChangeProperty(struct FPropertyChangedEvent& e)
 void UStateMachine::PostLinkerChange()
 {
 	Super::PostLinkerChange();
+}
+
+void UStateMachine::AppendDefaultEvents(const TSet<EDefaultStateMachineEvents>& Events)
+{
+	this->ActiveDefaultEvents.Append(Events);
 }
 
 
@@ -525,6 +551,7 @@ TArray<FString> UStateMachine::StateOptions()
 
 TArray<FString> UStateMachine::ConditionOptions() const {
 	TArray<FString> Names;
+
 	auto base = this->FindFunction("TrueCondition");
 
 	for (TFieldIterator<UFunction> FIT(this->GetClass(), EFieldIteratorFlags::IncludeSuper); FIT; ++FIT) {
@@ -1105,7 +1132,7 @@ AActor* UStateNode::GetActorOwner() const
 
 void UStateNode::Event(FName InEvent)
 {
-	if (this->bActive)
+	if (this->Active())
 	{
 		if (auto Notify = this->EventNotifies.Find(InEvent))
 		{
@@ -1130,7 +1157,7 @@ void UStateNode::Event_Inner_Implementation(FName InEvent)
 
 void UStateNode::EventWithData(FName InEvent, UObject* Data)
 {
-	if (this->bActive)
+	if (this->Active())
 	{
 		if (auto Notify = this->EventWithDataNotifies.Find(InEvent))
 		{
@@ -1143,7 +1170,8 @@ void UStateNode::EventWithData(FName InEvent, UObject* Data)
 	}
 }
 
-void UStateNode::EventWithData_Inner_Implementation(FName InEvent, UObject* Data) {
+void UStateNode::EventWithData_Inner_Implementation(FName InEvent, UObject* Data)
+{
 	this->Event_Inner(InEvent);
 }
 
@@ -1152,19 +1180,53 @@ bool UStateNode::DoesReferenceMachine(FName MachineName) const
 	return this->DoesReferenceMachine_Inner(MachineName);
 }
 
-void UStateNode::SetOwner(UStateMachine* Parent) {
+void UStateNode::SetOwner(UStateMachine* Parent)
+{
 	this->Owner = Parent;
+}
+
+bool UStateNode::Active() const
+{
+	switch (this->CurrentState)
+	{
+		case EStateNodeState::INACTIVE: return false;
+		case EStateNodeState::EXITING: return true;
+		case EStateNodeState::ENTERING: return true;
+		case EStateNodeState::ENTERED: return true;
+		case EStateNodeState::ENTERED_INACTIVE: return false;
+		default: return false;
+	}
 }
 
 void UStateNode::SetActive(bool bNewActive)
 {
-	this->bActive = bNewActive;
-	this->SetActive_Inner(bNewActive);
+	bool bOldActive = this->Active();
+
+	switch (this->CurrentState)
+	{
+		case EStateNodeState::ENTERED:
+			if (!bNewActive)
+			{
+				this->CurrentState = EStateNodeState::ENTERED_INACTIVE;
+			}
+		case EStateNodeState::ENTERED_INACTIVE:
+			if (bNewActive)
+			{
+				this->CurrentState = EStateNodeState::ENTERED;
+			}
+	}
+
+	bool bComputeActive = this->Active();
+
+	if (bComputeActive != bOldActive)
+	{
+		this->SetActive_Inner(bComputeActive);
+	}
 }
 
 void UStateNode::Tick(float DeltaTime)
 {
-	if (this->bActive)
+	if (this->Active())
 	{
 		this->Tick_Inner(DeltaTime);
 	}
@@ -1172,19 +1234,37 @@ void UStateNode::Tick(float DeltaTime)
 
 void UStateNode::Exit()
 {
-	if (this->bActive)
+	if (
+		this->CurrentState == EStateNodeState::ENTERING
+		|| this->CurrentState == EStateNodeState::ENTERED
+		|| this->CurrentState == EStateNodeState::ENTERED_INACTIVE)
 	{
-		this->SetActive(false);
+		this->CurrentState = EStateNodeState::EXITING;
 		this->Exit_Inner();
+
+		if (this->CurrentState == EStateNodeState::EXITING)
+		{
+			this->CurrentState = EStateNodeState::INACTIVE;
+			this->SetActive_Inner(false);
+		}
 	}
 }
 
 void UStateNode::ExitWithData(UObject* Data)
 {
-	if (this->bActive)
+	if (
+		this->CurrentState == EStateNodeState::ENTERING
+		|| this->CurrentState == EStateNodeState::ENTERED
+		|| this->CurrentState == EStateNodeState::ENTERED_INACTIVE)
 	{
-		this->SetActive(false);
+		this->CurrentState = EStateNodeState::EXITING;
 		this->ExitWithData_Inner(Data);
+
+		if (this->CurrentState == EStateNodeState::EXITING)
+		{
+			this->CurrentState = EStateNodeState::INACTIVE;
+			this->SetActive_Inner(false);
+		}
 	}
 }
 
@@ -1195,19 +1275,31 @@ void UStateNode::ExitWithData_Inner_Implementation(UObject* Data)
 
 void UStateNode::Enter()
 {
-	if (!this->bActive)
+	if (this->CurrentState == EStateNodeState::INACTIVE || this->CurrentState == EStateNodeState::EXITING)
 	{
-		this->SetActive(true);
+		this->CurrentState = EStateNodeState::ENTERING;
 		this->Enter_Inner();
+		
+		if (this->CurrentState == EStateNodeState::ENTERING)
+		{
+			this->CurrentState = EStateNodeState::ENTERED;
+			this->SetActive_Inner(true);
+		}
 	}
 }
 
 void UStateNode::EnterWithData(UObject* Data)
 {
-	if (!this->bActive)
+	if (this->CurrentState == EStateNodeState::INACTIVE || this->CurrentState == EStateNodeState::EXITING)
 	{
-		this->SetActive(true);
+		this->CurrentState = EStateNodeState::ENTERING;
 		this->EnterWithData_Inner(Data);
+
+		if (this->CurrentState == EStateNodeState::ENTERING)
+		{
+			this->CurrentState = EStateNodeState::ENTERED;
+			this->SetActive_Inner(true);
+		}
 	}
 }
 

@@ -39,6 +39,13 @@ struct FStateChangedEventData
 	TObjectPtr<UStateMachine> StateMachine;
 };
 
+UENUM()
+enum class EDefaultStateMachineEvents : uint8
+{
+	ON_MACHINE_ACTIVATE      UMETA(DisplayName="MachineActivated"),
+	ON_MACHINE_DEACTIVATE    UMETA(DisplayName = "MachineDeactivated"),
+};
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FStateChangedEvent, const FStateChangedEventData&, Data);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FTransitionFinishedEvent, UStateMachine*, Machine);
 DECLARE_DYNAMIC_DELEGATE_RetVal(bool, FTransitionDelegate);
@@ -213,7 +220,25 @@ private:
 	void EventWithData_Inner(FName InEvent, UObject* Data) const;
 };
 
+/*
+ * A StateNode can be in multiple states of entering, active, and exiting. These describe which state it
+ * is in.
+ */
+UENUM()
+enum class EStateNodeState
+{
+	/* The state node is being entered. It is considered active. */
+	ENTERING UMETA(DisplayName="Entering"),
+	/* The state node has been fully entered, Enter has been called for the node tree. Considered Active. */
+	ENTERED UMETA(DisplayName = "Entered"),
+	/* The node has been entered, but set to be inactive. */
+	ENTERED_INACTIVE UMETA(DisplayName = "Entered Inactive"),
+	/* The node is exiting. Considered active. */
+	EXITING UMETA(DisplayName = "Exiting"),
+	/* The node has been exited, and is considered inactive. */
+	INACTIVE UMETA(DisplayName = "Inactive"),
 
+};
 
 /**
  * Base Node class for an individual node in a statemachine. Defines the general behaviour and interface
@@ -229,7 +254,7 @@ class CRABTOOLSUE5_API UStateNode : public UObject, public IStateNodeLike
 	UPROPERTY(Transient, DuplicateTransient)
 	TObjectPtr<UStateMachine> Owner;
 
-	bool bActive = false;
+	EStateNodeState CurrentState = EStateNodeState::INACTIVE;
 
 	#if WITH_EDITORONLY_DATA
 		UPROPERTY(EditDefaultsOnly, Category="StateMachine|Events",
@@ -261,7 +286,7 @@ public:
 	void SetOwner(UStateMachine* Parent);
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category="StateMachine")
-	FORCEINLINE bool Active() const { return this->bActive; }
+	FORCEINLINE bool Active() const;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "StateMachine")
 	UObject* GetOwner() const;
@@ -292,6 +317,8 @@ public:
 		meta = (HideSelfPin=true))
 	void EmitEventWithData(FName InEvent, UObject* Data);
 
+	UFUNCTION(BlueprintCallable, Category="State")
+	FORCEINLINE EStateNodeState GetNodeState() const { return this->CurrentState; }
 
 	UFUNCTION(BlueprintNativeEvent, Category = "StateMachine")
 	bool RequiresTick() const;
@@ -612,10 +639,22 @@ private:
 	TObjectPtr<UStateMachine> ParentMachine;
 	/* The key/name of this submachine in the parent. */
 	FName ParentKey;
+
+	/*
+	 * Whether or not this state machine is active. Inactivate state machines cannot have events
+	 * sent to them, and they will not update their states. This is propagated to current nodes
+	 * state nodes.
+	 */
+	bool bIsActive = true;
 	
+	UPROPERTY()
+	TSet<EDefaultStateMachineEvents> ActiveDefaultEvents;
+
 public:
 
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FTickRequirementUpdated, bool, NeedsTick);
+
+	UPROPERTY(BlueprintAssignable, Category = "StateMachine", meta = (IgnorePropertySearch))
 	FTickRequirementUpdated OnTickRequirementUpdated;
 
 	UPROPERTY(BlueprintAssignable, Category="StateMachine", meta = (IgnorePropertySearch))
@@ -686,6 +725,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category="StateMachine")
 	bool IsActiveState(const UState* State) const;
 
+	UFUNCTION(BlueprintCallable, Category="StateMachine")
+	FORCEINLINE bool Active() const { return this->bIsActive; }
+
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "StateMachine")
 	FName GetCurrentStateName() const;
 
@@ -740,6 +782,9 @@ public:
 		virtual void PostEditChangeChainProperty(struct FPropertyChangedChainEvent& PropertyChangedEvent) override;
 		virtual void PreEditChange(FProperty* PropertyAboutToChange) override;
 		virtual void PostLinkerChange() override;
+
+		/* This is an editor only function used for compiling state machines.*/
+		void AppendDefaultEvents(const TSet<EDefaultStateMachineEvents>& Events);
 	#endif
 
 	// IStateMachineLike interface

@@ -22,6 +22,7 @@ public:
 
 	virtual void Enter_Inner_Implementation() override;
 	virtual void Exit_Inner_Implementation() override;
+	virtual void SetActive_Inner_Implementation(bool bNewActive) override;
 
 	void OnWaitEnd();
 };

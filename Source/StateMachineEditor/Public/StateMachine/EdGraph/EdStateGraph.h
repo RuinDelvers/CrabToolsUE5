@@ -110,12 +110,15 @@ private:
 	TArray<TObjectPtr<UEdEventObject>> EventObjects;
 
 	/* Which class to use for state data. */
-	UPROPERTY(EditDefaultsOnly, Category="StateMachine")
+	UPROPERTY(EditDefaultsOnly, Category="States")
 	TSubclassOf<UState> DefaultStateClass;
 
-	UPROPERTY(EditAnywhere, Instanced, Category="StateMachine",
+	UPROPERTY(EditAnywhere, Instanced, Category="Events",
 		meta = (AllowPrivateAccess))
 	TArray<TObjectPtr<UEventEmitter>> EventEmitters;
+
+	UPROPERTY(EditAnywhere, Category="Events")
+	TSet<EDefaultStateMachineEvents> ActiveDefaultEvents;
 
 public:
 
@@ -247,8 +250,11 @@ public:
 
 	TSubclassOf<UState> GetStateClass() const;
 
+	const TSet<EDefaultStateMachineEvents>& GetDefaultEvents() const { return this->ActiveDefaultEvents; }
+
 	void UpdateDefaultStateClass(TSubclassOf<UState> StateClass);
 	void SetDebugMachine(UStateMachine* Machine);
+
 
 private:
 

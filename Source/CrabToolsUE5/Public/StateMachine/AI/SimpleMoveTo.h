@@ -37,6 +37,7 @@ public:
 	virtual void Exit_Inner_Implementation() override;
 	virtual void Initialize_Inner_Implementation() override;
 	virtual void Enter_Inner_Implementation() override;
+	virtual void SetActive_Inner_Implementation(bool bNewActive) override;
 
 	#if WITH_EDITOR
 		virtual void PostLinkerChange() override;

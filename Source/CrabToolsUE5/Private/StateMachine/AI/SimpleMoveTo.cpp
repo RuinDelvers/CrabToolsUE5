@@ -25,9 +25,7 @@ void UAISimpleMoveToNode::Initialize_Inner_Implementation()
 void UAISimpleMoveToNode::Exit_Inner_Implementation()
 {
 	this->UnbindCallback();
-
 	this->StopMovement();
-
 	this->MoveData.ResetGoal();
 }
 
@@ -63,6 +61,18 @@ void UAISimpleMoveToNode::Enter_Inner_Implementation()
 	else
 	{
 		this->MoveTo();
+	}
+}
+
+void UAISimpleMoveToNode::SetActive_Inner_Implementation(bool bNewActive)
+{
+	if (bNewActive)
+	{
+		this->GetAIController()->ResumeMove(this->Result.MoveId);
+	}
+	else
+	{
+		this->GetAIController()->PauseMove(this->Result.MoveId);
 	}
 }
 
