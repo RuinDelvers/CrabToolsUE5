@@ -80,6 +80,24 @@ void SGraphView::BindEvents(UStateMachineBlueprint* Blueprint)
 		FGenericCommands::Get().Rename,
 		FExecuteAction::CreateRaw(this, &SGraphView::OnRenameSelection),
 		FCanExecuteAction::CreateRaw(this, &SGraphView::CanRenameSelection));
+
+	GraphEditorCommands->MapAction(
+		FGenericCommands::Get().Copy,
+		FExecuteAction::CreateRaw(this, &SGraphView::OnCopyNodes),
+		FCanExecuteAction::CreateRaw(this, &SGraphView::CanCopyNodes)
+	);
+
+	GraphEditorCommands->MapAction(
+		FGenericCommands::Get().Cut,
+		FExecuteAction::CreateRaw(this, &SGraphView::OnCutNodes),
+		FCanExecuteAction::CreateRaw(this, &SGraphView::CanCutNodes)
+	);
+
+	GraphEditorCommands->MapAction(
+		FGenericCommands::Get().Duplicate,
+		FExecuteAction::CreateRaw(this, &SGraphView::OnDuplicateNodes),
+		FCanExecuteAction::CreateRaw(this, &SGraphView::CanDuplicateNodes)
+	);
 }
 
 void SGraphView::OnRenameSelection()
@@ -95,7 +113,21 @@ void SGraphView::OnRenameSelection()
 
 bool SGraphView::CanRenameSelection()
 {
-	return this->SelectedNodes.Num() == 1;
+	if (this->SelectedNodes.Num() == 1)
+	{
+		if (auto Node = Cast<UEdBaseNode>(this->SelectedNodes[0]))
+		{
+			return Node->CanRename();
+		}
+		else
+		{
+			return false;
+		}
+	}
+	else
+	{
+		return false;
+	}
 }
 
 void SGraphView::OnGraphSelected(UEdStateGraph* Graph)
@@ -151,15 +183,115 @@ void SGraphView::OnDeleteNodes()
 
 	for (FGraphPanelSelectionSet::TConstIterator NodeIt(GraphSelectedNodes); NodeIt; ++NodeIt)
 	{
-		if (auto Node = Cast<UEdStateNode>(*NodeIt))
+		if (auto Node = Cast<UEdBaseNode>(*NodeIt))
 		{
 			Node->Delete();
 		}
-		else if (auto TransNode = Cast<UEdTransition>(*NodeIt))
-		{
-			TransNode->Delete();
-		}
 	}
+}
+
+bool SGraphView::CanDeleteNodes() const
+{
+	if (this->SelectedNodes.Num() == 0)
+	{
+		return false;
+	}
+	else
+	{
+		for (const auto& Node : this->SelectedNodes)
+		{
+			if (auto StateNode = Cast<UEdBaseNode>(Node))
+			{
+				if (!StateNode->CanDelete())
+				{
+					return false;
+				}
+			}
+		}
+
+		return true;
+	}
+}
+
+bool SGraphView::CanCopyNodes() const
+{
+	if (this->SelectedNodes.Num() == 0)
+	{
+		return false;
+	}
+	else
+	{
+		for (const auto& Node : this->SelectedNodes)
+		{
+			if (auto StateNode = Cast<UEdBaseNode>(Node))
+			{
+				if (!StateNode->CanCopy())
+				{
+					return false;
+				}
+			}
+		}
+
+		return true;
+	}
+}
+
+void SGraphView::OnCopyNodes()
+{
+}
+
+bool SGraphView::CanCutNodes() const
+{
+	if (this->SelectedNodes.Num() == 0)
+	{
+		return false;
+	}
+	else
+	{
+		for (const auto& Node : this->SelectedNodes)
+		{
+			if (auto StateNode = Cast<UEdBaseNode>(Node))
+			{
+				if (!StateNode->CanCut())
+				{
+					return false;
+				}
+			}
+		}
+
+		return true;
+	}
+}
+
+void SGraphView::OnCutNodes()
+{
+}
+
+bool SGraphView::CanDuplicateNodes() const
+{
+	if (this->SelectedNodes.Num() == 0)
+	{
+		return false;
+	}
+	else
+	{
+		for (const auto& Node : this->SelectedNodes)
+		{
+			if (auto StateNode = Cast<UEdBaseNode>(Node))
+			{
+				if (!StateNode->CanDuplicate())
+				{
+					return false;
+				}
+			}
+		}
+
+		return true;
+	}
+}
+
+void SGraphView::OnDuplicateNodes()
+{
 }
 
 #undef LOCTEXT_NAMESPACE

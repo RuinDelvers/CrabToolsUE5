@@ -42,13 +42,20 @@ public:
 private:
 	void OnSelectionChanged(const TSet<class UObject*>& NewSelection);
 	void OnGraphSelected(UEdStateGraph* Graph);
+	bool CanDeleteNodes() const;
 	void OnDeleteNodes();
-	bool CanDeleteNodes() { return true; }
+	bool CanCopyNodes() const;
+	void OnCopyNodes();
+
+	bool CanCutNodes() const;
+	void OnCutNodes();
+
+	bool CanDuplicateNodes() const;
+	void OnDuplicateNodes();
+	
 	void OnRenameSelection();
 	bool CanRenameSelection();
 	void BindEvents(UStateMachineBlueprint* Blueprint);
 
 	void AddGraphToEditor(UEdGraph* Graph);
-
-	//virtual FReply OnMouseMove(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent) override;
 };

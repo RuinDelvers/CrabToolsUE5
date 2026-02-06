@@ -6,6 +6,7 @@
 #include "StateMachine/EdGraph/EdStateNode.h"
 #include "StateMachine/EdGraph/EdTransition.h"
 #include "StateMachine/EdGraph/StateConnectionDrawingPolicy.h"
+#include "Framework/Commands/GenericCommands.h"
 
 #define LOCTEXT_NAMESPACE "StateMachineSchema"
 
@@ -283,6 +284,29 @@ void UStateMachineSchema::GetGraphContextActions(FGraphContextMenuBuilder& Conte
 	this->AddEmptyAction(ContextMenuBuilder);
 	this->AddExtensionAction(ContextMenuBuilder);
 	this->AddAliasAction(ContextMenuBuilder);
+}
+
+void UStateMachineSchema::GetContextMenuActions(UToolMenu* Menu, UGraphNodeContextMenuContext* Context) const
+{
+	if (auto StateNode = Cast<UEdBaseNode>(Context->Node))
+	{
+		FToolMenuInsert Insert;
+		Insert.Position = EToolMenuInsertType::First;
+
+		FToolMenuSection& Section = Menu->AddSection(
+			"StateMachineGraphSchemaNodeActions",
+			LOCTEXT("ClassActionsMenuHeader", "Edit"),
+			Insert);
+
+		Section.AddMenuEntry(FGenericCommands::Get().Delete);
+		Section.AddMenuEntry(FGenericCommands::Get().Cut);
+		Section.AddMenuEntry(FGenericCommands::Get().Copy);
+		Section.AddMenuEntry(FGenericCommands::Get().Duplicate);
+		Section.AddMenuEntry(FGenericCommands::Get().Rename);
+
+	}
+
+	Super::GetContextMenuActions(Menu, Context);
 }
 
 void UStateMachineSchema::AddEmptyAction(FGraphContextMenuBuilder& ContextMenuBuilder) const

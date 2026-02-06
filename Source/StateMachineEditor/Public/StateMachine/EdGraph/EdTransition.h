@@ -58,8 +58,12 @@ public:
 	virtual UEdGraphPin* GetInputPin() const { return Pins[0]; }
 	virtual UEdGraphPin* GetOutputPin() const { return Pins[1]; }
 
+	virtual bool CanDelete() const override { return true; }
+	virtual bool CanCopy() const { return true; }
+	virtual bool CanCut() const { return true; }
+
 	void CreateConnections(UEdBaseStateNode* Start, UEdBaseStateNode* End);
-	void Delete();
+	virtual void Delete() override;
 
 	UEdBaseStateNode* GetStartNode() const;
 	UEdBaseStateNode* GetEndNode() const;

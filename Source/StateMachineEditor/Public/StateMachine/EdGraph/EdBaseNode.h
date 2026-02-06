@@ -39,6 +39,21 @@ public:
 	UEdStateGraph* GetStateGraph() const;
 
 	void Inspect();
+
+	/* Edit Commands */
+	virtual bool CanRename() const { return false; }
+
+	virtual void Delete() {}
+	virtual bool CanDelete() const { return false; }
+
+	virtual void Copy() {}
+	virtual bool CanCopy() const { return false; }
+
+	virtual void Cut() {}
+	virtual bool CanCut() const { return false; }
+
+	virtual void Duplicate() {}
+	virtual bool CanDuplicate() const { return false; }
 };
 
 /* Base State node to be used for states in the State Machine Graph. */
@@ -49,8 +64,14 @@ class UEdBaseStateNode : public UEdBaseNode, public IStateLike
 
 public:
 
+	UPROPERTY(EditAnywhere, Category="Documentation")
+	FString Comment;
+
+public:
+
 	UEdBaseStateNode() {}
 	virtual ~UEdBaseStateNode() {}
+
 
 
 	virtual void AutowireNewNode(UEdGraphPin* FromPin) override;

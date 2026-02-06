@@ -112,7 +112,14 @@ public:
 	FName SetStateName(FName NewName);
 	const TArray<TObjectPtr<UStateNode>>& GetStateList() const { return this->Nodes; }
 	FStateArchetypeData CompileState(FNodeVerificationContext& Context, UObject* Outer);
-	void Delete();
+
+	virtual bool CanRename() const;
+	virtual void Delete() override;
+	virtual bool CanDelete() const override { return true; }
+	virtual bool CanCopy() const { return true; }
+	virtual bool CanCut() const { return true; }
+	virtual bool CanDuplicate() const override;
+
 	virtual void RenameNode(FName Name);
 	void UpdateStateArchetype(TSubclassOf<UState> StateClass);
 	void SetDebugObject(UState* State);

@@ -63,6 +63,15 @@ FName UEdStateNode::SetStateName(FName NewName)
 	return NewName;
 }
 
+bool UEdStateNode::CanDuplicate() const
+{
+	switch (this->NodeType)
+	{
+		case EStateNodeType::INLINE_NODE: return true;
+		default: return false;
+	}
+}
+
 void UEdStateNode::RenameNode(FName Name)
 {
 	this->GetStateGraph()->RenameNode(this, Name);
@@ -194,6 +203,15 @@ void UEdStateNode::GetLocalEventOptions(TArray<FString>& Names) const
 	for (const auto& Name : PerNodeNames)
 	{
 		Names.Add(Name.ToString());
+	}
+}
+
+bool UEdStateNode::CanRename() const
+{
+	switch (this->NodeType)
+	{
+		case EStateNodeType::INLINE_NODE: return true;
+		default: return false;
 	}
 }
 

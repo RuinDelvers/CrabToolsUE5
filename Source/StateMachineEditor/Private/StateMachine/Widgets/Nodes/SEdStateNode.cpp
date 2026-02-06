@@ -200,6 +200,11 @@ void SEdStateNode::OnAttemptRename()
 	}
 }
 
+void SEdStateNode::DeleteNode()
+{
+	this->GetStateNode()->Delete();
+}
+
 void SEdStateNode::AddPin(const TSharedRef<SGraphPin>& PinToAdd)
 {
 	PinToAdd->SetOwner(SharedThis(this));
@@ -290,6 +295,11 @@ const FSlateBrush* SEdStateNode::GetNameIcon() const
 	return FAppStyle::GetBrush(TEXT("BTEditor.Graph.BTNode.Icon"));
 }
 
+inline FString SEdStateNode::GetNodeComment() const
+{
+	return this->GetStateNode()->Comment;
+}
+
 bool SEdStateNode::IsNameReadOnly() const
 {
 	if (auto StateNode = Cast<UEdStateNode>(this->GetStateNode()))
@@ -327,7 +337,6 @@ void SEdStateNode::OnNameTextCommited(const FText& InText, ETextCommit::Type Com
 
 FReply SEdStateNode::OnKeyUp(const FGeometry& MyGeometry, const FKeyEvent& KeyEvent)
 {
-	UE_LOG(LogTemp, Warning, TEXT("OnKeyUp?"));
 	auto Reply = SGraphNode::OnKeyUp(MyGeometry, KeyEvent);
 	if (KeyEvent.GetKey() == EKeys::F2)
 	{

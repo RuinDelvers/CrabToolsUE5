@@ -34,15 +34,20 @@ public:
 	virtual ~UEdAliasNode();
 	
 	FName SetStateName(FName NewName) override;
-	void Delete();
+	
 	bool Matches(UEdStateNode* Node) const;
-
 	virtual FName GetStateName() const override;
 	/* Returns the name which should appear on graph nodes. */
 	virtual bool HasEvent(FName InEvent) override;
 	virtual bool Modify(bool bAlwaysMarkDirty = true) override;
 	virtual void RenameNode(FName Name) override;
 	virtual FName GetNodeName() const override { return this->AliasLabel; }
+	virtual bool CanRename() const { return true; }
+	void Delete();
+	virtual bool CanDelete() const override { return true; }
+	virtual bool CanCopy() const override { return true; }
+	virtual bool CanCut() const override { return true; }
+	virtual bool CanDuplicate() const override { return true; }
 
 	#if WITH_EDITOR
 		virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;

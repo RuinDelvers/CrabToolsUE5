@@ -27,6 +27,7 @@ public:
 	virtual EVisibility GetDragOverMarkerVisibility() const;
 	virtual void UpdateGraphNode() override;
 	virtual const FSlateBrush* GetNameIcon() const;
+	inline virtual FString GetNodeComment() const override;
 
 	virtual void GetNodeInfoPopups(FNodeInfoContext* Context, TArray<FGraphInformationPopupInfo>& Popups) const override;
 	virtual FReply OnKeyUp(const FGeometry& MyGeometry, const FKeyEvent& KeyEvent) override;
@@ -44,5 +45,7 @@ private:
 
 	void OnErrorTextUpdate(FText ErrText);
 	void OnAttemptRename();
+
+	void DeleteNode();
 };
 

@@ -29,7 +29,7 @@ UEdStateGraph::UEdStateGraph()
 
 void UEdStateGraph::Initialize(UStateMachineBlueprint* BP)
 {
-
+	
 }
 
 void UEdStateGraph::SetDebugMachine(UStateMachine* Machine)
