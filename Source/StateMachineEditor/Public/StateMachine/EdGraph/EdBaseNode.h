@@ -21,19 +21,28 @@ public:
 	class FEditorEvents
 	{
 	public:
+		DECLARE_MULTICAST_DELEGATE(FSimpleEvent)
+		DECLARE_MULTICAST_DELEGATE_OneParam(FReferenceEvent, UEdBaseNode*)
 		DECLARE_MULTICAST_DELEGATE_TwoParams(FNameChanged, FName, FName)
-		FNameChanged OnNameChanged;
 
-		DECLARE_MULTICAST_DELEGATE(FNodeDeleted)
-		FNodeDeleted OnNodeDeleted;
-
-		DECLARE_MULTICAST_DELEGATE(FNodeAttemptRename)
-		FNodeAttemptRename OnAttemptRename;
+		
+		FNameChanged OnNameChanged;		
+		FSimpleEvent OnNodeDeleted;
+		FSimpleEvent OnAttemptRename;
+		FReferenceEvent OnStateNodesUpdated;
 
 		DECLARE_MULTICAST_DELEGATE_OneParam(FNodeError, FText)
 		FNodeError OnNodeError;
+
+		DECLARE_MULTICAST_DELEGATE_OneParam(FNodeCommentChanged, const FString&)
+		FNodeCommentChanged OnCommentChanged;
 	} 
 	Events;
+
+	UPROPERTY(EditAnywhere, Category = "Documentation")
+	FString Comment;
+
+public:
 
 	virtual void ClearEvents();
 	UEdStateGraph* GetStateGraph() const;
@@ -54,6 +63,12 @@ public:
 
 	virtual void Duplicate() {}
 	virtual bool CanDuplicate() const { return false; }
+
+protected:
+
+	#if WITH_EDITOR
+		virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+	#endif
 };
 
 /* Base State node to be used for states in the State Machine Graph. */
@@ -62,10 +77,6 @@ class UEdBaseStateNode : public UEdBaseNode, public IStateLike
 {
 	GENERATED_BODY()
 
-public:
-
-	UPROPERTY(EditAnywhere, Category="Documentation")
-	FString Comment;
 
 public:
 

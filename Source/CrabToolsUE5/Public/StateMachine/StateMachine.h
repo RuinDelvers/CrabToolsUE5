@@ -329,6 +329,15 @@ public:
 		virtual void GetEmittedEvents(TSet<FName>& Events) const;
 		virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 		virtual void PreEditChange(FProperty* PropertyAboutToChange) override;
+
+		/*
+		 * This is used by the SM editor to determine whether or not the node requires the events entering
+		 * its state for available events, such as Local Events. Hierarchy nodes use this for its propagation
+		 * of entering events to its child machine.
+		 */
+		UFUNCTION(BlueprintNativeEvent, Category = "StateMachine")
+		bool UsesEnteringEvents() const;
+		virtual bool UsesEnteringEvents_Implementation() const { return false; }
 	#endif
 
 		virtual bool Modify(bool bShouldAlwaysMarkDirty = true) override;

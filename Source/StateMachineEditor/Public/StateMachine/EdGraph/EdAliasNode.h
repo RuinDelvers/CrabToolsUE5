@@ -35,7 +35,7 @@ public:
 	
 	FName SetStateName(FName NewName) override;
 	
-	bool Matches(UEdStateNode* Node) const;
+	bool Matches(const UEdStateNode* Node) const;
 	virtual FName GetStateName() const override;
 	/* Returns the name which should appear on graph nodes. */
 	virtual bool HasEvent(FName InEvent) override;

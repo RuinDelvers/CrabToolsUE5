@@ -223,7 +223,6 @@ TArray<FString> UHierarchyNode::GetSubMachineTransitionEvents() const
 			}
 			break;
 	}
-	
 
 	Names.Sort([&](const FString& A, const FString& B) { return A < B; });
 

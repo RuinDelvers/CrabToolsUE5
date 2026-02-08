@@ -33,7 +33,7 @@ void UEdAliasNode::RenameNode(FName Name)
 	this->GetStateGraph()->RenameNode(this, Name);
 }
 
-bool UEdAliasNode::Matches(UEdStateNode* Node) const
+bool UEdAliasNode::Matches(const UEdStateNode* Node) const
 {
 	return this->AliasedStates.Contains(Node->GetStateName()) != this->bComplement;
 }

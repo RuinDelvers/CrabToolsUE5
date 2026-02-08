@@ -55,6 +55,7 @@ public:
 
 	#if WITH_EDITORONLY_DATA
 		virtual void GetEmittedEvents(TSet<FName>& Events) const override;
+		virtual bool UsesEnteringEvents_Implementation() const override;
 	#endif
 
 	const TArray<TObjectPtr<UStateNode>>& GetNodes() const { return this->Nodes; }

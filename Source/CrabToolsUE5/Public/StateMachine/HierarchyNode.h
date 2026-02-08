@@ -86,6 +86,7 @@ public:
 	virtual void Exit_Inner_Implementation() override;
 	virtual bool RequiresTick_Implementation() const override;
 	virtual void SetActive_Inner_Implementation(bool bNewActive) override;
+	virtual bool UsesEnteringEvents_Implementation() const override { return this->bPropagateEnterEvent; }
 
 	virtual bool DoesReferenceMachine_Inner_Implementation(FName MachineName) const override;
 

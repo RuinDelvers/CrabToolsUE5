@@ -127,6 +127,19 @@ void UArrayNode::SetActive_Inner_Implementation(bool bNewActive)
 	}
 }
 
+bool UArrayNode::UsesEnteringEvents_Implementation() const
+{
+	for (const auto& Child : this->Nodes)
+	{
+		if (Child && Child->UsesEnteringEvents())
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
 bool UArrayNode::Verify_Inner(FNodeVerificationContext& Context) const
 {
 	for (const auto& Child : this->Nodes)

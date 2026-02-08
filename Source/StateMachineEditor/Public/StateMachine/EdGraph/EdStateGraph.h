@@ -15,6 +15,7 @@ class UEdBaseNode;
 class UEdStartStateNode;
 class UEdStateNode;
 class UStateMachineBlueprint;
+class UEdTransition;
 class UDataTable;
 struct FStateMachineArchetypeData;
 
@@ -188,9 +189,10 @@ public:
 
 	void Verify(FNodeVerificationContext& Context, UStateMachineInterface* IFace) const;
 	bool CanOverrideStart() const;
-	TArray<class UEdStateNode*> GetStates() const;
-	TArray<class UEdTransition*> GetTransitions() const;
-	TArray<class UEdTransition*> GetExitTransitions(UEdStateNode* Start) const;
+	TArray<UEdStateNode*> GetStates() const;
+	TArray<UEdTransition*> GetTransitions() const;
+	TArray<UEdTransition*> GetExitTransitions(const UEdStateNode* Start) const;
+	TArray<UEdTransition*> GetEnterTransitions(const UEdStateNode* Start) const;
 	FStateMachineArchetypeData CompileStateMachine(FNodeVerificationContext& Context);
 	FName GetStartStateName() const;
 	TArray<UEdBaseNode*> GetDestinations(UEdBaseNode* Node) const;

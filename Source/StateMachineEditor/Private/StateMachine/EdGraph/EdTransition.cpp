@@ -15,6 +15,17 @@ UEdTransition::UEdTransition()
 }
 
 
+void UEdTransition::AppendUsedEvents(TSet<FName>& InEvents) const
+{
+	for (const auto& Pair : this->EventToConditionMap)
+	{
+		if (!Pair.Key.IsNone())
+		{
+			InEvents.Add(Pair.Key);
+		}		
+	}
+}
+
 void UEdTransition::AllocateDefaultPins()
 {
 	UEdGraphPin* Inputs = CreatePin(EGPD_Input, TEXT("Edge"), FName(), TEXT("In"));

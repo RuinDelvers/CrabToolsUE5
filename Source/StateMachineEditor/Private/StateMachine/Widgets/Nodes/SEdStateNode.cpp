@@ -23,9 +23,10 @@ void SEdStateNode::Construct(const FArguments& InArgs, UEdBaseStateNode* InNode)
 	this->GraphNode = InNode;
 	this->UpdateGraphNode();
 	
-	InNode->Events.OnNameChanged.AddRaw(this, &SEdStateNode::OnNodeNameChanged);
-	InNode->Events.OnNodeError.AddRaw(this, &SEdStateNode::OnErrorTextUpdate);
-	InNode->Events.OnAttemptRename.AddRaw(this, &SEdStateNode::OnAttemptRename);
+	InNode->Events.OnNameChanged.AddSP(this, &SEdStateNode::OnNodeNameChanged);
+	InNode->Events.OnNodeError.AddSP(this, &SEdStateNode::OnErrorTextUpdate);
+	InNode->Events.OnAttemptRename.AddSP(this, &SEdStateNode::OnAttemptRename);
+	InNode->Events.OnCommentChanged.AddSP(this, &SEdStateNode::OnCommentChanged);
 }
 
 BEGIN_SLATE_FUNCTION_BUILD_OPTIMIZATION
@@ -48,6 +49,8 @@ void SEdStateNode::UpdateGraphNode()
 	FLinearColor TitleShadowColor(0.6f, 0.6f, 0.6f);	
 	TSharedPtr<SVerticalBox> NodeBody;
 	TSharedPtr<SNodeTitle> NodeTitle = SNew(SNodeTitle, this->GraphNode);
+
+	this->SetToolTipText(FText::FromString(this->GetStateNode()->Comment));
 	
 	this->ContentScale.Bind(this, &SGraphNode::GetContentScale);
 	this->GetOrAddSlot(ENodeZone::Center)
@@ -203,6 +206,11 @@ void SEdStateNode::OnAttemptRename()
 void SEdStateNode::DeleteNode()
 {
 	this->GetStateNode()->Delete();
+}
+
+void SEdStateNode::OnCommentChanged(const FString& NewComment)
+{
+	this->SetToolTipText(FText::FromString(NewComment));
 }
 
 void SEdStateNode::AddPin(const TSharedRef<SGraphPin>& PinToAdd)

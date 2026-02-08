@@ -132,11 +132,16 @@ public:
 	virtual bool HasLocalEvent(FName InEvent) override;
 	virtual bool Modify(bool bAlwaysMarkDirty = true) override;
 
+	const TArray<UStateNode*>& GetNodes() const { return this->Nodes; }
+
 	/* Begin IStateLike Interface */
 	virtual TArray<FString> GetEventOptions() const override;
 	/* End IStateLike Interface */
 
 	void GetLocalEventOptions(TArray<FString>& Names) const;
+	void RemoveStateNode(UStateNode* NodeToRemove);
+	void AddStateNode(TSubclassOf<UStateNode> NodeToCreate);
+
 
 	bool DoesReferenceMachine(FName MachineName) const;
 

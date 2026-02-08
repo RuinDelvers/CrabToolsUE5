@@ -81,6 +81,7 @@ protected:
 	virtual bool HasPipedData_Implementation() const override;
 	virtual UObject* GetPipedData_Implementation() override;
 	virtual void SetActive_Inner_Implementation(bool bNewActive) override;
+	virtual bool DoesReferenceMachine_Inner_Implementation(FName MachineName) const override;
 
 private:
 

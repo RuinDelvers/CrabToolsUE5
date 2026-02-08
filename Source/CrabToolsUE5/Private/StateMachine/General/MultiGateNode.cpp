@@ -150,6 +150,18 @@ void UMultiGateNode::SetActive_Inner_Implementation(bool bNewActive)
 	}
 }
 
+bool UMultiGateNode::DoesReferenceMachine_Inner_Implementation(FName MachineName) const
+{
+	for (const auto& Data : this->Nodes)
+	{
+		if (Data.Node && Data.Node->DoesReferenceMachine(MachineName))
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
 void UMultiGateNode::OnGateChanged(UStateNode* Node, UMultiGateNodeGate* Gate)
 {
 	bool bNewActivity = Gate->GetGateActivity() && this->Active();

@@ -200,9 +200,48 @@ void UEdStateNode::GetLocalEventOptions(TArray<FString>& Names) const
 		}
 	}
 
+	for (const auto& Node : this->Nodes)
+	{
+		if (Node && Node->UsesEnteringEvents())
+		{
+			for (const auto& Trans : this->GetStateGraph()->GetEnterTransitions(this))
+			{
+				Trans->AppendUsedEvents(PerNodeNames);
+			}
+			// Only need to add them once.
+			break;
+		}
+	}
+
 	for (const auto& Name : PerNodeNames)
 	{
 		Names.Add(Name.ToString());
+	}
+}
+
+void UEdStateNode::RemoveStateNode(UStateNode* NodeToRemove)
+{
+	FScopedTransaction Transaction(LOCTEXT("RemoveStateNode", "RemoveSateNodeTransaction"));
+
+	if (this->Nodes.Contains(NodeToRemove))
+	{
+		this->Modify();
+		this->Nodes.Remove(NodeToRemove);		
+		this->Events.OnStateNodesUpdated.Broadcast(this);
+	}
+}
+
+void UEdStateNode::AddStateNode(TSubclassOf<UStateNode> NodeToCreate)
+{
+	FScopedTransaction Transaction(LOCTEXT("AddStateNode", "AddSateNodeTransaction"));
+
+	if (NodeToCreate)
+	{
+		this->Modify();
+		auto NewNode = NewObject<UStateNode>(this, NodeToCreate);
+		this->Nodes.Add(NewNode);
+		
+		this->Events.OnStateNodesUpdated.Broadcast(this);
 	}
 }
 

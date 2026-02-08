@@ -304,6 +304,32 @@ bool UEdStateGraph::HasEvent(FName InEvent) const
 				}
 			}
 		}
+
+		if (!bHasEvent && !this->IsMainGraph())
+		{
+			TArray<FString> Names;
+
+			for (const auto& State : this->GetBlueprintOwner()->GetMainGraph()->GetStates())
+			{
+				if (State->DoesReferenceMachine(this->GetGraphName()))
+				{
+					State->GetLocalEventOptions(Names);
+				}
+			}
+
+			for (const auto& Subgraph : this->GetBlueprintOwner()->GetSubgraphs())
+			{
+				for (const auto& State : Subgraph->GetStates())
+				{
+					if (State->DoesReferenceMachine(this->GetGraphName()))
+					{
+						State->GetLocalEventOptions(Names);
+					}
+				}
+			}
+
+			bHasEvent = Names.Contains(InEvent);
+		}
 	}
 
 	return bHasEvent;;
@@ -540,7 +566,7 @@ TArray<UEdTransition*> UEdStateGraph::GetTransitions() const
 	return Transitions;
 }
 
-TArray<UEdTransition*> UEdStateGraph::GetExitTransitions(UEdStateNode* Start) const
+TArray<UEdTransition*> UEdStateGraph::GetExitTransitions(const UEdStateNode* Start) const
 {
 	TArray<UEdTransition*> Transitions;
 	this->GetNodesOfClass<UEdTransition>(Transitions);
@@ -552,6 +578,23 @@ TArray<UEdTransition*> UEdStateGraph::GetExitTransitions(UEdStateNode* Start) co
 		}
 		return A->GetStartNode() == Start;
 	};
+
+	return Transitions.FilterByPredicate(Pred);
+}
+
+TArray<class UEdTransition*> UEdStateGraph::GetEnterTransitions(const UEdStateNode* Start) const
+{
+	TArray<UEdTransition*> Transitions;
+	this->GetNodesOfClass<UEdTransition>(Transitions);
+
+	auto Pred = [&](const UEdTransition* A) -> bool
+		{
+			if (auto Alias = Cast<UEdAliasNode>(A->GetEndNode()))
+			{
+				return Alias->Matches(Start);
+			}
+			return A->GetEndNode() == Start;
+		};
 
 	return Transitions.FilterByPredicate(Pred);
 }

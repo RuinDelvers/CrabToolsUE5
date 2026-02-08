@@ -20,8 +20,10 @@ class STATEMACHINEEDITOR_API SMachineDetailsView
 private:
 
 	TSharedPtr<IDetailsView> Inspector;
+	TSharedPtr<SVerticalBox> StateNodeContainer;
 
-	static bool PropertyFilterRule(const FPropertyAndParent& PropertyAndParent);
+	/* Stored most recent state node. */
+	TWeakObjectPtr<UEdBaseNode> InspectedStateNode;
 
 public:
 
@@ -43,6 +45,8 @@ private:
 
 	void OnSelectionChanged(TArray<class UEdGraphNode*>& SelectedNodes);
 	void BindEvents(TSharedPtr<class FEditor> InEditor);
-
 	void InspectObject(UObject* Obj);
+	FReply OnAddStateNode();
+	void OnStateNodesChanged(UEdBaseNode* NodeUpdated);
+	EVisibility StateNodesVisibility() const;
 };

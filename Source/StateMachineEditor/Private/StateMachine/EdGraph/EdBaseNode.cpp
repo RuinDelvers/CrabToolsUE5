@@ -11,6 +11,16 @@ void UEdBaseNode::Inspect()
 	}
 }
 
+void UEdBaseNode::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
+{
+	Super::PostEditChangeProperty(PropertyChangedEvent);
+
+	if (PropertyChangedEvent.GetPropertyName() == GET_MEMBER_NAME_CHECKED(UEdBaseNode, Comment))
+	{
+		this->Events.OnCommentChanged.Broadcast(this->Comment);
+	}
+}
+
 void UEdBaseStateNode::AllocateDefaultPins()
 {
 	CreatePin(EGPD_Input, "MultipleNodes", FName(), TEXT("In"));

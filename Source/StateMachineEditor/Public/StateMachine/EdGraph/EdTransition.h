@@ -48,6 +48,8 @@ public:
 	UPROPERTY()
 	class UEdGraph* Graph;
 
+	void AppendUsedEvents(TSet<FName>& InEvents) const;
+
 	virtual void AllocateDefaultPins() override;
 	virtual FText GetNodeTitle(ENodeTitleType::Type TitleType) const override;
 

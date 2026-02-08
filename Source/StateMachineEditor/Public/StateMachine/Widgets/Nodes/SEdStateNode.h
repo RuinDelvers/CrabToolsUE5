@@ -47,5 +47,7 @@ private:
 	void OnAttemptRename();
 
 	void DeleteNode();
+
+	void OnCommentChanged(const FString& NewComment);
 };
 
