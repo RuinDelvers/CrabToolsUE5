@@ -38,9 +38,23 @@ private:
 		meta=(AllowPrivateAccess))
 	TMap<FName, FSMIData> Events;
 
+	/*
+	 * Node classes specified here are use both events they are expecting (notifies) and events that they emit.
+	 * This has two applications: For notifies, this allows nodes to quickly be added to a SM, put that node class
+	 * in its interface, then it's easily callable from the outside without defining new events.
+	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "StateMachine",
 		meta = (AllowPrivateAccess))
 	TSet<TSoftClassPtr<UStateNode>> NodeEvents;
+
+	/*
+	 * For emitted events, this allows events from Hieararchy nodes that are passed SM's that dynamically instantiated
+	 * to be used. For example, RPGTurnEnd nodes can be embedded in a dynamic SM, and this event would want to be useable
+	 * in an extensible SM.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "StateMachine",
+		meta = (AllowPrivateAccess))
+	TSet<TSoftClassPtr<UStateNode>> NodeListeners;
 
 	/* Do not read from this directly. Use GetEvents_Inner(). */
 	mutable TSet<FName> NamespacedEvents;
@@ -57,7 +71,6 @@ public:
 	
 	bool HasEvent(FName InEvent) const;
 	bool HasCallEvent(FName InEvent) const;
-	TSet<FName> GetCallEvents() const;
 	TSet<FName> GetEvents() const;
 	const TMap<FName, FSMIData> GetEventData() const { return this->Events; }
 

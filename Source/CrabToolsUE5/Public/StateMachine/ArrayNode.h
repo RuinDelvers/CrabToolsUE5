@@ -50,6 +50,7 @@ public:
 	virtual UObject* GetPipedData_Implementation() override;
 	virtual void SetActive_Inner_Implementation(bool bNewActive) override;
 	virtual bool Verify_Inner(FNodeVerificationContext& Context) const override;
+	virtual void PostTransition_Implementation() override;
 
 	FORCEINLINE void AddNode(UStateNode* Node) { this->Nodes.Add(Node); }
 

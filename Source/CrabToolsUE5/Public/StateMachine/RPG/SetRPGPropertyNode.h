@@ -1,9 +1,12 @@
 #pragma once
 
+#include "Utils/UtilsLibrary.h"
 #include "StateMachine/StateMachine.h"
+#include "Components/RPGSystem/RPGProperty.h"
 #include "SetRPGPropertyNode.generated.h"
 
 class URPGComponent;
+class URPGSetter;
 
 /**
  * State Machine Node that is a composite of other nodes.
@@ -26,15 +29,21 @@ private:
 	UPROPERTY(VisibleAnywhere, Category="RPG", meta=(ShowInnerProperties))
 	TObjectPtr<URPGSetter> Setter;
 
-	/* Whether to set on Enter (true) or on exit (false). */
 	UPROPERTY(EditAnywhere, Category = "RPG")
-	bool bSetOnEnterOrExit = true;
+	ERPGSetterOperation OnEnter = ERPGSetterOperation::NONE;
+
+	UPROPERTY(EditAnywhere, Category = "RPG")
+	ERPGSetterOperation OnExit = ERPGSetterOperation::NONE;
+
+	UPROPERTY(EditAnywhere, Category = "RPG")
+	ERPGSetterOperation OnPostTransition = ERPGSetterOperation::NONE;
 
 protected:
 
 	virtual void Initialize_Inner_Implementation() override;
 	virtual void Enter_Inner_Implementation() override;
 	virtual void Exit_Inner_Implementation() override;
+	virtual void PostTransition_Implementation() override;
 
 	#if WITH_EDITOR
 		virtual void PostEditChangeProperty(FPropertyChangedEvent& Event) override;
@@ -44,4 +53,8 @@ protected:
 
 		void UpdateSetterObject();
 	#endif
+
+private:
+
+	void ApplyAction(ERPGSetterOperation Op) const;
 };

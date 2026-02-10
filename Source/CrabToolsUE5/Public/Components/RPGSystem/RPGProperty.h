@@ -182,6 +182,14 @@ protected:
 	#endif
 };
 
+UENUM()
+enum class ERPGSetterOperation
+{
+	APPLY   UMETA(DisplayName = "Apply"),
+	UNAPPLY UMETA(DisplayName = "Unapply"),
+	NONE    UMETA(DisplayName = "None"),
+};
+
 UCLASS(Abstract, Blueprintable)
 class URPGSetter : public URPGOperation
 {
@@ -189,10 +197,15 @@ class URPGSetter : public URPGOperation
 
 public:
 
+	/* Apply the set operation to the property. */
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "RPGProperty")
 	void ApplyValue();
 	virtual void ApplyValue_Implementation() {}
 
+	/* Attempts to undo the set operation. Not all properties support this operation. */
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "RPGProperty")
+	void UnapplyValue();
+	virtual void UnapplyValue_Implementation() {}
 };
 
 UCLASS(Abstract, Blueprintable)

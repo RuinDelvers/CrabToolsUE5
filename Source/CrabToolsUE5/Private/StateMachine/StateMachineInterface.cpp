@@ -37,7 +37,7 @@ void UStateMachineInterface::SetParent(TSoftObjectPtr<UStateMachineInterface> Ne
 
 bool UStateMachineInterface::HasEvent(FName InEvent) const
 {
-	bool bFound = this->GetEvents_Inner().Contains(InEvent);
+	bool bFound = this->GetEvents_Inner().Contains(InEvent) || this->HasCallEvent(InEvent);
 
 	if (auto CheckParent = this->Parent.LoadSynchronous())
 	{
@@ -57,8 +57,28 @@ bool UStateMachineInterface::HasCallEvent(FName InEvent) const
 
 		if (NodeClass.IsValid())
 		{
+			auto DefaultObject = CastChecked<UStateNode>(NodeClass->GetDefaultObject());
 			TSet<FName> Notifies;
-			CastChecked<UStateNode>(NodeClass->GetDefaultObject())->GetNotifies(Notifies);
+			DefaultObject->GetNotifies(Notifies);
+			DefaultObject->GetEmittedEvents(Notifies);
+
+			if (Notifies.Contains(InEvent))
+			{
+				bFound = true;
+				break;
+			}
+		}
+	}
+
+	for (const auto& NodeClass : this->NodeListeners)
+	{
+		NodeClass.LoadSynchronous();
+
+		if (NodeClass.IsValid())
+		{
+			auto DefaultObject = CastChecked<UStateNode>(NodeClass->GetDefaultObject());
+			TSet<FName> Notifies;
+			DefaultObject->GetEmittedEvents(Notifies);
 
 			if (Notifies.Contains(InEvent))
 			{
@@ -80,13 +100,6 @@ TSet<FName> UStateMachineInterface::GetEvents() const
 		Collect.Append(CheckParent->GetEvents());
 	}
 
-	return Collect;
-}
-
-TSet<FName> UStateMachineInterface::GetCallEvents() const
-{
-	TSet<FName> Collect = this->GetEvents();
-
 	Collect.Append(this->GetNodeEvents());
 
 	return Collect;
@@ -102,7 +115,22 @@ TSet<FName> UStateMachineInterface::GetNodeEvents() const
 
 		if (NodeClass.IsValid())
 		{
-			CastChecked<UStateNode>(NodeClass->GetDefaultObject())->GetNotifies(Collect);
+			auto DefaultObject = CastChecked<UStateNode>(NodeClass->GetDefaultObject());
+
+			DefaultObject->GetNotifies(Collect);
+			DefaultObject->GetEmittedEvents(Collect);
+		}
+	}
+
+	for (const auto& NodeClass : this->NodeListeners)
+	{
+		NodeClass.LoadSynchronous();
+
+		if (NodeClass.IsValid())
+		{
+			auto DefaultObject = CastChecked<UStateNode>(NodeClass->GetDefaultObject());
+
+			DefaultObject->GetEmittedEvents(Collect);
 		}
 	}
 

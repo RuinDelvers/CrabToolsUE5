@@ -10,17 +10,34 @@ void USetRPGPropertyNode::Initialize_Inner_Implementation()
 
 void USetRPGPropertyNode::Enter_Inner_Implementation()
 {
-	if (this->bSetOnEnterOrExit && this->Setter)
+	if (this->Setter)
 	{
-		this->Setter->ApplyValue();
+		this->ApplyAction(this->OnEnter);
 	}
 }
 
 void USetRPGPropertyNode::Exit_Inner_Implementation()
 {
-	if (!this->bSetOnEnterOrExit && this->Setter)
+	if (this->Setter)
 	{
-		this->Setter->ApplyValue();
+		this->ApplyAction(this->OnExit);
+	}
+}
+
+void USetRPGPropertyNode::PostTransition_Implementation()
+{
+	if (this->Setter)
+	{
+		this->ApplyAction(this->OnPostTransition);
+	}
+}
+
+void USetRPGPropertyNode::ApplyAction(ERPGSetterOperation Op) const
+{
+	switch (Op)
+	{
+		case ERPGSetterOperation::APPLY:  this->Setter->ApplyValue(); break;
+		case ERPGSetterOperation::UNAPPLY: this->Setter->UnapplyValue(); break;
 	}
 }
 
@@ -62,6 +79,11 @@ void USetRPGPropertyNode::UpdateSetterObject()
 				{
 					this->Setter = NewObject<URPGSetter>(this, SetterClass);
 					this->Setter->SetExternalControl(true, this->RPGClass, this->PropertyName);
+
+					if (auto State = UtilsFunctions::GetOuterAs<IStateLike>(this))
+					{
+						this->Setter->Rename(*State->GetStateDisplayName(), this);
+					}
 				}
 			}
 			else

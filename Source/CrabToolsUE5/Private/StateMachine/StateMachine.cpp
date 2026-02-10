@@ -181,21 +181,21 @@ void UStateMachine::UpdateState()
 
 	// Cache the queue to detect preemptions on the transition.
 	FTransitionQueue Cached = this->Queue;
-	auto CurrentState = this->GetCurrentState();
+	auto PreviousState = this->GetCurrentState();
 	this->TransPhase = TransitionPhase::Exiting;
 	this->SetupStateChangedData();
-	this->UpdateTransitionPipedData(CurrentState, Cached);
+	this->UpdateTransitionPipedData(PreviousState, Cached);
 
 	// Exit Phase: Do an atomic exit call on the node.
-	if (CurrentState)
+	if (PreviousState)
 	{
 		if (Cached.bHasData)
 		{
-			CurrentState->ExitWithData(Cached.Data);
+			PreviousState->ExitWithData(Cached.Data);
 		}
 		else
 		{
-			CurrentState->Exit();
+			PreviousState->Exit();
 		}
 	}
 
@@ -204,23 +204,23 @@ void UStateMachine::UpdateState()
 
 	this->CurrentStateName = Cached.Destination;
 	this->PushStateToStack(Cached.Destination);
-	CurrentState = this->GetCurrentState();
-	StateChangedData.ToState = CurrentState;
+	auto NewState = this->GetCurrentState();
+	StateChangedData.ToState = NewState;
 	StateChangedData.To = this->CurrentStateName;
 	this->TransPhase = TransitionPhase::Entering;
 
-	if (CurrentState)
+	if (NewState)
 	{
 		if (Cached.bHasData)
 		{
-			CurrentState->EnterWithData(Cached.Data);
+			NewState->EnterWithData(Cached.Data);
 		}
 		else
 		{
-			CurrentState->Enter();
+			NewState->Enter();
 		}
 
-		this->UpdateTickRequirements(CurrentState->RequiresTick());
+		this->UpdateTickRequirements(NewState->RequiresTick());
 	}
 
 	if (Cached.Transition) { Cached.Transition->OnTransitionTaken(); }
@@ -229,6 +229,11 @@ void UStateMachine::UpdateState()
 	this->OnTransitionFinished.Broadcast(this);
 	this->StateChangedData = FStateChangedEventData();
 	this->TransPhase = TransitionPhase::None;
+
+	if (PreviousState)
+	{
+		PreviousState->PostTransition();
+	}
 
 	
 	if (this->DidPreempt(Cached))
@@ -1678,6 +1683,14 @@ void UState::Tick(float DeltaTime)
 			Condition.Value.Condition->Tick(DeltaTime);
 			Condition.Value.DataCondition->Tick(DeltaTime);
 		}
+	}
+}
+
+void UState::PostTransition()
+{
+	if (this->Node)
+	{
+		this->Node->PostTransition();
 	}
 }
 

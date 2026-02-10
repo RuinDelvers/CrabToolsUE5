@@ -111,3 +111,9 @@ namespace Events::Dialogue
 	constexpr char SEQUENCE_LOADED[]        = "SEQUENCE_LOADED";
 	constexpr char NULL_SEQUENCE_PROGRESS[] = "PROGRESS_DIALOGUE";
 }
+
+namespace Events::RPG
+{
+	constexpr char TURN_ENDED[] = "TURN_ENDED";
+	constexpr char TURN_STARTED[] = "TURN_STARTED";
+}

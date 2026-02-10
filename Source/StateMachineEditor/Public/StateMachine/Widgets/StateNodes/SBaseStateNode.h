@@ -29,6 +29,10 @@ private:
 
 	FReply OnDeleteClicked();
 	FReply OnExpandClicked();
+	FReply OnMoveUpClicked();
+	FReply OnMoveDownClicked();
+
+	TSharedPtr<SWidget> ConstructHeader();
 
 	const FSlateBrush* GetExpanderBrush() const;
 

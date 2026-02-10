@@ -49,4 +49,6 @@ private:
 	FReply OnAddStateNode();
 	void OnStateNodesChanged(UEdBaseNode* NodeUpdated);
 	EVisibility StateNodesVisibility() const;
+
+
 };

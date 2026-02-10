@@ -126,6 +126,7 @@ void SMachineDetailsView::Construct(
 				.AutoHeight()
 				[
 					SAssignNew(StateNodeContainer, SVerticalBox)
+						.Visibility(this, &SMachineDetailsView::StateNodesVisibility)
 				]
 		]
 	];
@@ -220,7 +221,7 @@ void SMachineDetailsView::OnStateNodesChanged(UEdBaseNode* NodeUpdated)
 
 EVisibility SMachineDetailsView::StateNodesVisibility() const
 {
-	if (this->Inspector->GetSelectedObjects().Num() > 0)
+	if (this->InspectedStateNode.IsValid())
 	{
 		return EVisibility::Visible;
 	}

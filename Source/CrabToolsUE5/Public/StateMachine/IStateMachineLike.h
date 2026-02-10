@@ -59,6 +59,8 @@ public:
 
     virtual IStateMachineLike* GetMachineLike() const { return nullptr; }
 
+    virtual FString GetStateDisplayName() const { ensure(false); return "?StateName?"; }
+
     // Editor Functions
     virtual void OnModify() {}
 };

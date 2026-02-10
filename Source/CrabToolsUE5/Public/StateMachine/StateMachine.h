@@ -179,6 +179,7 @@ public:
 	void Event(FName InEvent);
 	void EventWithData(FName InEvent, UObject* Data);
 	void Tick(float DeltaTime);
+	void PostTransition();
 	bool RequiresTick() const;
 	bool HasPipedData() const;
 	UObject* GetPipedData() const;
@@ -381,6 +382,11 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "StateMachine")
 	bool DoesReferenceMachine(FName MachineName) const;
+
+	/* Called on a node after it has been exited, and the next state has been fully entered. */
+	UFUNCTION(BlueprintNativeEvent, Category = "StateMachine")
+	void PostTransition();
+	virtual void PostTransition_Implementation() {}
 
 protected:
 

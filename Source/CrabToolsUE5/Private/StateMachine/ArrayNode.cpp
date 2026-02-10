@@ -161,6 +161,17 @@ bool UArrayNode::Verify_Inner(FNodeVerificationContext& Context) const
 	return true;
 }
 
+void UArrayNode::PostTransition_Implementation()
+{
+	for (auto& Child : this->Nodes)
+	{
+		if (Child)
+		{
+			Child->PostTransition();
+		}
+	}
+}
+
 UObject* UArrayNode::GetPipedData_Implementation()
 {
 	auto Data = NewObject<UArrayNodeData>(this);

@@ -245,6 +245,53 @@ void UEdStateNode::AddStateNode(TSubclassOf<UStateNode> NodeToCreate)
 	}
 }
 
+bool UEdStateNode::CanMoveStateNodeUp(UStateNode* NodeToMove) const
+{
+	return this->Nodes.Find(NodeToMove) > 0;
+}
+
+bool UEdStateNode::CanMoveStateNodeDown(UStateNode* NodeToMove) const
+{
+	int Index = this->Nodes.Find(NodeToMove);
+	return Index >= 0 && Index < this->Nodes.Num() - 1;
+}
+
+void UEdStateNode::MoveStateNodeUp(UStateNode* NodeToMove)
+{
+	int Index = this->Nodes.Find(NodeToMove);
+
+	if (Index > 0)
+	{
+		FScopedTransaction Transaction(LOCTEXT("MoveStateNodeUp", "MoveStateNodeUp"));
+		this->Modify();
+
+		TObjectPtr<UStateNode> First = this->Nodes[Index - 1];
+		TObjectPtr<UStateNode> Second = this->Nodes[Index];
+
+		this->Nodes[Index - 1] = Second;
+		this->Nodes[Index] = First;
+		this->Events.OnStateNodesUpdated.Broadcast(this);
+	}
+}
+
+void UEdStateNode::MoveStateNodeDown(UStateNode* NodeToMove)
+{
+	int Index = this->Nodes.Find(NodeToMove);
+
+	if (Index >= 0 && Index < this->Nodes.Num() - 1)
+	{
+		FScopedTransaction Transaction(LOCTEXT("MoveStateNodeDown", "MoveStateNodeDown"));
+		this->Modify();
+
+		TObjectPtr<UStateNode> First = this->Nodes[Index + 1];
+		TObjectPtr<UStateNode> Second = this->Nodes[Index];
+
+		this->Nodes[Index + 1] = Second;
+		this->Nodes[Index] = First;
+		this->Events.OnStateNodesUpdated.Broadcast(this);
+	}
+}
+
 bool UEdStateNode::CanRename() const
 {
 	switch (this->NodeType)

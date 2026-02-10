@@ -136,11 +136,16 @@ public:
 
 	/* Begin IStateLike Interface */
 	virtual TArray<FString> GetEventOptions() const override;
+	virtual FString GetStateDisplayName() const { return this->GetNodeName().ToString(); }
 	/* End IStateLike Interface */
 
 	void GetLocalEventOptions(TArray<FString>& Names) const;
 	void RemoveStateNode(UStateNode* NodeToRemove);
 	void AddStateNode(TSubclassOf<UStateNode> NodeToCreate);
+	bool CanMoveStateNodeUp(UStateNode* NodeToMove) const;
+	bool CanMoveStateNodeDown(UStateNode* NodeToMove) const;
+	void MoveStateNodeUp(UStateNode* NodeToMove);
+	void MoveStateNodeDown(UStateNode* NodeToMove);
 
 
 	bool DoesReferenceMachine(FName MachineName) const;

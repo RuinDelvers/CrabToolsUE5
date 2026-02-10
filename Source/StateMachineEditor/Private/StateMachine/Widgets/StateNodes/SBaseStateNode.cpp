@@ -5,12 +5,17 @@
 
 #define LOCTEXT_NAMESPACE "SBaseStateNode"
 
+
+
 SBaseStateNodeDetails::~SBaseStateNodeDetails()
 {
 }
 
 void SBaseStateNodeDetails::Construct(const FArguments& InArgs, UEdStateNode* OwningState, UStateNode* InNode)
 {
+	check(InNode);
+	check(OwningState);
+
 	this->StateNode = InNode;
 	this->EdStateNode = OwningState;
 
@@ -22,50 +27,7 @@ void SBaseStateNodeDetails::Construct(const FArguments& InArgs, UEdStateNode* Ow
 			+ SVerticalBox::Slot()
 			.AutoHeight()
 			[
-				SNew(SBorder)
-				.BorderImage(FAppStyle::Get().GetBrush("DetailsView.CategoryTop"))
-				.OnMouseButtonUp(this, &SBaseStateNodeDetails::OnHeaderClicked)
-				[
-					
-					SNew(SHorizontalBox)
-					+ SHorizontalBox::Slot()
-					.VAlign(VAlign_Center)
-					.HAlign(HAlign_Left)
-					[
-						SNew(SButton)
-							.OnClicked(this, &SBaseStateNodeDetails::OnExpandClicked)
-							.ButtonStyle(FAppStyle::Get(), "SimpleButton")
-							.Text(FText::FromString("Expand"))
-							.ContentPadding(FMargin(1, 0))
-							[
-								SNew(SImage)
-									.Image(this, &SBaseStateNodeDetails::GetExpanderBrush)
-									.ColorAndOpacity(FSlateColor::UseForeground())
-							]
-					]
-					+SHorizontalBox::Slot()
-					.HAlign(HAlign_Fill)
-						[
-							SNew(STextBlock)
-								.Text(FText::FromString(InNode->GetClass()->GetName()))
-								.Font(FAppStyle::GetFontStyle("DetailsView.CategoryTextStyle"))
-						]
-					+ SHorizontalBox::Slot()
-					.VAlign(VAlign_Center)
-					.HAlign(HAlign_Right)
-						[
-							SNew(SButton)
-								.OnClicked(this, &SBaseStateNodeDetails::OnDeleteClicked)
-								.ButtonStyle(FAppStyle::Get(), "SimpleButton")
-								.Text(FText::FromString("Delete"))
-								.ContentPadding(FMargin(1, 0))
-								[
-									SNew(SImage)
-										.Image(FAppStyle::Get().GetBrush("Icons.Denied"))
-										.ColorAndOpacity(FSlateColor::UseForeground())
-								]
-						]
-				]
+				this->ConstructHeader().ToSharedRef()
 			]
 			+ SVerticalBox::Slot()
 			.AutoHeight()
@@ -134,6 +96,105 @@ FReply SBaseStateNodeDetails::OnExpandClicked()
 	}
 	
 	return FReply::Handled();
+}
+
+FReply SBaseStateNodeDetails::OnMoveUpClicked()
+{
+	this->EdStateNode->MoveStateNodeUp(this->StateNode.Get());
+	return FReply::Handled();
+}
+
+FReply SBaseStateNodeDetails::OnMoveDownClicked()
+{
+	this->EdStateNode->MoveStateNodeDown(this->StateNode.Get());
+	return FReply::Handled();
+}
+
+TSharedPtr<SWidget> SBaseStateNodeDetails::ConstructHeader()
+{
+	return SNew(SBorder)
+		.BorderImage(FAppStyle::Get().GetBrush("DetailsView.CategoryTop"))
+		.OnMouseButtonUp(this, &SBaseStateNodeDetails::OnHeaderClicked)
+		[
+			SNew(SHorizontalBox)
+				+ SHorizontalBox::Slot()
+				.VAlign(VAlign_Center)
+				.HAlign(HAlign_Left)
+				[
+					SNew(SButton)
+						.OnClicked(this, &SBaseStateNodeDetails::OnExpandClicked)
+						.ButtonStyle(FAppStyle::Get(), "SimpleButton")
+						.Text(FText::FromString("Expand"))
+						.ContentPadding(FMargin(1, 0))
+						[
+							SNew(SImage)
+								.Image(this, &SBaseStateNodeDetails::GetExpanderBrush)
+								.ColorAndOpacity(FSlateColor::UseForeground())
+						]
+				]
+				+ SHorizontalBox::Slot()
+				.HAlign(HAlign_Fill)
+				[
+					SNew(STextBlock)
+						.Text(FText::FromString(this->StateNode->GetClass()->GetName()))
+						.Font(FAppStyle::GetFontStyle("DetailsView.CategoryTextStyle"))
+				]
+				+ SHorizontalBox::Slot()
+				.VAlign(VAlign_Center)
+				.HAlign(HAlign_Right)
+				[
+					SNew(SHorizontalBox)
+					+ SHorizontalBox::Slot()
+					.VAlign(VAlign_Center)
+					.HAlign(HAlign_Center)
+					[
+						SNew(SButton)
+							.OnClicked(this, &SBaseStateNodeDetails::OnMoveUpClicked)
+							.ButtonStyle(FAppStyle::Get(), "SimpleButton")
+							.Text(FText::FromString("MoveUp"))
+							.ContentPadding(FMargin(1, 0))
+							.ToolTipText(LOCTEXT("MoveUpButton", "Move Node Up"))
+							[
+								SNew(SImage)
+									.Image(FAppStyle::Get().GetBrush("ArrowUp"))
+									.ColorAndOpacity(FSlateColor::UseForeground())
+							]
+					]
+					+ SHorizontalBox::Slot()
+					.VAlign(VAlign_Center)
+					.HAlign(HAlign_Center)
+					[
+						SNew(SButton)
+							.OnClicked(this, &SBaseStateNodeDetails::OnMoveDownClicked)
+							.ButtonStyle(FAppStyle::Get(), "SimpleButton")
+							.Text(FText::FromString("MoveUp"))
+							.ContentPadding(FMargin(1, 0))
+							.ToolTipText(LOCTEXT("MoveDownButton", "Move Node Down"))
+							[
+								SNew(SImage)
+									.Image(FAppStyle::Get().GetBrush("ArrowDown"))
+									.ColorAndOpacity(FSlateColor::UseForeground())
+							]
+					]
+					+ SHorizontalBox::Slot()
+					.VAlign(VAlign_Center)
+					.HAlign(HAlign_Center)
+					[
+						SNew(SButton)
+							.OnClicked(this, &SBaseStateNodeDetails::OnDeleteClicked)
+							.ButtonStyle(FAppStyle::Get(), "SimpleButton")
+							.Text(FText::FromString("Delete"))
+							.ContentPadding(FMargin(1, 0))
+							.ToolTipText(LOCTEXT("DeleteButton", "Delete Node"))
+							[
+								SNew(SImage)
+									.Image(FAppStyle::Get().GetBrush("Icons.Denied"))
+									.ColorAndOpacity(FSlateColor::UseForeground())
+							]
+					]
+				]
+				
+		];
 }
 
 const FSlateBrush* SBaseStateNodeDetails::GetExpanderBrush() const
