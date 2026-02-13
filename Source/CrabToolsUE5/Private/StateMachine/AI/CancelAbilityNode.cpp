@@ -9,9 +9,20 @@ UCancelAbilityNode::UCancelAbilityNode()
 
 void UCancelAbilityNode::Enter_Inner_Implementation()
 {
-	if (this->bCanCallOwner && this->GetOwner()->Implements<UHasAbilityInterface>())
+	this->HandleOwnerCall();
+	this->EmitEvent(Events::AI::DONE);
+}
+
+void UCancelAbilityNode::EnterWithData_Inner_Implementation(UObject* Data)
+{
+	if (auto Abi = UStateMachinePipedData::FindDataOfType<UAbility>(Data))
 	{
-		if (auto GetAbi = IHasAbilityInterface::Execute_GetAbility(this->GetOwner()))
+		Abi->Cancel();
+	}
+	else if (auto Value = UStateMachinePipedData::FindDataImplementing<UHasAbilityInterface>(Data).GetObject())
+	{
+		// Need to get object ref to check validity. if (Value) will always be false.
+		if (auto GetAbi = IHasAbilityInterface::Execute_GetAbility(Value))
 		{
 			GetAbi->Cancel();
 		}
@@ -20,33 +31,20 @@ void UCancelAbilityNode::Enter_Inner_Implementation()
 	this->EmitEvent(Events::AI::DONE);
 }
 
-void UCancelAbilityNode::EnterWithData_Inner_Implementation(UObject* Data)
+void UCancelAbilityNode::HandleOwnerCall()
 {
-	if (auto Abi = Cast<UAbility>(Data))
+	if (this->bCanCallOwner)
 	{
-		Abi->Cancel();
-	}
-	else if (Data->Implements<UHasAbilityInterface>())
-	{
-		if (auto GetAbi = IHasAbilityInterface::Execute_GetAbility(Data))
+		if (auto Abi = Cast<UAbility>(this->GetOwner()))
 		{
-			GetAbi->Cancel();
+			Abi->Cancel();
 		}
-		else if (this->bCanCallOwner && this->GetOwner()->Implements<UHasAbilityInterface>())
+		if (this->GetOwner()->Implements<UHasAbilityInterface>())
 		{
-			if (auto GetAbi2 = IHasAbilityInterface::Execute_GetAbility(this->GetOwner()))
+			if (auto GetAbi = IHasAbilityInterface::Execute_GetAbility(this->GetOwner()))
 			{
-				GetAbi2->Cancel();
+				GetAbi->Cancel();
 			}
 		}
 	}
-	else if (this->bCanCallOwner && this->GetOwner()->Implements<UHasAbilityInterface>())
-	{
-		if (auto GetAbi = IHasAbilityInterface::Execute_GetAbility(this->GetOwner()))
-		{
-			GetAbi->Cancel();
-		}
-	}
-
-	this->EmitEvent(Events::AI::DONE);
 }

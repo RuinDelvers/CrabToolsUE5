@@ -24,6 +24,7 @@ void UAISimpleMoveToNode::Initialize_Inner_Implementation()
 
 void UAISimpleMoveToNode::Exit_Inner_Implementation()
 {
+	this->MoveData.ClearIfNoCache();
 	this->UnbindCallback();
 	this->StopMovement();
 	this->MoveData.ResetGoal();
@@ -33,16 +34,6 @@ void UAISimpleMoveToNode::Enter_Inner_Implementation()
 {
 	this->BindCallback();
 
-	if (this->MoveData.bResumePreviousPath)
-	{
-		auto ResumeResult = this->GetAIController()->ResumeMove(this->Result.MoveId);
-
-		if (Result.Code == EPathFollowingRequestResult::RequestSuccessful)
-		{
-			return;
-		}
-	}
-
 	if (this->Property->IsBound())
 	{
 		bool bFoundData = false;
@@ -50,9 +41,9 @@ void UAISimpleMoveToNode::Enter_Inner_Implementation()
 
 		if (bFoundData)
 		{
-			this->Result = Value.MakeRequest(this->GetAIController());
+			Value.MakeRequest(this->GetAIController());
 
-			if (this->Result.Code == EPathFollowingRequestResult::Failed)
+			if (this->MoveData.Result.Code == EPathFollowingRequestResult::Failed)
 			{
 				this->EmitEvent(Events::AI::LOST);
 			}
@@ -68,27 +59,29 @@ void UAISimpleMoveToNode::SetActive_Inner_Implementation(bool bNewActive)
 {
 	if (bNewActive)
 	{
-		this->GetAIController()->ResumeMove(this->Result.MoveId);
+		this->MoveData.ResumeMove(this->GetAIController());
 	}
 	else
 	{
-		this->GetAIController()->PauseMove(this->Result.MoveId);
+		this->MoveData.PauseMove(this->GetAIController());
 	}
 }
 
 void UAISimpleMoveToNode::EnterWithData_Inner_Implementation(UObject* Data)
 {
+	UE_LOG(LogTemp, Warning, TEXT("MoveTo: %s"), IsValid(Data) ? *Data->GetName() : *FString("None"));
+	this->MoveData.ResetGoal();
 	this->MoveData.DestinationActor = Cast<AActor>(Data);	
 	this->Enter_Inner();
 }
 
 void UAISimpleMoveToNode::MoveTo()
 {
-	this->Result = this->MoveData.MakeRequest(this->GetAIController());
+	this->MoveData.MakeRequest(this->GetAIController());
 
-	if (this->Result.Code == EPathFollowingRequestResult::Failed)
+	if (this->MoveData.Result.Code == EPathFollowingRequestResult::Failed)
 	{
-		this->EmitEvent(Events::AI::LOST);
+		//this->EmitEvent(Events::AI::LOST);
 	}
 }
 
@@ -108,11 +101,13 @@ void UAISimpleMoveToNode::OnMoveCompleted(FAIRequestID RequestID, EPathFollowing
 {
 	this->MovementResult = MoveResult;
 
+	UE_LOG(LogTemp, Warning, TEXT("OnMoveCompleted"));
+
 	switch (MoveResult)
 	{
-		case EPathFollowingResult::Success: this->EmitEvent(Events::AI::ARRIVE); break;
-		case EPathFollowingResult::Aborted: this->EmitEvent(Events::AI::ARRIVE); break;
-		default:this->EmitEvent(Events::AI::LOST);
+		case EPathFollowingResult::Success: UE_LOG(LogTemp, Warning, TEXT("Success")); this->EmitEvent(Events::AI::ARRIVE); break;
+		case EPathFollowingResult::Aborted: UE_LOG(LogTemp, Warning, TEXT("Aborted")); this->EmitEvent(Events::AI::ARRIVE); break;
+		default: UE_LOG(LogTemp, Warning, TEXT("default")); this->EmitEvent(Events::AI::LOST);
 	}
 }
 
@@ -130,17 +125,10 @@ void UAISimpleMoveToNode::UnbindCallback()
 
 void UAISimpleMoveToNode::EventNotify_PauseMovement(FName InEvent)
 {
-	this->GetAIController()->PauseMove(this->Result.MoveId);
+	this->MoveData.PauseMove(this->GetAIController());
 }
 
 void UAISimpleMoveToNode::EventNotify_ResumeMovement(FName InEvent)
 {
-	this->GetAIController()->ResumeMove(this->Result.MoveId);
+	this->MoveData.ResumeMove(this->GetAIController());
 }
-
-#if WITH_EDITOR
-void UAISimpleMoveToNode::PostLinkerChange()
-{
-	Super::PostLinkerChange();
-}
-#endif

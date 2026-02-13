@@ -2,11 +2,9 @@
 #include "Components/StateMachineComponent.h"
 #include "Components/SlateWrapperTypes.h"
 #include "Blueprint/UserWidget.h"
-#include "StateMachine/CompositeNode.h"
 #include "StateMachine/StateMachine.h"
 #include "StateMachine/EdGraph/EdStateNode.h"
 #include "StateMachine/StateMachineBlueprintGeneratedClass.h"
-
 #include "Kismet2/Kismet2NameValidators.h"
 #include "Kismet2/KismetReinstanceUtilities.h"
 #include "Kismet2/BlueprintEditorUtils.h"

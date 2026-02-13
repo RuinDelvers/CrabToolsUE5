@@ -85,6 +85,10 @@ public:
 	void HandleTrace();
 	virtual void HandleTrace_Implementation() {}
 
+	virtual FTargetingData GetPendingData_Implementation() const override { return this->TracedTarget; }
+
+	virtual void AddDirectTarget_Implementation(const FTargetingData& TargetData) override;
+
 protected:
 
 	void InvalidateTargetData();

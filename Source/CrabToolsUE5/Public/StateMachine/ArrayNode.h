@@ -5,7 +5,7 @@
 
 struct FStateNodeInstanceData;
 
-/* This is used to handle piped data for the nested structure. */
+/*
 UCLASS()
 class CRABTOOLSUE5_API UArrayNodeData : public UObject, public IStateMachineDataInterface
 {
@@ -22,7 +22,9 @@ public:
 	virtual void FindAllDataImplementing_Implementation(TSubclassOf<UInterface> Type, TArray<TScriptInterface<UInterface>>& ReturnValue) override;
 
 	void AddData(UObject* AddedData);
+	void AppendData(const TArray<TObjectPtr<UObject>>& Appended);
 };
+*/
 
 /**
  * State Machine Node that is a composite of other nodes.

@@ -174,25 +174,31 @@ void UArrayNode::PostTransition_Implementation()
 
 UObject* UArrayNode::GetPipedData_Implementation()
 {
-	auto Data = NewObject<UArrayNodeData>(this);
+	TArray<TObjectPtr<UObject>> DataArray;
 
 	for (auto& Child : this->Nodes)
 	{
 		if (Child->HasPipedData())
 		{
-			Data->AddData(Child->GetPipedData());
+			DataArray.Add(Child->GetPipedData());
 		}
 	}
-
-	return Data;
+	
+	return UStateMachinePipedData::ConcatDataArray(DataArray);
 }
 
+/*
 void UArrayNodeData::AddData(UObject* AddedData)
 {
 	if (IsValid(AddedData))
 	{
 		this->Data.Add(AddedData);
 	}
+}
+
+void UArrayNodeData::AppendData(const TArray<TObjectPtr<UObject>>& Appended)
+{
+	this->Data.Append(Appended);
 }
 
 UObject* UArrayNodeData::FindDataOfType_Implementation(TSubclassOf<UObject> Type)
@@ -245,6 +251,7 @@ void UArrayNodeData::FindAllDataImplementing_Implementation(TSubclassOf<UInterfa
 		UStateMachineDataHelpers::FindAllDataImplementing(Type, Child, ReturnValue);
 	}
 }
+*/
 
 #if WITH_EDITORONLY_DATA
 void UArrayNode::GetEmittedEvents(TSet<FName>& Events) const

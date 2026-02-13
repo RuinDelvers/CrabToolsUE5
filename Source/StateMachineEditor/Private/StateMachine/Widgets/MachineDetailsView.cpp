@@ -203,7 +203,6 @@ FReply SMachineDetailsView::OnAddStateNode()
 	
 	if (isSuccessful && ChosenParentClass)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Adding node of class %s"), *ChosenParentClass->GetName());
 		if (auto Node = Cast<UEdStateNode>(this->InspectedStateNode))
 		{
 			Node->AddStateNode(ChosenParentClass);
@@ -215,7 +214,6 @@ FReply SMachineDetailsView::OnAddStateNode()
 
 void SMachineDetailsView::OnStateNodesChanged(UEdBaseNode* NodeUpdated)
 {
-	UE_LOG(LogTemp, Warning, TEXT("state nodes changed."));
 	this->InspectObject(NodeUpdated);
 }
 

@@ -270,9 +270,7 @@ void UStateMachine::UpdateTransitionPipedData(UState* CurrentState, FTransitionQ
 
 		if (Queue.bHasData)
 		{
-			auto ArrayData = NewObject<UArrayNodeData>(this);
-			ArrayData->AddData(Cached.Data);
-			ArrayData->AddData(PipedData);
+			auto ConcatData = UStateMachinePipedData::ConcatData(Cached.Data, PipedData);
 			PipedData = PipedData;
 		}
 

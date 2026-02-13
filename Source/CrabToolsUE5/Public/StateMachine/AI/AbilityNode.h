@@ -36,6 +36,9 @@ public:
 	virtual void Exit_Inner_Implementation() override;
 	virtual bool RequiresTick_Implementation() const override;
 
+	virtual bool HasPipedData_Implementation() const override;
+	virtual UObject* GetPipedData_Implementation() override;
+
 private:
 	UFUNCTION()
 	void HandleFinish(UAbility* Abi);

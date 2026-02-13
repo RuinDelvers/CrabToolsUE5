@@ -45,10 +45,14 @@ void ABaseTargetingActor::InitFromAbility(UAbilityData* AbiData)
 
 	if (auto Comp = AbiData->TargetAttachComponent())
 	{
+		FAttachmentTransformRules Rules = FAttachmentTransformRules::SnapToTargetNotIncludingScale;
+
 		this->AttachToComponent(
 			Comp,
-			FAttachmentTransformRules::SnapToTargetNotIncludingScale,
+			Rules,
 			AbiData->TargetAttachPoint());
+
+		this->RootComponent->SetAbsolute(false, true, true);
 	}
 }
 

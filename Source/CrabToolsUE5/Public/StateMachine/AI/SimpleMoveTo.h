@@ -7,7 +7,7 @@
 #include "SimpleMoveTo.generated.h"
 
 /**
- * Simple node for making an entity move to a given actor.
+ * Simple node for making an a pawn or AI Controller 
  */
 UCLASS(Blueprintable, Category = "StateMachine|AI")
 class CRABTOOLSUE5_API UAISimpleMoveToNode : public UAIBaseNode
@@ -27,8 +27,6 @@ protected:
 		ShowOnlyInnerProperties))
 	FMoveToData MoveData;
 
-	FPathFollowingRequestResult Result;
-
 public:
 
 	UAISimpleMoveToNode();
@@ -38,10 +36,6 @@ public:
 	virtual void Initialize_Inner_Implementation() override;
 	virtual void Enter_Inner_Implementation() override;
 	virtual void SetActive_Inner_Implementation(bool bNewActive) override;
-
-	#if WITH_EDITOR
-		virtual void PostLinkerChange() override;
-	#endif
 
 protected:
 

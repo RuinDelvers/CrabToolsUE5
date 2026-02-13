@@ -3,13 +3,18 @@
 
 void UAIBaseNode::Initialize_Inner_Implementation()
 {
-	auto PawnQ = Cast<APawn>(this->GetMachine()->GetActorOwner());
-
-	if (PawnQ)
+	if (auto PawnQ = Cast<APawn>(this->GetMachine()->GetOwner()))
 	{
-		this->PawnRef = PawnQ;
-		this->AICtrl = CastChecked<AAIController>(PawnQ->GetController());
-
-		check(this->AICtrl.Get());
+		this->AICtrl = Cast<AAIController>(PawnQ->GetController());
+		PawnQ->ReceiveControllerChangedDelegate.AddDynamic(this, &UAIBaseNode::OnControllerUpdated);
 	}
+	else if (auto Ctrl = Cast<AAIController>(this->GetOwner())) 
+	{
+		this->AICtrl = Ctrl;		
+	}
+}
+
+void UAIBaseNode::OnControllerUpdated(APawn* Pawn, AController* OldController, AController* NewController)
+{
+	this->AICtrl = Cast<AAIController>(NewController);
 }

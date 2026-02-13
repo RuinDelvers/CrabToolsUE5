@@ -6,13 +6,41 @@ void FMoveToData::ResetGoal()
 {
 	this->DestinationLocation = FVector::ZeroVector;
 	this->DestinationActor = nullptr;
-
+	this->Result.MoveId = FAIRequestID::InvalidRequest;
 	this->bUseOverrideLocation = false;
 }
 
-FPathFollowingRequestResult FMoveToData::MakeRequest(AAIController* Ctrl) const
+void FMoveToData::ClearIfNoCache()
+{
+	if (!this->bResumePreviousPath)
+	{
+		this->Result = FPathFollowingRequestResult();
+	}
+}
+
+bool FMoveToData::ResumeMove(AAIController* Ctrl) const
 {
 	check(Ctrl);
+
+	return Ctrl->ResumeMove(this->Result.MoveId);
+}
+
+bool FMoveToData::PauseMove(AAIController* Ctrl) const
+{
+	return Ctrl->PauseMove(this->Result.MoveId);
+}
+
+void FMoveToData::MakeRequest(AAIController* Ctrl)
+{
+	check(Ctrl);
+
+	if (this->bResumePreviousPath)
+	{
+		if (Ctrl->ResumeMove(this->Result.MoveId))
+		{
+			return;
+		}
+	}
 
 	if (this->DestinationActor || this->bUseLocationIfNoGoal || this->bUseOverrideLocation)
 	{
@@ -30,13 +58,10 @@ FPathFollowingRequestResult FMoveToData::MakeRequest(AAIController* Ctrl) const
 		Request.SetUsePathfinding(this->bUsePathfinding);
 
 		Ctrl->StopMovement();
-		return Ctrl->MoveTo(Request);
+		this->Result = Ctrl->MoveTo(Request, &this->SavedPath);
 	}
 	else
 	{
-		FPathFollowingRequestResult Failure;
-		Failure.Code = EPathFollowingRequestResult::Failed;
-
-		return Failure;
+		this->Result = FPathFollowingRequestResult();
 	}
 }

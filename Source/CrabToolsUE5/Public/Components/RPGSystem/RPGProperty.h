@@ -81,6 +81,10 @@ protected:
 public:
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Resource")
+	void RestoreResource();
+	virtual void RestoreResource_Implementation() {}
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Resource")
 	float GetPercent() const;
 	virtual float GetPercent_Implementation() const { return 0.0f; }
 

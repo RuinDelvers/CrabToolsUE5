@@ -55,18 +55,28 @@ bool UAbilityNode::RequiresTick_Implementation() const
 	return false;
 }
 
+bool UAbilityNode::HasPipedData_Implementation() const
+{
+	return IsValid(this->Selected);
+}
+
+UObject* UAbilityNode::GetPipedData_Implementation()
+{
+	return this->Selected;
+}
+
 void UAbilityNode::EnterWithData_Inner_Implementation(UObject* Data)
 {
-	if (auto Abi = UStateMachineDataHelpers::FindDataOfType<UAbility>(Data))
+	if (auto Abi = UStateMachinePipedData::FindDataOfType<UAbility>(Data))
 	{
 		this->Selected = Abi;
 	}
 	else
 	{
-		auto Value = UStateMachineDataHelpers::FindDataImplementing<UHasAbilityInterface>(Data);
+		auto Value = UStateMachinePipedData::FindDataImplementing<UHasAbilityInterface>(Data);
 
 		// Need to get object ref to check validity. if (Value) will always be false.
-		if (Value.GetObjectRef())
+		if (IsValid(Value.GetObject()))
 		{
 			this->Selected = IHasAbilityInterface::Execute_GetAbility(Value.GetObjectRef());
 		}

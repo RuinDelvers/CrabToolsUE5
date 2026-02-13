@@ -1,6 +1,5 @@
 #pragma once
 
-#include "AITypes.h"
 #include "AIController.h"
 #include "Navigation/PathFollowingComponent.h"
 #include "AIStructs.generated.h"
@@ -13,9 +12,11 @@ struct FMoveToData
 
 public:
 
+	FNavPathSharedPtr SavedPath;
+
+	/* If this is true, then controllers using this will attempt to */
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "StateMachine|AI")
 	bool bResumePreviousPath = false;
-
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "StateMachine|AI")
 	bool bUseOverrideLocation = false;
@@ -34,8 +35,14 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "StateMachine|AI")
 	bool bUsePathfinding = true;
 
+	FPathFollowingRequestResult Result;
+
 public:
 
+
 	void ResetGoal();
-	FPathFollowingRequestResult MakeRequest(AAIController* Ctrl) const;
+	void ClearIfNoCache();
+	bool ResumeMove(AAIController* Ctrl) const;
+	bool PauseMove(AAIController* Ctrl) const;
+	void MakeRequest(AAIController* Ctrl);
 };

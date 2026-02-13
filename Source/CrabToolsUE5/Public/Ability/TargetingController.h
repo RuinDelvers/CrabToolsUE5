@@ -43,6 +43,10 @@ class ITargetingControllerInterface
 public:
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Targeting")
+	FTargetingData GetPendingData() const;
+	virtual FTargetingData GetPendingData_Implementation() const { return FTargetingData(); }
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Targeting")
 	AActor* GetUsingActor() const;
 	virtual AActor* GetUsingActor_Implementation() const { return nullptr; }
 
@@ -54,6 +58,18 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Targeting")
 	void AddTarget(const FTargetingData& TargetData);
 	virtual void AddTarget_Implementation(const FTargetingData& TargetData) {}
+
+	/*
+	 * A similar function to AddTarget. Adds the target to this controller. This is used when intending to setup
+	 * some extra stuff before it gets used. e.g. Using Arc tracing to place the spline endpoint immediately after
+	 * adding a target. Useful when it's immediately spawned, but not allowed to do any tracing.
+	 * 
+	 * Often this will just call AddTarget without any differences, but for specific cases this can be a useful for
+	 * extending existing implementations.
+	 */
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Targeting")
+	void AddDirectTarget(const FTargetingData& TargetData);
+	virtual void AddDirectTarget_Implementation(const FTargetingData& TargetData) {}
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Targeting")
 	void SetEnabled(bool bNewEnabled);
@@ -110,4 +126,22 @@ public:
 	UFUNCTION(BlueprintNativeEvent, Category = "Targeting")
 	bool Validate(FText& Reason) const;
 	virtual bool Validate_Implementation(FText& Reason) const { return true; }
+};
+
+/* This interface is for objects which can spawn an object implementing the ITargetingControllerInterface. */
+UINTERFACE(MinimalAPI, Blueprintable, BlueprintType)
+class USpawnsTargetingInterface : public UInterface
+{
+	GENERATED_BODY()
+};
+
+class ISpawnsTargetingInterface
+{
+	GENERATED_BODY()
+
+public:
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category="Targeting")
+	TScriptInterface<ITargetingControllerInterface> SpawnTargetingController();
+	virtual TScriptInterface<ITargetingControllerInterface> SpawnTargetingController_Implementation() { return nullptr; }
 };

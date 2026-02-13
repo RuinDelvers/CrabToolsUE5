@@ -18,20 +18,47 @@ void UAIMoveToInteractNode::Initialize_Inner_Implementation()
 	check(IsValid(this->GetInteractionComponent()));
 }
 
+void UAIMoveToInteractNode::Enter_Inner_Implementation()
+{
+	/*
+		if (!IsValid(this->MoveData.DestinationActor))
+	{
+		Super::Enter_Inner_Implementation();
+		//this->EmitEvent(Events::AI::CANNOT_INTERACT);
+	}
+	else if (!this->MoveData.DestinationActor->GetComponentByClass<UInteractableComponent>())
+	{
+		//this->EmitEvent(Events::AI::CANNOT_INTERACT);
+		Super::Enter_Inner_Implementation();
+	}
+	else 
+	*/
+	if (this->HasInteractable())
+	{
+		this->EmitEvent(Events::AI::ARRIVE);
+	}
+	else
+	{
+		this->ComputeTarget();
+		Super::Enter_Inner_Implementation();
+	}
+}
+
 void UAIMoveToInteractNode::EnterWithData_Inner_Implementation(UObject* Data)
 {
-	if (auto Interaction = Cast<UAIInteractionData>(Data))
+	if (auto Interaction = UStateMachinePipedData::FindDataOfType<UAIInteractionData>(Data))
 	{
 		if (Interaction->IsValidData())
 		{
 			this->CurrentData = Interaction;
 			this->BindEvents();
-			Super::EnterWithData_Inner_Implementation(Interaction->Interactable);
 		}
 		else
 		{
-			Super::EnterWithData_Inner_Implementation(nullptr);
+			this->CurrentData = nullptr;
 		}
+
+		Super::EnterWithData_Inner_Implementation(Interaction->Interactable);
 	}
 	else
 	{
@@ -52,9 +79,15 @@ void UAIMoveToInteractNode::Exit_Inner_Implementation()
 		this->HandleInteraction();
 	}
 
-	this->CurrentData = nullptr;
+	if (!this->bCacheInteractionData)
+	{
+		this->CurrentData = nullptr;
+	}
 
-	this->GetInteractionComponent()->OnInteractableAddedEvent.RemoveAll(this);
+	if (auto Component = this->GetInteractionComponent())
+	{
+		Component->OnInteractableAddedEvent.RemoveAll(this);
+	}
 }
 
 bool UAIMoveToInteractNode::HandleInteraction()
@@ -86,7 +119,15 @@ bool UAIMoveToInteractNode::HandleInteraction()
 
 bool UAIMoveToInteractNode::HasInteractable() const
 {
-	return this->GetInteractionComponent()->HasObject(this->GetInteractable());
+	if (auto Component = this->GetInteractionComponent())
+	{
+		return Component->HasObject(this->GetInteractable());
+	}
+	else
+	{
+		return false;
+	}
+	
 }
 
 void UAIMoveToInteractNode::ComputeTarget()
@@ -103,51 +144,24 @@ void UAIMoveToInteractNode::ComputeTarget()
 				auto Dest = UPathFindingUtilsLibrary::ChooseNearLocation(this->GetAIController(), Locations);
 				this->SetOverrideLocation(Dest);
 			}
-			else
-			{
-				this->MoveData.DestinationActor = this->CurrentData->Interactable;
-			}
 		}
-		else
-		{
-			this->MoveData.DestinationActor = this->CurrentData->Interactable;
-		}
-	}
-}
-
-void UAIMoveToInteractNode::Enter_Inner_Implementation()
-{
-	if (!IsValid(this->MoveData.DestinationActor))
-	{
-		this->EmitEvent(Events::AI::CANNOT_INTERACT);
-	}
-	else if (!this->MoveData.DestinationActor->GetComponentByClass<UInteractableComponent>())
-	{
-		this->EmitEvent(Events::AI::CANNOT_INTERACT);
-	} 
-	else if (this->HasInteractable())
-	{
-		this->EmitEvent(Events::AI::ARRIVE);
-	}
-	else
-	{
-		this->ComputeTarget();
-		Super::Enter_Inner_Implementation();
 	}
 }
 
 UInteractionSystem* UAIMoveToInteractNode::GetInteractionComponent() const
 {
-	auto InteractComp = this->GetActorOwner()->FindComponentByClass<UInteractionSystem>();
-	
-	return InteractComp;
+	return this->GetActorOwner()->FindComponentByClass<UInteractionSystem>();
 }
 
 void UAIMoveToInteractNode::BindEvents()
 {
-	this->GetInteractionComponent()->OnInteractableAddedEvent.AddDynamic(
-		this,
-		&UAIMoveToInteractNode::OnInteractableAdded);
+	if (auto Comp = this->GetInteractionComponent())
+	{
+		this->GetInteractionComponent()->OnInteractableAddedEvent.AddDynamic(
+			this,
+			&UAIMoveToInteractNode::OnInteractableAdded);
+	}
+	
 }
 
 void UAIMoveToInteractNode::OnInteractableAdded(UInteractableComponent* Interactable)
@@ -160,7 +174,14 @@ void UAIMoveToInteractNode::OnInteractableAdded(UInteractableComponent* Interact
 
 UInteractableComponent* UAIMoveToInteractNode::GetInteractable() const
 {
-	return this->CurrentData->Interactable->GetComponentByClass<UInteractableComponent>();
+	if (this->CurrentData)
+	{
+		return this->CurrentData->Interactable->GetComponentByClass<UInteractableComponent>();
+	}
+	else
+	{
+		return nullptr;
+	}
 }
 
 #if WITH_EDITOR

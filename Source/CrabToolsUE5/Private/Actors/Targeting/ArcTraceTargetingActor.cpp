@@ -57,10 +57,8 @@ void AArcTraceTargetingActor::HandleTrace_Implementation()
 
 		if (bFoundTarget)
 		{
-			auto CheckActor = Result.GetActor();
-
 			FTargetingData InData;
-			InData.TargetActor = CheckActor;
+			InData.TargetActor = Result.GetActor();
 			InData.TargetLocation = Result.ImpactPoint;
 			InData.TargetNormal = Result.ImpactNormal;
 

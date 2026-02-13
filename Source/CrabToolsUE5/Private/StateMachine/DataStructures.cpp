@@ -17,12 +17,9 @@ void FSubMachineSlot::Initialize(UStateMachine* MachineSource)
 		case EHierarchyInputType::CUSTOM:
 			if (this->MachineClass)
 			{
-				this->SubMachine = NewObject<UStateMachine>(
-					MachineSource,
-					this->MachineClass->GetMachineClass(MachineSource).LoadSynchronous());
+				if (auto ClassPtr = this->MachineClass->GetMachineClass(MachineSource).LoadSynchronous()) {
+					this->SubMachine = NewObject<UStateMachine>(MachineSource, ClassPtr);
 
-				if (this->SubMachine)
-				{
 					this->SubMachine->Initialize(MachineSource->GetOwner());
 				}
 			}

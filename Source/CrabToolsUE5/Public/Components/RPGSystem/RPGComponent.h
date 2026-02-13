@@ -255,6 +255,14 @@ protected:
 		return Prop;
 	}
 
+	UFUNCTION(BlueprintNativeEvent, Category = "RPG|Turns", meta = (DisplayName = "TurnEnd"))
+	void TurnEnd_Inner();
+	virtual void TurnEnd_Inner_Implementation() {}
+
+	UFUNCTION(BlueprintNativeEvent, Category = "RPG|Turns", meta = (DisplayName = "TurnStart"))
+	void TurnStart_Inner();
+	virtual void TurnStart_Inner_Implementation() {}
+
 	UFUNCTION(BlueprintCallable, Category = "RPG|Status")
 	void ApplyStatus(UStatus* Status);
 

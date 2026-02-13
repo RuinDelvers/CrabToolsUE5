@@ -77,6 +77,11 @@ void UFloatResource::SetMaxProp(URPGProperty* Prop)
 	this->Maximum = CastChecked<UBaseFloatAttribute>(Prop);
 }
 
+void UFloatResource::RestoreResource_Implementation()
+{
+	this->SetValue(this->GetMax());
+}
+
 void UFloatResource::Refresh()
 {
 	auto NewValue = FMath::Clamp(this->Value, this->GetMin(), this->GetMax());

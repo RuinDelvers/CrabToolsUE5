@@ -129,17 +129,15 @@ bool UMultiGateNode::HasPipedData_Implementation() const
 
 UObject* UMultiGateNode::GetPipedData_Implementation()
 {
-	auto Data = NewObject<UArrayNodeData>(this);
+	
+	TArray<TObjectPtr<UObject>> Data;
 
 	for (auto& Child : this->Nodes)
 	{
-		if (Child.Node->HasPipedData())
-		{
-			Data->AddData(Child.Node->GetPipedData());
-		}
+		Data.Add(Child.Node->GetPipedData());
 	}
 
-	return Data;
+	return UStateMachinePipedData::ConcatDataArray(Data);
 }
 
 void UMultiGateNode::SetActive_Inner_Implementation(bool bNewActive)

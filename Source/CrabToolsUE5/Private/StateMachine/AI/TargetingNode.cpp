@@ -11,15 +11,23 @@ UTargetingNode::UTargetingNode()
 
 void UTargetingNode::EnterWithData_Inner_Implementation(UObject* Data)
 {
-	if (IsValid(Data) && Data->Implements<UTargetingControllerInterface>())
+	if (auto Targeting = UStateMachinePipedData::FindDataImplementing<UTargetingControllerInterface>(Data).GetObject())
 	{
-		this->TargetingInterface = Data;
+		this->TargetingInterface = Targeting;
+	}
+	else if (auto Spawner = UStateMachinePipedData::FindDataImplementing<USpawnsTargetingInterface>(Data).GetObject())
+	{
+		auto Interface = ISpawnsTargetingInterface::Execute_SpawnTargetingController(Spawner);
+		this->TargetingInterface = Interface.GetObject();
+	}
 
+	if (this->TargetingInterface)
+	{
 		FConfirmTargetsSingle t;
 
 		t.BindDynamic(this, &UTargetingNode::OnConfirmed);
 
-		ITargetingControllerInterface::Execute_AddListener(Data, t);
+		ITargetingControllerInterface::Execute_AddListener(this->TargetingInterface, t);
 	}
 	else
 	{

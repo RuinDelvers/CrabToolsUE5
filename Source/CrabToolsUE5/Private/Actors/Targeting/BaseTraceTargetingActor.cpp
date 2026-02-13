@@ -63,6 +63,11 @@ void ABaseTraceTargetingActor::HandleMouseOver(UMouseOverComponent* Comp)
 	}	
 }
 
+void ABaseTraceTargetingActor::AddDirectTarget_Implementation(const FTargetingData& TargetData)
+{
+	ITargetingControllerInterface::Execute_AddTarget(this, TargetData);
+}
+
 void ABaseTraceTargetingActor::InvalidateTargetData()
 {
 	this->TracedTarget = FTargetingData();

@@ -5,6 +5,7 @@
 
 class UMouseOverComponent;
 
+/* This interface is for implementers who are utilizing a targeting actor.*/
 UINTERFACE(MinimalAPI, Blueprintable, BlueprintType)
 class UTargeterInterface : public UInterface
 {

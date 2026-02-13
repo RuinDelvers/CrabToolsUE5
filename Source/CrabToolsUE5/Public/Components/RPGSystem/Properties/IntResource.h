@@ -45,12 +45,11 @@ public:
 
 	virtual void UseResourceInt_Implementation(int Amount) override;
 	virtual void UseResourceFloat_Implementation(float Amount) override;
-
 	virtual bool HasResourceInt_Implementation(int Compare) const override;
 	virtual bool HasResourceFloat_Implementation(float Compare) const override;
-
 	virtual void SetMinProp(URPGProperty* Prop) override;
 	virtual void SetMaxProp(URPGProperty* Prop) override;
+	virtual void RestoreResource_Implementation() override;
 
 protected:
 

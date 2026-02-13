@@ -102,6 +102,11 @@ void UIntResource::SetMaxProp(URPGProperty* Prop)
 	}
 }
 
+void UIntResource::RestoreResource_Implementation()
+{
+	this->SetValue(this->GetMax());
+}
+
 float UIntResource::GetPercent_Implementation() const
 {
 	int Min = this->GetMin();

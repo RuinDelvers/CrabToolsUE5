@@ -72,6 +72,7 @@ void URPGComponent::TurnStart()
 		}
 	}
 
+	this->TurnStart_Inner();
 	this->OnTurnStart.Broadcast(this);
 }
 
@@ -85,6 +86,7 @@ void URPGComponent::TurnEnd()
 		}
 	}
 
+	this->TurnEnd_Inner();
 	this->OnTurnEnd.Broadcast(this);
 }
 
