@@ -15,11 +15,11 @@ void UStateMachinePlaceholderNode::Tick_Inner_Implementation(float DeltaTime)
 
 }
 
-void UStateMachinePlaceholderNode::Event_Inner_Implementation(FName Event) 
+void UStateMachinePlaceholderNode::Event_Inner_Implementation(FName Event, UObject* EventSource) 
 { 
 
 }
-void UStateMachinePlaceholderNode::EventWithData_Inner_Implementation(FName InEvent, UObject* Data)
+void UStateMachinePlaceholderNode::EventWithData_Inner_Implementation(FName InEvent, UObject* Data, UObject* Source)
 { 
 
 }

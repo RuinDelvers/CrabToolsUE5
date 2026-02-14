@@ -84,6 +84,11 @@ namespace Events::AI
 
 	// Event used by Interactables to automate move to and interact logic.
 	constexpr char MOVE_AND_INTERACT[] = "MOVE_AND_INTERACT";
+
+	constexpr char ROUTE_REQUEST_RESUME[]   = "RESUME_REQUEST";
+	constexpr char ROUTE_REQUEST_PAUSE[]    = "PAUSE_REQUEST";
+	constexpr char ROUTE_REQUEST_ACTOR[]    = "TO_ACTOR_REQUEST";
+	constexpr char ROUTE_REQUEST_LOCATION[] = "TO_LOCATION_REQUEST";
 }
 
 namespace Events::Animation

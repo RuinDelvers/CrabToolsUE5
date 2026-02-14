@@ -16,5 +16,7 @@ void UAIBaseNode::Initialize_Inner_Implementation()
 
 void UAIBaseNode::OnControllerUpdated(APawn* Pawn, AController* OldController, AController* NewController)
 {
+
 	this->AICtrl = Cast<AAIController>(NewController);
+	this->OnControllerChanged(OldController, NewController);
 }

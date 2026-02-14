@@ -26,11 +26,11 @@ void AEventTriggerBox::OnBeginOverlap(
 {
 	if (this->bUseData)
 	{
-		IEventListenerInterface::Execute_Event(OtherActor, this->BeginEvent);
+		IEventListenerInterface::Execute_Event(OtherActor, this->BeginEvent, this);
 	}
 	else
 	{
-		IEventListenerInterface::Execute_EventWithData(OtherActor, this->BeginEvent, this->Data.LoadSynchronous());
+		IEventListenerInterface::Execute_EventWithData(OtherActor, this->BeginEvent, this->Data.LoadSynchronous(), this);
 	}	
 }
 
@@ -42,11 +42,11 @@ void AEventTriggerBox::OnEndOverlap(
 {
 	if (this->bUseData)
 	{
-		IEventListenerInterface::Execute_Event(OtherActor, this->EndEvent);
+		IEventListenerInterface::Execute_Event(OtherActor, this->EndEvent, this);
 	}
 	else
 	{
-		IEventListenerInterface::Execute_EventWithData(OtherActor, this->EndEvent, this->Data.LoadSynchronous());
+		IEventListenerInterface::Execute_EventWithData(OtherActor, this->EndEvent, this->Data.LoadSynchronous(), this);
 	}
 }
 

@@ -32,14 +32,14 @@ void UIfElseNode::Tick_Inner_Implementation(float DeltaTime)
 	if (auto Node = this->GetNode()) { Node->Tick(DeltaTime); }
 }
 
-void UIfElseNode::Event_Inner_Implementation(FName Event)
+void UIfElseNode::Event_Inner_Implementation(FName Event, UObject* EventSource)
 {
-	if (auto Node = this->GetNode()) { Node->Event(Event); }
+	if (auto Node = this->GetNode()) { Node->Event(Event, EventSource); }
 }
 
-void UIfElseNode::EventWithData_Inner_Implementation(FName InEvent, UObject* Data)
+void UIfElseNode::EventWithData_Inner_Implementation(FName InEvent, UObject* Data, UObject* Source)
 {
-	if (auto Node = this->GetNode()) { Node->EventWithData(InEvent, Data); }
+	if (auto Node = this->GetNode()) { Node->EventWithData(InEvent, Data, Source); }
 }
 
 void UIfElseNode::Enter_Inner_Implementation()

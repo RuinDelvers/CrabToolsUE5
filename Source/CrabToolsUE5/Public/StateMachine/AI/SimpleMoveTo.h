@@ -31,6 +31,7 @@ public:
 
 	UAISimpleMoveToNode();
 
+	virtual void EventWithData_Inner_Implementation(FName InEvent, UObject* Data, UObject* Source) override;
 	virtual void EnterWithData_Inner_Implementation(UObject* Data) override;
 	virtual void Exit_Inner_Implementation() override;
 	virtual void Initialize_Inner_Implementation() override;
@@ -45,10 +46,10 @@ protected:
 	void SetOverrideLocation(FVector Location);
 
 	UFUNCTION()
-	void EventNotify_PauseMovement(FName InEvent);
+	void EventNotify_PauseMovement(FName InEvent, UObject* EventSource);
 
 	UFUNCTION()
-	void EventNotify_ResumeMovement(FName InEvent);
+	void EventNotify_ResumeMovement(FName InEvent, UObject* EventSource);
 
 private:
 
@@ -57,6 +58,4 @@ private:
 
 	void BindCallback();
 	void UnbindCallback();
-
-	void MoveTo();
 };

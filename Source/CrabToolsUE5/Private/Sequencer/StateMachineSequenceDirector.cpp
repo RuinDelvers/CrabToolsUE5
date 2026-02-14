@@ -15,12 +15,12 @@ void UStateMachineSequenceDirector::ResumeSequence()
 
 void UStateMachineSequenceDirector::ProgressDialogue()
 {
-	IEventListenerInterface::Execute_Event(this->GetOuter(), this->ProgressDialogueEvent);
+	IEventListenerInterface::Execute_Event(this->GetOuter(), this->ProgressDialogueEvent, this);
 }
 
 void UStateMachineSequenceDirector::ProgressDialogueWithData(UObject* Data)
 {
-	IEventListenerInterface::Execute_EventWithData(this->GetOuter(), this->ProgressDialogueEvent, Data);
+	IEventListenerInterface::Execute_EventWithData(this->GetOuter(), this->ProgressDialogueEvent, Data, this);
 }
 
 void UStateMachineSequenceDirector::ProgressDialogueWithPause()
@@ -37,7 +37,7 @@ void UStateMachineSequenceDirector::ProgressDialogueWithPauseWithdata(UObject* D
 
 void UStateMachineSequenceDirector::MachineEvent(FEventSlot InEvent)
 {
-	IEventListenerInterface::Execute_Event(this->GetOuter(), InEvent);
+	IEventListenerInterface::Execute_Event(this->GetOuter(), InEvent, this);
 }
 
 void UStateMachineSequenceDirector::StepMonologue()

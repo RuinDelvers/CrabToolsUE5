@@ -48,6 +48,7 @@ public:
 	virtual bool CanCopy() const override { return true; }
 	virtual bool CanCut() const override { return true; }
 	virtual bool CanDuplicate() const override { return true; }
+	virtual TArray<FString> GetEventOptions() const override;
 
 	#if WITH_EDITOR
 		virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;

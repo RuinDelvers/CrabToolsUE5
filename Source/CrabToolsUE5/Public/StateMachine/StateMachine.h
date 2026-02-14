@@ -37,6 +37,18 @@ struct FStateChangedEventData
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "StateMachine")
 	TObjectPtr<UStateMachine> StateMachine;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "StateMachine")
+	FName Event;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "StateMachine")
+	TObjectPtr<UObject> EventSource;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "StateMachine")
+	FName PreemptEvent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "StateMachine")
+	TObjectPtr<UObject> PreemptEventSource;
 };
 
 UENUM()
@@ -176,8 +188,8 @@ public:
 	void EnterWithData(UObject* Data);
 	void Exit();
 	void ExitWithData(UObject* Data);
-	void Event(FName InEvent);
-	void EventWithData(FName InEvent, UObject* Data);
+	void Event(FName InEvent, UObject* Source);
+	void EventWithData(FName InEvent, UObject* Data, UObject* Source);
 	void Tick(float DeltaTime);
 	void PostTransition();
 	bool RequiresTick() const;
@@ -208,8 +220,8 @@ public:
 	void ExitWithData_Inner(UObject* Data);
 	virtual void ExitWithData_Inner_Implementation(UObject* Data) { this->Exit_Inner(); }
 
-	bool GetDestination(FName InEvent, FDestinationResult& Result);
-	bool GetDataDestination(FName InEvent, UObject* Data, FDestinationResult& Result);
+	bool GetDestination(FName InEvent, UObject* Source, FDestinationResult& Result);
+	bool GetDataDestination(FName InEvent, UObject* Data, UObject* Source, FDestinationResult& Result);
 
 	void GetTransitionEvents(TSet<FName>& Events) const;
 
@@ -217,8 +229,8 @@ private:
 
 	void EnterConditions();
 	void ExitConditions();
-	void Event_Inner(FName InEvent) const;
-	void EventWithData_Inner(FName InEvent, UObject* Data) const;
+	void Event_Inner(FName InEvent, UObject* Source) const;
+	void EventWithData_Inner(FName InEvent, UObject* Data, UObject* Source) const;
 };
 
 /*
@@ -264,10 +276,10 @@ class CRABTOOLSUE5_API UStateNode : public UObject, public IStateNodeLike
 		TSet<FName> PreEditEmittedEvents;
 	#endif
 
-	DECLARE_DELEGATE_OneParam(FEventNotify_Single, FName);
-	DECLARE_MULTICAST_DELEGATE_OneParam(FEventNotify, FName);
-	DECLARE_DELEGATE_TwoParams(FEventWithDataNotify_Single, FName, UObject*);
-	DECLARE_MULTICAST_DELEGATE_TwoParams(FEventWithDataNotify, FName, UObject*);
+	DECLARE_DELEGATE_TwoParams(FEventNotify_Single, FName, UObject*);
+	DECLARE_MULTICAST_DELEGATE_TwoParams(FEventNotify, FName, UObject*);
+	DECLARE_DELEGATE_ThreeParams(FEventWithDataNotify_Single, FName, UObject*, UObject*);
+	DECLARE_MULTICAST_DELEGATE_ThreeParams(FEventWithDataNotify, FName, UObject*, UObject*);
 
 	TMap<FName, FEventNotify> EventNotifies;
 	TMap<FName, FEventWithDataNotify> EventWithDataNotifies;
@@ -344,10 +356,10 @@ public:
 		virtual bool Modify(bool bShouldAlwaysMarkDirty = true) override;
 
 	/* Only call from an SM or a managing Node. */
-	void Event(FName InEvent);
+	void Event(FName InEvent, UObject* Source);
 
 	/* Only call from an SM or a managing Node. */
-	void EventWithData(FName InEvent, UObject* Data);
+	void EventWithData(FName InEvent, UObject* Data, UObject* Source);
 
 	/* Only call from an SM or a managing Node. */
 	void Enter();
@@ -402,12 +414,12 @@ protected:
 	virtual void Initialize_Inner_Implementation();
 
 	UFUNCTION(BlueprintNativeEvent, Category = "StateMachine", meta = (DisplayName = "Event"))
-	void Event_Inner(FName InEvent);	
-	virtual void Event_Inner_Implementation(FName InEvent);
+	void Event_Inner(FName InEvent, UObject* EventSource);
+	virtual void Event_Inner_Implementation(FName InEvent, UObject* EventSource);
 
 	UFUNCTION(BlueprintNativeEvent, Category = "StateMachine", meta = (DisplayName = "EventWithData"))
-	void EventWithData_Inner(FName InEvent, UObject* Data);
-	virtual void EventWithData_Inner_Implementation(FName InEvent, UObject* Data);
+	void EventWithData_Inner(FName InEvent, UObject* Data, UObject* EventSource);
+	virtual void EventWithData_Inner_Implementation(FName InEvent, UObject* Data, UObject* EventSource);
 
 	UFUNCTION(BlueprintNativeEvent, Category = "StateMachine", meta = (DisplayName = "Enter"))
 	void Enter_Inner();	
@@ -464,10 +476,10 @@ protected:
 private:
 
 	UFUNCTION()
-	void EventNotifySignatureFunction(FName Name) {}
+	void EventNotifySignatureFunction(FName Name, UObject* EventSource) {}
 
 	UFUNCTION()
-	void EventWithDataNotifySignatureFunction(FName Name, UObject* Data) {}
+	void EventWithDataNotifySignatureFunction(FName Name, UObject* Data, UObject* EventSource) {}
 
 	void InitNotifies();
 };
@@ -544,10 +556,13 @@ public:
 	UPROPERTY(VisibleAnywhere, Category = "Transition")
 	TObjectPtr<UAbstractCondition> Transition;
 
+	UPROPERTY()
+	TObjectPtr<UObject> EventSource;
+
 public:
 
-	void Queue(FName NewDestination, FName Event = NAME_None, UAbstractCondition* TakenTransition = nullptr);
-	void Queue(FName NewDestination, UObject* NewData, FName Event = NAME_None, UAbstractCondition* TakenTransition = nullptr);
+	void Queue(FName NewDestination, FName Event = NAME_None, UAbstractCondition* TakenTransition = nullptr, UObject* Source=nullptr);
+	void Queue(FName NewDestination, UObject* NewData, FName Event = NAME_None, UAbstractCondition* TakenTransition = nullptr, UObject* Source = nullptr);
 	void Clear();
 };
 
@@ -565,12 +580,19 @@ struct FEventQueueData
 	UPROPERTY()
 	TObjectPtr<UObject> Data;
 
+	UPROPERTY()
+	TObjectPtr<UObject> Source;
+
 public:
 
 	FEventQueueData() {}
-	FEventQueueData(FName InEvent) : EventName(InEvent) {}
-	FEventQueueData(FName InEvent, UObject* InData)
-	: EventName(InEvent), bHasData(true), Data(InData)
+	FEventQueueData(FName InEvent, UObject* InSource) : EventName(InEvent), Source(InSource) {}
+	FEventQueueData(FName InEvent, UObject* InData, UObject* InSource)
+	: EventName(InEvent), bHasData(true), Data(InData), Source(InSource)
+	{}
+
+	FEventQueueData(FName InEvent, UObject* InData, bool bNeedsData, UObject* InSource)
+		: EventName(InEvent), bHasData(bNeedsData), Data(InData), Source(InSource)
 	{}
 };
 
@@ -710,12 +732,12 @@ public:
 	FName GetCurrentEvent() const { return this->Queue.CurrentEvent; }
 
 	UFUNCTION(BlueprintCallable, BlueprintInternalUseOnly, Category = "StateMachine")
-	void SendEvent(FName InEvent);
-	virtual void Event_Implementation(FName InEvent) override final { this->SendEvent(InEvent); }
+	void SendEvent(FName InEvent, UObject* Source);
+	virtual void Event_Implementation(FName InEvent, UObject* Source) override final { this->SendEvent(InEvent, Source); }
 
 	UFUNCTION(BlueprintCallable, BlueprintInternalUseOnly, Category = "StateMachine")
-	void SendEventWithData(FName InEvent, UObject* Data);
-	void EventWithData_Implementation(FName InEvent, UObject* Data) override final { this->SendEventWithData(InEvent, Data); }
+	void SendEventWithData(FName InEvent, UObject* Data, UObject* Source);
+	void EventWithData_Implementation(FName InEvent, UObject* Data, UObject* Source) override final { this->SendEventWithData(InEvent, Data, Source); }
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "StateMachine",
 		meta = (ExpandEnumAsExecs = "Branches"))
@@ -849,6 +871,7 @@ private:
 		void NotInitializedError();
 	#endif // STATEMACHINE_DEBUG_DATA
 
+	void SendEvent_Internal(FName InEvent, UObject* Data, bool bNeedsData, UObject* Source);
 	void InitFromArchetype();
 	void PushStateToStack(FName InEvent);
 	void UpdateState();

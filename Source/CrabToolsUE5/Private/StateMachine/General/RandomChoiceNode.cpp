@@ -37,19 +37,19 @@ void URandomChoiceNode::EnterWithData_Inner_Implementation(UObject* Data)
 	}
 }
 
-void URandomChoiceNode::Event_Inner_Implementation(FName InEvent)
+void URandomChoiceNode::Event_Inner_Implementation(FName InEvent, UObject* EventSource)
 {
 	if (this->CurrentNode)
 	{
-		this->CurrentNode->Event(InEvent);
+		this->CurrentNode->Event(InEvent, EventSource);
 	}
 }
 
-void URandomChoiceNode::EventWithData_Inner_Implementation(FName InEvent, UObject* Data)
+void URandomChoiceNode::EventWithData_Inner_Implementation(FName InEvent, UObject* Data, UObject* EventSource)
 {
 	if (this->CurrentNode)
 	{
-		this->CurrentNode->EventWithData(InEvent, Data);
+		this->CurrentNode->EventWithData(InEvent, Data, EventSource);
 	}
 }
 

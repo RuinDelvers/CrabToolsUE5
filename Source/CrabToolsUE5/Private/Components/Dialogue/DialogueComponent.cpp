@@ -5,7 +5,7 @@
 
 void UDialogueStateComponent::AttemptDialogueWithActor(AActor* Actor)
 {
-	IEventListenerInterface::Execute_EventWithData(this->GetOwner(), Events::Dialogue::REQUEST_CONFIRMED, Actor);
+	IEventListenerInterface::Execute_EventWithData(this->GetOwner(), Events::Dialogue::REQUEST_CONFIRMED, Actor, this->GetOwner());
 }
 
 bool UDialogueStateComponent::HandShake(UDialogueStateComponent* Conversee)

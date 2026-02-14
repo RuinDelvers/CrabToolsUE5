@@ -22,24 +22,24 @@ void UHierarchyNode::PerformExit()
 
 		if (this->ExitStates.Contains(SubStateName))
 		{
-			this->GetMachine()->Event(this->ExitStates[SubStateName].GetEvent());
+			this->GetMachine()->Event(this->ExitStates[SubStateName].GetEvent(), this);
 		}
 	}
 }
 
-void UHierarchyNode::Event_Inner_Implementation(FName InEvent)
+void UHierarchyNode::Event_Inner_Implementation(FName InEvent, UObject* EventSource)
 {
 	if (this->Slot)
 	{
-		this->Slot->SendEvent(InEvent);
+		this->Slot->SendEvent(InEvent, EventSource);
 	}
 }
 
-void UHierarchyNode::EventWithData_Inner_Implementation(FName InEvent, UObject* Data)
+void UHierarchyNode::EventWithData_Inner_Implementation(FName InEvent, UObject* Data, UObject* EventSource)
 {
 	if (this->Slot)
 	{
-		this->Slot->SendEventWithData(InEvent, Data);
+		this->Slot->SendEventWithData(InEvent, Data, EventSource);
 	}
 }
 
@@ -60,12 +60,12 @@ void UHierarchyNode::Enter_Inner_Implementation()
 		}
 		else
 		{
-			this->Slot->SendEvent(this->EnterEventName);
+			this->Slot->SendEvent(this->EnterEventName, this);
 		}
 
 		if (this->bPropagateEnterEvent)
 		{
-			this->Slot->SendEvent(this->GetMachine()->GetCurrentEvent());
+			this->Slot->SendEvent(this->GetMachine()->GetCurrentEvent(), this);
 		}
 
 		this->PerformExit();
@@ -91,7 +91,7 @@ void UHierarchyNode::Exit_Inner_Implementation()
 		}
 		else
 		{
-			this->Slot->SendEvent(this->ExitEventName);
+			this->Slot->SendEvent(this->ExitEventName, this);
 		}
 		this->Slot->SetActive(false);
 	}

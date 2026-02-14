@@ -14,10 +14,6 @@ public:
 
 	FNavPathSharedPtr SavedPath;
 
-	/* If this is true, then controllers using this will attempt to */
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "StateMachine|AI")
-	bool bResumePreviousPath = false;
-
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "StateMachine|AI")
 	bool bUseOverrideLocation = false;
 
@@ -41,7 +37,6 @@ public:
 
 
 	void ResetGoal();
-	void ClearIfNoCache();
 	bool ResumeMove(AAIController* Ctrl) const;
 	bool PauseMove(AAIController* Ctrl) const;
 	void MakeRequest(AAIController* Ctrl);

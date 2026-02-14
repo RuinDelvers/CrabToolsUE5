@@ -16,10 +16,10 @@ class IEventListenerInterface
 public:
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category="StateMachine")
-	void Event(FName InEvent);
-	virtual void Event_Implementation(FName InEvent) {}
+	void Event(FName InEvent, UObject* Source);
+	virtual void Event_Implementation(FName InEvent, UObject* Source) {}
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category="StateMachine")
-	void EventWithData(FName InEvent, UObject* Data);
-	virtual void EventWithData_Implementation(FName InEvent, UObject* Data) {}
+	void EventWithData(FName InEvent, UObject* Data, UObject* Source);
+	virtual void EventWithData_Implementation(FName InEvent, UObject* Data, UObject* Source) {}
 };

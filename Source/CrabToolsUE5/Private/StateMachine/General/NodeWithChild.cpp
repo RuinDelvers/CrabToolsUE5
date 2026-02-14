@@ -16,18 +16,18 @@ void UNodeWithChild::Tick_Inner_Implementation(float DeltaTime)
 	}
 }
 
-void UNodeWithChild::Event_Inner_Implementation(FName Event)
+void UNodeWithChild::Event_Inner_Implementation(FName Event, UObject* EventSource)
 {
 	if (this->Child)
 	{
-		this->Child->Event(Event);
+		this->Child->Event(Event, EventSource);
 	}
 }
-void UNodeWithChild::EventWithData_Inner_Implementation(FName InEvent, UObject* Data)
+void UNodeWithChild::EventWithData_Inner_Implementation(FName InEvent, UObject* Data, UObject* EventSource)
 {
 	if (this->Child)
 	{
-		this->Child->EventWithData(InEvent, Data);
+		this->Child->EventWithData(InEvent, Data, EventSource);
 	}
 }
 

@@ -32,9 +32,6 @@ void UInteractableComponent::BeginPlay()
 		}
 	}
 
-	//this->GetOwner()->OnActorBeginOverlap.AddDynamic(this, &UInteractableComponent::OnBeginActorOverlap);
-	//this->GetOwner()->OnActorEndOverlap.AddDynamic(this, &UInteractableComponent::OnEndActorOverlap);
-
 	TArray<USceneComponent*> Children;
 	this->GetChildrenComponents(true, Children);
 
@@ -185,7 +182,7 @@ TArray<UContextMenuEntry*> UInteractableComponent::GatherEntries_Implementation(
 void UInteractableComponent::MoveToInteract(FName Interaction, AActor* Interactor, UObject* Data)
 {
 	auto AIData = UAIInteractionData::MakeInteractionData(Interaction, this->GetOwner(), Data);
-	IEventListenerInterface::Execute_EventWithData(Interactor, this->MoveLogicEvent, AIData);
+	IEventListenerInterface::Execute_EventWithData(Interactor, this->MoveLogicEvent, AIData, this->GetOwner());
 }
 
 TArray<FString> UInteractableComponent::GetActorInteractions(UClass* Class)

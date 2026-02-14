@@ -3,6 +3,7 @@
 #include "Navigation/PathFollowingComponent.h"
 #include "StateMachine/Events.h"
 #include "StateMachine/AI/AIStructs.h"
+#include "AI/MovementRequest.h"
 
 
 UAISimpleMoveToNode::UAISimpleMoveToNode(): MovementResult(EPathFollowingResult::Aborted)
@@ -24,10 +25,8 @@ void UAISimpleMoveToNode::Initialize_Inner_Implementation()
 
 void UAISimpleMoveToNode::Exit_Inner_Implementation()
 {
-	this->MoveData.ClearIfNoCache();
 	this->UnbindCallback();
-	this->StopMovement();
-	this->MoveData.ResetGoal();
+	this->MoveData.PauseMove(this->GetAIController());
 }
 
 void UAISimpleMoveToNode::Enter_Inner_Implementation()
@@ -48,10 +47,10 @@ void UAISimpleMoveToNode::Enter_Inner_Implementation()
 				this->EmitEvent(Events::AI::LOST);
 			}
 		}
-	}	
+	}
 	else
 	{
-		this->MoveTo();
+		this->MoveData.MakeRequest(this->GetAIController());
 	}
 }
 
@@ -67,24 +66,58 @@ void UAISimpleMoveToNode::SetActive_Inner_Implementation(bool bNewActive)
 	}
 }
 
+void UAISimpleMoveToNode::EventWithData_Inner_Implementation(FName InEvent, UObject* Data, UObject* Source)
+{
+	if (auto Actor = UStateMachinePipedData::FindDataOfType<AActor>(Data))
+	{
+		this->UnbindCallback();
+		this->StopMovement();
+		this->EnterWithData_Inner(Actor);
+	}
+	else if (auto Request = UStateMachinePipedData::FindDataImplementing<UMovementRequestInterface>(Data).GetObject())
+	{
+		this->UnbindCallback();
+		switch (IMovementRequestInterface::Execute_GetRequestType(Request))
+		{
+			case EAIMovementRequestType::TO_ACTOR: StopMovement(); break;
+			case EAIMovementRequestType::TO_LOCATION: StopMovement(); break;
+		}
+		this->EnterWithData_Inner(Request);
+	}	
+}
+
 void UAISimpleMoveToNode::EnterWithData_Inner_Implementation(UObject* Data)
 {
-	UE_LOG(LogTemp, Warning, TEXT("MoveTo: %s"), IsValid(Data) ? *Data->GetName() : *FString("None"));
-	this->MoveData.ResetGoal();
-	this->MoveData.DestinationActor = Cast<AActor>(Data);	
-	this->Enter_Inner();
-}
-
-void UAISimpleMoveToNode::MoveTo()
-{
-	this->MoveData.MakeRequest(this->GetAIController());
-
-	if (this->MoveData.Result.Code == EPathFollowingRequestResult::Failed)
+	if (auto Actor = UStateMachinePipedData::FindDataOfType<AActor>(Data))
 	{
-		//this->EmitEvent(Events::AI::LOST);
+		this->MoveData.DestinationActor = Actor;
+		this->Enter_Inner();
+	}
+	else if (auto Request = UStateMachinePipedData::FindDataImplementing<UMovementRequestInterface>(Data).GetObject())
+	{
+		switch (IMovementRequestInterface::Execute_GetRequestType(Request))
+		{
+			case EAIMovementRequestType::TO_ACTOR: 
+				this->MoveData.DestinationActor = IMovementRequestInterface::Execute_GetActor(Request);
+				break;
+			case EAIMovementRequestType::TO_LOCATION:
+				this->SetOverrideLocation(IMovementRequestInterface::Execute_GetLocation(Request));
+				break;
+			case EAIMovementRequestType::PAUSE:
+				if (!this->MoveData.PauseMove(this->GetAIController()))
+				{
+					this->EmitEvent(Events::AI::LOST);
+				}
+				break;
+			case EAIMovementRequestType::RESUME:
+				if (!this->MoveData.ResumeMove(this->GetAIController()))
+				{
+					this->EmitEvent(Events::AI::LOST);
+				}
+				break;
+		}
 	}
 }
-
 
 void UAISimpleMoveToNode::SetOverrideLocation(FVector Location)
 {
@@ -101,19 +134,17 @@ void UAISimpleMoveToNode::OnMoveCompleted(FAIRequestID RequestID, EPathFollowing
 {
 	this->MovementResult = MoveResult;
 
-	UE_LOG(LogTemp, Warning, TEXT("OnMoveCompleted"));
-
 	switch (MoveResult)
 	{
-		case EPathFollowingResult::Success: UE_LOG(LogTemp, Warning, TEXT("Success")); this->EmitEvent(Events::AI::ARRIVE); break;
-		case EPathFollowingResult::Aborted: UE_LOG(LogTemp, Warning, TEXT("Aborted")); this->EmitEvent(Events::AI::ARRIVE); break;
-		default: UE_LOG(LogTemp, Warning, TEXT("default")); this->EmitEvent(Events::AI::LOST);
+		case EPathFollowingResult::Success: this->EmitEvent(Events::AI::ARRIVE); break;
+		case EPathFollowingResult::Aborted: this->EmitEvent(Events::AI::ARRIVE); break;
+		default: this->EmitEvent(Events::AI::LOST);
 	}
 }
 
 void UAISimpleMoveToNode::BindCallback()
 {
-	auto CtrlQ = this->GetAIController();	
+	auto CtrlQ = this->GetAIController();
 	CtrlQ->ReceiveMoveCompleted.AddDynamic(this, &UAISimpleMoveToNode::OnMoveCompleted);
 }
 
@@ -123,12 +154,12 @@ void UAISimpleMoveToNode::UnbindCallback()
 	CtrlQ->ReceiveMoveCompleted.RemoveAll(this);
 }
 
-void UAISimpleMoveToNode::EventNotify_PauseMovement(FName InEvent)
+void UAISimpleMoveToNode::EventNotify_PauseMovement(FName InEvent, UObject* EventSource)
 {
 	this->MoveData.PauseMove(this->GetAIController());
 }
 
-void UAISimpleMoveToNode::EventNotify_ResumeMovement(FName InEvent)
+void UAISimpleMoveToNode::EventNotify_ResumeMovement(FName InEvent, UObject* EventSource)
 {
 	this->MoveData.ResumeMove(this->GetAIController());
 }

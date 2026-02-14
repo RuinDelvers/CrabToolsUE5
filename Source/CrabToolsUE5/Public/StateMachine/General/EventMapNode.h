@@ -28,8 +28,8 @@ private:
 
 public:
 
-	virtual void Event_Inner_Implementation(FName Event) override;
-	virtual void EventWithData_Inner_Implementation(FName Event, UObject* Data) override;
+	virtual void Event_Inner_Implementation(FName Event, UObject* EventSource) override;
+	virtual void EventWithData_Inner_Implementation(FName Event, UObject* Data, UObject* Source) override;
 	virtual void Initialize_Inner_Implementation() override;
 
 private:

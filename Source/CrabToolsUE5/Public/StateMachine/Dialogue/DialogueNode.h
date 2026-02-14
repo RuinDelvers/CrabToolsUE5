@@ -70,14 +70,14 @@ private:
 
 protected:
 
-	virtual void EventWithData_Inner_Implementation(FName InEvent, UObject* Data) override;
+	virtual void EventWithData_Inner_Implementation(FName InEvent, UObject* Data, UObject* Source) override;
 
 	#if WITH_EDITOR
 		virtual void GetEmittedEvents(TSet<FName>& Events) const override;
 	#endif
 
 	UFUNCTION()
-	void EventNotify_AttemptDialogue(FName InEvent, UObject* Data);
+	void EventNotify_AttemptDialogue(FName InEvent, UObject* Data, UObject* EventSource);
 
 private:
 

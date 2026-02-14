@@ -43,19 +43,19 @@ void UMultiGateNode::Tick_Inner_Implementation(float DeltaTime)
 	}
 }
 
-void UMultiGateNode::Event_Inner_Implementation(FName Event)
+void UMultiGateNode::Event_Inner_Implementation(FName Event, UObject* EventSource)
 {
 	for (const auto& Child : this->Nodes)
 	{
-		Child.Node->Event(Event);
+		Child.Node->Event(Event, EventSource);
 	}
 }
 
-void UMultiGateNode::EventWithData_Inner_Implementation(FName InEvent, UObject* Data)
+void UMultiGateNode::EventWithData_Inner_Implementation(FName InEvent, UObject* Data, UObject* EventSource)
 {
 	for (const auto& Child : this->Nodes)
 	{
-		Child.Node->EventWithData(InEvent, Data);
+		Child.Node->EventWithData(InEvent, Data, EventSource);
 	}
 }
 

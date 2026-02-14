@@ -20,19 +20,6 @@ void UAIMoveToInteractNode::Initialize_Inner_Implementation()
 
 void UAIMoveToInteractNode::Enter_Inner_Implementation()
 {
-	/*
-		if (!IsValid(this->MoveData.DestinationActor))
-	{
-		Super::Enter_Inner_Implementation();
-		//this->EmitEvent(Events::AI::CANNOT_INTERACT);
-	}
-	else if (!this->MoveData.DestinationActor->GetComponentByClass<UInteractableComponent>())
-	{
-		//this->EmitEvent(Events::AI::CANNOT_INTERACT);
-		Super::Enter_Inner_Implementation();
-	}
-	else 
-	*/
 	if (this->HasInteractable())
 	{
 		this->EmitEvent(Events::AI::ARRIVE);

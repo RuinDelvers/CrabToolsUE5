@@ -73,7 +73,7 @@ public:
 
 	virtual bool Check() const override;
 	virtual void Exit_Inner_Implementation() override;
-	virtual void Event_Inner_Implementation(FName InEvent) override;
+	virtual void Event_Inner_Implementation(FName InEvent, UObject* EventSource) override;
 
 private:
 	#if WITH_EDITOR
@@ -97,7 +97,7 @@ public:
 
 	virtual bool Check(UObject* Data) const override;
 	virtual void Exit_Inner_Implementation() override;
-	virtual void Event_Inner_Implementation(FName InEvent) override;
+	virtual void Event_Inner_Implementation(FName InEvent, UObject* EventSource) override;
 
 private:
 	#if WITH_EDITOR

@@ -6,7 +6,7 @@
 UENUM(meta = (Bitflags, UseEnumValuesAsMaskValuesInEditor = "true"))
 enum class EAIMovementRouterType: uint8
 {
-	NONE   = 1 << 0 UMETA(DisplayName="None"),
+	NONE   = 1 << 0 UMETA(DisplayName = "None"),
 	ENTER  = 1 << 2 UMETA(DisplayName = "Enter"),
 	EXIT   = 1 << 3 UMETA(DisplayName = "Exit"),
 	NOTIFY = 1 << 4 UMETA(DisplayName = "Notify"),
@@ -37,4 +37,7 @@ protected:
 	virtual void Exit_Inner_Implementation() override;
 	virtual void ExitWithData_Inner_Implementation(UObject* Data) override;
 	
+private:
+
+	void HandleRouting(EAIMovementRequestType MovementType, UObject* Request);
 };

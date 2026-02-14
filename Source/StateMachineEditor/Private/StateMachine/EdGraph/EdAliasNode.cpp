@@ -99,7 +99,24 @@ bool UEdAliasNode::HasEvent(FName InEvent)
 		}
 	}
 
-	return this->GetStateGraph()->HasEvent(InEvent);;
+	return this->GetStateGraph()->HasEvent(InEvent);
+}
+
+TArray<FString> UEdAliasNode::GetEventOptions() const
+{
+	TArray<FString> Names = this->GetStateGraph()->GetEventOptions();
+
+	for (auto State : this->GetStateGraph()->GetStates())
+	{
+		if (this->AliasedStates.Contains(State->GetStateName()) != this->bComplement)
+		{
+			Names.Append(State->GetEventOptions());
+		}
+	}
+
+	Names.Sort([](const FString& A, const FString& B) { return A < B; });
+
+	return Names;
 }
 
 

@@ -185,6 +185,9 @@ void UStateMachine::UpdateState()
 	this->TransPhase = TransitionPhase::Exiting;
 	this->SetupStateChangedData();
 	this->UpdateTransitionPipedData(PreviousState, Cached);
+	StateChangedData.Event = Cached.CurrentEvent;
+	StateChangedData.EventSource = Cached.EventSource;
+	
 
 	// Exit Phase: Do an atomic exit call on the node.
 	if (PreviousState)
@@ -201,12 +204,18 @@ void UStateMachine::UpdateState()
 
 	// Update the cached data, and see if it's been changed to a new destination.
 	this->GetPreemptTransition(Cached);
+	bool bDidPreempt = this->DidPreempt(Cached);
 
 	this->CurrentStateName = Cached.Destination;
 	this->PushStateToStack(Cached.Destination);
 	auto NewState = this->GetCurrentState();
 	StateChangedData.ToState = NewState;
-	StateChangedData.To = this->CurrentStateName;
+	StateChangedData.To = this->CurrentStateName;	
+	if (bDidPreempt)
+	{
+		StateChangedData.PreemptEventSource = Cached.EventSource;
+		StateChangedData.PreemptEvent = Cached.CurrentEvent;
+	}
 	this->TransPhase = TransitionPhase::Entering;
 
 	if (NewState)
@@ -236,7 +245,7 @@ void UStateMachine::UpdateState()
 	}
 
 	
-	if (this->DidPreempt(Cached))
+	if (bDidPreempt)
 	{
 		this->UpdateState();
 	}
@@ -252,11 +261,11 @@ void UStateMachine::UpdateState()
 
 			if (QueuedEvent.bHasData)
 			{
-				this->SendEventWithData(QueuedEvent.EventName, QueuedEvent.Data);
+				this->SendEventWithData(QueuedEvent.EventName, QueuedEvent.Data, QueuedEvent.Source);
 			}
 			else
 			{
-				this->SendEvent(QueuedEvent.EventName);
+				this->SendEvent(QueuedEvent.EventName, QueuedEvent.Source);
 			}
 		}
 	}
@@ -338,54 +347,17 @@ UStateMachine* UStateMachine::GetRootMachine()
 	}
 }
 
-void UStateMachine::SendEvent(FName InEvent)
+void UStateMachine::SendEvent(FName InEvent, UObject* Source)
 {
-	#if STATEMACHINE_DEBUG_DATA
-		if (!this->bWasInitialized)
-		{
-			this->NotInitializedError();
-			return;
-		}
-	#endif
-
-	if (!this->bIsActive) { return; }
-	if (InEvent.IsNone()) { return; }
-
-	auto CurrentState = this->GetCurrentState();
-
-	if (CurrentState)
-	{
-		#if WITH_EDITORONLY_DATA
-			CurrentState->OnEventReceived.Broadcast(InEvent);
-		#endif
-
-		FDestinationResult Result;
-
-		// First we check if there are any declarative events to handle for this state.
-		if (CurrentState->GetDestination(InEvent, Result))
-		{
-			if (!Result.Destination.IsNone())
-			{
-				this->Queue.Queue(Result.Destination, Result.Condition, InEvent);
-			}
-		}
-		else
-		{
-			if (this->TransPhase == TransitionPhase::Entering)
-			{
-				this->EventQueue.Add(InEvent);
-			}
-			else
-			{
-				CurrentState->Event(InEvent);
-			}
-		}
-
-		this->UpdateState();
-	}
+	SendEvent_Internal(InEvent, nullptr, false, Source);
 }
 
-void UStateMachine::SendEventWithData(FName InEvent, UObject* Data)
+void UStateMachine::SendEventWithData(FName InEvent, UObject* Data, UObject* Source)
+{
+	SendEvent_Internal(InEvent, Data, true, Source);
+}
+
+void UStateMachine::SendEvent_Internal(FName InEvent, UObject* Data, bool bNeedsData, UObject* Source)
 {
 	#if STATEMACHINE_DEBUG_DATA
 		if (!this->bWasInitialized)
@@ -400,16 +372,20 @@ void UStateMachine::SendEventWithData(FName InEvent, UObject* Data)
 
 	auto CurrentState = this->GetCurrentState();
 
-	if (CurrentState)
+	if (this->TransPhase == TransitionPhase::Entering)
+	{
+		this->EventQueue.Add(FEventQueueData(InEvent, Data, bNeedsData, Source));
+	}
+	else if (CurrentState)
 	{
 		#if WITH_EDITORONLY_DATA
-			CurrentState->OnEventWithDataReceived.Broadcast(InEvent, Data);
+				CurrentState->OnEventWithDataReceived.Broadcast(InEvent, Data);
 		#endif
 
 		FDestinationResult Result;
 
 		// First we check if there are any declarative events to handle for this state.
-		if (CurrentState->GetDataDestination(InEvent, Data, Result))
+		if (bNeedsData ? CurrentState->GetDataDestination(InEvent, Data, Source, Result) : CurrentState->GetDestination(InEvent, Data, Result))
 		{
 			if (!Result.Destination.IsNone())
 			{
@@ -418,14 +394,15 @@ void UStateMachine::SendEventWithData(FName InEvent, UObject* Data)
 		}
 		else
 		{
-			if (this->TransPhase == TransitionPhase::Entering)
+			if (bNeedsData)
 			{
-				this->EventQueue.Add(InEvent);
+				CurrentState->EventWithData(InEvent, Data, Source);
 			}
 			else
 			{
-				CurrentState->EventWithData(InEvent, Data);
+				CurrentState->Event(InEvent, Source);
 			}
+			
 		}
 		this->UpdateState();
 	}
@@ -447,7 +424,7 @@ void UStateMachine::SetActive(bool bNewActive)
 	{
 		if (!bNewActive && this->ActiveDefaultEvents.Contains(EDefaultStateMachineEvents::ON_MACHINE_DEACTIVATE))
 		{
-			this->SendEvent(Events::Default::MACHINE_DEACTIVATED);
+			this->SendEvent(Events::Default::MACHINE_DEACTIVATED, this);
 		}
 
 		this->bIsActive = bNewActive;
@@ -462,7 +439,7 @@ void UStateMachine::SetActive(bool bNewActive)
 
 		if (bNewActive && this->ActiveDefaultEvents.Contains(EDefaultStateMachineEvents::ON_MACHINE_ACTIVATE))
 		{
-			this->SendEvent(Events::Default::MACHINE_ACTIVATED);
+			this->SendEvent(Events::Default::MACHINE_ACTIVATED, this);
 		}
 	}
 }
@@ -1009,7 +986,7 @@ UWorld* UStateMachine::GetWorld() const
 	return nullptr;
 }
 
-void FTransitionQueue::Queue(FName NewDestination, FName Event, UAbstractCondition* TakenTransition)
+void FTransitionQueue::Queue(FName NewDestination, FName Event, UAbstractCondition* TakenTransition, UObject* Source)
 {
 	this->Destination = NewDestination;
 	this->bHasData = false;
@@ -1017,9 +994,10 @@ void FTransitionQueue::Queue(FName NewDestination, FName Event, UAbstractConditi
 	this->Transition = TakenTransition;
 	this->TransitionID += 1;
 	this->CurrentEvent = Event;
+	this->EventSource = Source;
 }
 
-void FTransitionQueue::Queue(FName NewDestination, UObject* NewData, FName Event, UAbstractCondition* TakenTransition)
+void FTransitionQueue::Queue(FName NewDestination, UObject* NewData, FName Event, UAbstractCondition* TakenTransition, UObject* Source)
 {
 	this->Destination = NewDestination;
 	this->bHasData = true;
@@ -1027,6 +1005,7 @@ void FTransitionQueue::Queue(FName NewDestination, UObject* NewData, FName Event
 	this->Transition = TakenTransition;
 	this->TransitionID += 1;
 	this->CurrentEvent = Event;
+	this->EventSource = Source;
 }
 
 void FTransitionQueue::Clear()
@@ -1080,11 +1059,11 @@ void UStateNode::InitNotifies()
 					this->EventNotifies.Add(EventName, Notify);
 				}
 
-				this->EventNotifies.Find(EventName)->AddLambda([this, Del] (FName EventName)
+				this->EventNotifies.Find(EventName)->AddLambda([this, Del] (FName EventName, UObject* Source)
 					{
 						if (this->Active())
 						{
-							Del.Execute(EventName);
+							Del.Execute(EventName, Source);
 						}
 					});
 			}
@@ -1099,11 +1078,11 @@ void UStateNode::InitNotifies()
 					this->EventWithDataNotifies.Add(EventName, Notify);
 				}
 
-				this->EventWithDataNotifies.Find(EventName)->AddLambda([this, Del](FName EventName, UObject* Data)
+				this->EventWithDataNotifies.Find(EventName)->AddLambda([this, Del](FName EventName, UObject* Data, UObject* EventSource)
 					{
 						if (this->Active())
 						{
-							Del.Execute(EventName, Data);
+							Del.Execute(EventName, Data, EventSource);
 						}
 					});
 			}
@@ -1133,17 +1112,17 @@ AActor* UStateNode::GetActorOwner() const
 	return this->Owner->GetActorOwner();
 }
 
-void UStateNode::Event(FName InEvent)
+void UStateNode::Event(FName InEvent, UObject* EventSource)
 {
 	if (this->Active())
 	{
 		if (auto Notify = this->EventNotifies.Find(InEvent))
 		{
-			Notify->Broadcast(InEvent);
+			Notify->Broadcast(InEvent, EventSource);
 		}
 		else
 		{
-			this->Event_Inner(InEvent);
+			this->Event_Inner(InEvent, EventSource);
 		}
 	}
 }
@@ -1153,29 +1132,29 @@ UStateMachine* UStateNode::GetRootMachine() const
 	return this->Owner->GetRootMachine();
 }
 
-void UStateNode::Event_Inner_Implementation(FName InEvent)
+void UStateNode::Event_Inner_Implementation(FName InEvent, UObject* EventSource)
 {
 	// Does Nothing by default.
 }
 
-void UStateNode::EventWithData(FName InEvent, UObject* Data)
+void UStateNode::EventWithData(FName InEvent, UObject* Data, UObject* EventSource)
 {
 	if (this->Active())
 	{
 		if (auto Notify = this->EventWithDataNotifies.Find(InEvent))
 		{
-			Notify->Broadcast(InEvent, Data);
+			Notify->Broadcast(InEvent, Data, EventSource);
 		}
 		else
 		{
-			this->EventWithData_Inner(InEvent, Data);
+			this->EventWithData_Inner(InEvent, Data, EventSource);
 		}
 	}
 }
 
-void UStateNode::EventWithData_Inner_Implementation(FName InEvent, UObject* Data)
+void UStateNode::EventWithData_Inner_Implementation(FName InEvent, UObject* Data, UObject* Source)
 {
-	this->Event_Inner(InEvent);
+	this->Event_Inner(InEvent, Source);
 }
 
 bool UStateNode::DoesReferenceMachine(FName MachineName) const
@@ -1392,7 +1371,7 @@ void UStateNode::EmitEvent(FName InEvent)
 {
 	if (this->Active())
 	{
-		this->GetMachine()->SendEvent(InEvent);
+		this->GetMachine()->SendEvent(InEvent, this);
 	}
 }
 
@@ -1400,7 +1379,7 @@ void UStateNode::EmitEventWithData(FName InEvent, UObject* Data)
 {
 	if (this->Active())
 	{
-		this->GetMachine()->SendEventWithData(InEvent, Data);
+		this->GetMachine()->SendEventWithData(InEvent, Data, this);
 	}
 }
 
@@ -1788,18 +1767,18 @@ void UState::ExitWithData(UObject* Data)
 	this->ExitConditions();
 }
 
-void UState::Event(FName InEvent)
+void UState::Event(FName InEvent, UObject* Source)
 {
 	if (IsValid(this->Node))
 	{
-		this->Node->Event(InEvent);
+		this->Node->Event(InEvent, Source);
 	}
 }
-void UState::EventWithData(FName InEvent, UObject* Data)
+void UState::EventWithData(FName InEvent, UObject* Data, UObject* Source)
 {
 	if (IsValid(this->Node))
 	{
-		this->Node->EventWithData(InEvent, Data);
+		this->Node->EventWithData(InEvent, Data, Source);
 	}
 }
 
@@ -1841,9 +1820,9 @@ void UState::GetTransitionEvents(TSet<FName>& Events) const
 	}
 }
 
-bool UState::GetDestination(FName InEvent, FDestinationResult& Result)
+bool UState::GetDestination(FName InEvent, UObject* Source, FDestinationResult& Result)
 {
-	this->Event_Inner(InEvent);
+	this->Event_Inner(InEvent, Source);
 	if (!this->Transitions.Contains(InEvent)) { return false; }
 
 	Result.Destination = NAME_None;
@@ -1866,9 +1845,9 @@ bool UState::GetDestination(FName InEvent, FDestinationResult& Result)
 	return Transition;
 }
 
-bool UState::GetDataDestination(FName InEvent, UObject* Data, FDestinationResult& Result)
+bool UState::GetDataDestination(FName InEvent, UObject* Data, UObject* Source, FDestinationResult& Result)
 {
-	this->EventWithData_Inner(InEvent, Data);
+	this->EventWithData_Inner(InEvent, Data, Source);
 	if (!this->Transitions.Contains(InEvent)) { return false; }
 
 	Result.Destination = NAME_None;
@@ -1891,24 +1870,24 @@ bool UState::GetDataDestination(FName InEvent, UObject* Data, FDestinationResult
 	return Transition;
 }
 
-void UState::Event_Inner(FName InEvent) const
+void UState::Event_Inner(FName InEvent, UObject* Source) const
 {
 	for (const auto& Transition : this->Transitions)
 	{
 		for (const auto& Destination : Transition.Value.Destinations)
 		{
-			Destination.Value.Condition->Event(InEvent);
+			Destination.Value.Condition->Event(InEvent, Source);
 		}
 	}
 }
 
-void UState::EventWithData_Inner(FName InEvent, UObject* Data) const
+void UState::EventWithData_Inner(FName InEvent, UObject* Data, UObject* Source) const
 {
 	for (const auto& Transition : this->Transitions)
 	{
 		for (const auto& Destination : Transition.Value.Destinations)
 		{
-			Destination.Value.Condition->EventWithData(InEvent, Data);
+			Destination.Value.Condition->EventWithData(InEvent, Data, Source);
 		}
 	}
 }

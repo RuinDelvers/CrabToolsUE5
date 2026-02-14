@@ -11,7 +11,7 @@ void UEventEmitter::EmitEvent(FName Event)
 {
 	if (this->Machine)
 	{
-		this->Machine->SendEvent(Event);
+		this->Machine->SendEvent(Event, this);
 	}
 }
 

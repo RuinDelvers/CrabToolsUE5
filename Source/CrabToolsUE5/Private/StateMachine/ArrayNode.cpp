@@ -23,24 +23,24 @@ void UArrayNode::Tick_Inner_Implementation(float DeltaTime)
 	}
 }
 
-void UArrayNode::Event_Inner_Implementation(FName Event)
+void UArrayNode::Event_Inner_Implementation(FName Event, UObject* EventSource)
 {
 	for (const auto& Node : this->Nodes)
 	{
 		if (Node)
 		{
-			Node->Event(Event);
+			Node->Event(Event, EventSource);
 		}
 	}
 }
 
-void UArrayNode::EventWithData_Inner_Implementation(FName Event, UObject* Data)
+void UArrayNode::EventWithData_Inner_Implementation(FName Event, UObject* Data, UObject* Source)
 {
 	for (const auto& Node : this->Nodes)
 	{
 		if (Node)
 		{
-			Node->EventWithData(Event, Data);
+			Node->EventWithData(Event, Data, Source);
 		}
 	}
 }
@@ -186,72 +186,6 @@ UObject* UArrayNode::GetPipedData_Implementation()
 	
 	return UStateMachinePipedData::ConcatDataArray(DataArray);
 }
-
-/*
-void UArrayNodeData::AddData(UObject* AddedData)
-{
-	if (IsValid(AddedData))
-	{
-		this->Data.Add(AddedData);
-	}
-}
-
-void UArrayNodeData::AppendData(const TArray<TObjectPtr<UObject>>& Appended)
-{
-	this->Data.Append(Appended);
-}
-
-UObject* UArrayNodeData::FindDataOfType_Implementation(TSubclassOf<UObject> Type)
-{
-	for (auto& Child : this->Data)
-	{
-		if (auto Check = UStateMachineDataHelpers::FindDataOfType(Type, Child))
-		{
-			return Check;
-		}
-	}
-
-	return nullptr;
-}
-
-void UArrayNodeData::FindAllDataOfType_Implementation(TSubclassOf<UObject> Type, TArray<UObject*>& ReturnValue)
-{
-	for (auto& Child : this->Data)
-	{
-		UStateMachineDataHelpers::FindAllDataOfType(Type, Child, ReturnValue);
-	}
-}
-
-TScriptInterface<UInterface> UArrayNodeData::FindDataImplementing_Implementation(TSubclassOf<UInterface> Type)
-{
-	for (auto& Child : this->Data)
-	{
-		if (Child->GetClass()->ImplementsInterface(Type))
-		{
-			TScriptInterface<UInterface> T(Child);
-
-			return T;
-		}
-	}
-
-	return nullptr;
-}
-
-void UArrayNodeData::FindAllDataImplementing_Implementation(TSubclassOf<UInterface> Type, TArray<TScriptInterface<UInterface>>& ReturnValue)
-{
-	for (auto& Child : this->Data)
-	{
-		if (Child->GetClass()->ImplementsInterface(Type))
-		{
-			TScriptInterface<UInterface> T(Child);
-
-			ReturnValue.Add(T);
-		}
-
-		UStateMachineDataHelpers::FindAllDataImplementing(Type, Child, ReturnValue);
-	}
-}
-*/
 
 #if WITH_EDITORONLY_DATA
 void UArrayNode::GetEmittedEvents(TSet<FName>& Events) const

@@ -25,6 +25,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category="AI")
 	FORCEINLINE AAIController* GetAIController() const { return this->AICtrl.Get(); }
 
+protected:
+
+	UFUNCTION(BlueprintNativeEvent, Category="Controller")
+	void OnControllerChanged(AController* OldController, AController* NewController);
+	virtual void OnControllerChanged_Implementation(AController* OldController, AController* NewController) {}
+
 private:
 
 

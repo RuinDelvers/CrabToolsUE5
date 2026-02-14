@@ -8,14 +8,14 @@
 
 #define LOCTEXT_NAMESPACE "StateMachine"
 
-void UStateMachineHelperLibrary::EmitEvent(UObject* Obj, FName InEvent)
+void UStateMachineHelperLibrary::EmitEvent(UObject* Obj, FName InEvent, UObject* Source)
 {
 	#if UE_BUILD_SHIPPING
 		IEventListenerInterface::Execute_Event(Obj, InEvent);
 	#else
 		if (IsValid(Obj))
 		{
-			IEventListenerInterface::Execute_Event(Obj, InEvent);
+			IEventListenerInterface::Execute_Event(Obj, InEvent, Source);
 		}
 		else
 		{
@@ -25,19 +25,19 @@ void UStateMachineHelperLibrary::EmitEvent(UObject* Obj, FName InEvent)
 	#endif	
 }
 
-void UStateMachineHelperLibrary::EmitEventSlot(UObject* Obj, FEventSlot InEvent)
+void UStateMachineHelperLibrary::EmitEventSlot(UObject* Obj, FEventSlot InEvent, UObject* Source)
 {
-	EmitEvent(Obj, InEvent);
+	EmitEvent(Obj, InEvent, Source);
 }
 
-void UStateMachineHelperLibrary::EmitEventWithData(UObject* Obj, FName InEvent, UObject* Data)
+void UStateMachineHelperLibrary::EmitEventWithData(UObject* Obj, FName InEvent, UObject* Data, UObject* Source)
 {
 	#if UE_BUILD_SHIPPING
 		IEventListenerInterface::Execute_EventWithData(Obj, InEvent, Data);
 	#else
 		if (IsValid(Obj))
 		{
-			IEventListenerInterface::Execute_EventWithData(Obj, InEvent, Data);
+			IEventListenerInterface::Execute_EventWithData(Obj, InEvent, Data, Source);
 		}
 		else
 		{
@@ -47,9 +47,9 @@ void UStateMachineHelperLibrary::EmitEventWithData(UObject* Obj, FName InEvent, 
 	#endif
 }
 
-void UStateMachineHelperLibrary::EmitEventSlotWithData(UObject* Obj, FEventSlot InEvent, UObject* Data)
+void UStateMachineHelperLibrary::EmitEventSlotWithData(UObject* Obj, FEventSlot InEvent, UObject* Data, UObject* Source)
 {
-	EmitEventWithData(Obj, InEvent, Data);
+	EmitEventWithData(Obj, InEvent, Data, Source);
 }
 
 #undef LOCTEXT_NAMESPACE

@@ -66,12 +66,12 @@ void UDialogueNode::PostEditChangeProperty(FPropertyChangedEvent& PropertyChange
 
 #pragma region Attempt Dialogue Node
 
-void UAttemptDialogueNode::EventWithData_Inner_Implementation(FName InEvent, UObject* Data)
+void UAttemptDialogueNode::EventWithData_Inner_Implementation(FName InEvent, UObject* Data, UObject* Source)
 {
 
 }
 
-void UAttemptDialogueNode::EventNotify_AttemptDialogue(FName InEvent, UObject* Data)
+void UAttemptDialogueNode::EventNotify_AttemptDialogue(FName InEvent, UObject* Data, UObject* EventSource)
 {
 	UDialogueStateComponent* Comp = Cast<UDialogueStateComponent>(Data);
 

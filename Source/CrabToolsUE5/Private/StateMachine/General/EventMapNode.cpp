@@ -1,6 +1,6 @@
 #include "StateMachine/General/EventMapNode.h"
 
-void UEventMapNode::Event_Inner_Implementation(FName Event)
+void UEventMapNode::Event_Inner_Implementation(FName Event, UObject* EventSource)
 {
 	if (auto Handle = this->EventMapInternal.Find(Event))
 	{
@@ -8,7 +8,7 @@ void UEventMapNode::Event_Inner_Implementation(FName Event)
 	}
 }
 
-void UEventMapNode::EventWithData_Inner_Implementation(FName Event, UObject* Data)
+void UEventMapNode::EventWithData_Inner_Implementation(FName Event, UObject* Data, UObject* Source)
 {
 	if (auto Handle = this->EventWithDataMapInternal.Find(Event))
 	{

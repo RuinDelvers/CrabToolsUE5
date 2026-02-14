@@ -19,15 +19,15 @@ public:
 	ASMPawn();
 
 
-	virtual void Event_Implementation(FName InEvent) override final { this->Event_Direct(InEvent); }
-	void Event_Direct(FName InEvent)
+	virtual void Event_Implementation(FName InEvent, UObject* Source) override final { this->Event_Direct(InEvent, Source); }
+	void Event_Direct(FName InEvent, UObject* Source)
 	{
-		this->StateMachineComponent->Event_Direct(InEvent);
+		this->StateMachineComponent->Event_Direct(InEvent, Source);
 	}
-	void EventWithData_Implementation(FName InEvent, UObject* Data) override final { this->EventWithData_Direct(InEvent, Data); }
-	void EventWithData_Direct(FName InEvent, UObject* Data)
+	void EventWithData_Implementation(FName InEvent, UObject* Data, UObject* Source) override final { this->EventWithData_Direct(InEvent, Data, Source); }
+	void EventWithData_Direct(FName InEvent, UObject* Data, UObject* Source)
 	{
-		this->StateMachineComponent->EventWithData_Direct(InEvent, Data);
+		this->StateMachineComponent->EventWithData_Direct(InEvent, Data, Source);
 	}
 };
 

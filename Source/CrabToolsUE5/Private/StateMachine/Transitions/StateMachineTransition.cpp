@@ -38,19 +38,19 @@ void UStateMachineTransitionCondition::Exit_Inner_Implementation()
 	}
 }
 
-void UStateMachineTransitionCondition::Event_Inner_Implementation(FName InEvent)
+void UStateMachineTransitionCondition::Event_Inner_Implementation(FName InEvent, UObject* EventSource)
 {
 	if (this->Slot)
 	{
-		this->Slot->SendEvent(InEvent);
+		this->Slot->SendEvent(InEvent, EventSource);
 	}
 }
 
-void UStateMachineTransitionCondition::EventWithData_Inner_Implementation(FName InEvent, UObject* Data)
+void UStateMachineTransitionCondition::EventWithData_Inner_Implementation(FName InEvent, UObject* Data, UObject* EventSource)
 {
 	if (this->Slot)
 	{
-		this->Slot->SendEventWithData(InEvent, Data);
+		this->Slot->SendEventWithData(InEvent, Data, EventSource);
 	}
 }
 
@@ -94,19 +94,19 @@ void UStateMachineTransitionDataCondition::Exit_Inner_Implementation()
 	}
 }
 
-void UStateMachineTransitionDataCondition::Event_Inner_Implementation(FName InEvent)
+void UStateMachineTransitionDataCondition::Event_Inner_Implementation(FName InEvent, UObject* EventSource)
 {
 	if (this->Slot)
 	{
-		this->Slot->SendEvent(InEvent);
+		this->Slot->SendEvent(InEvent, EventSource);
 	}
 }
 
-void UStateMachineTransitionDataCondition::EventWithData_Inner_Implementation(FName InEvent, UObject* Data)
+void UStateMachineTransitionDataCondition::EventWithData_Inner_Implementation(FName InEvent, UObject* Data, UObject* EventSource)
 {
 	if (this->Slot)
 	{
-		this->Slot->SendEventWithData(InEvent, Data);
+		this->Slot->SendEventWithData(InEvent, Data, EventSource);
 	}
 }
 

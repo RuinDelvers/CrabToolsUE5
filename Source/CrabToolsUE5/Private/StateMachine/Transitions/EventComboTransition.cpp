@@ -14,7 +14,7 @@ bool UEventComboTransitionCondition::Check() const
 	return false;
 }
 
-void UEventComboTransitionCondition::Event_Inner_Implementation(FName InEvent)
+void UEventComboTransitionCondition::Event_Inner_Implementation(FName InEvent, UObject* EventSource)
 {
 	for (auto& Data : this->Combos)
 	{
@@ -43,7 +43,7 @@ bool UEventComboTransitionDataCondition::Check(UObject* Data) const
 	return false;
 }
 
-void UEventComboTransitionDataCondition::Event_Inner_Implementation(FName InEvent)
+void UEventComboTransitionDataCondition::Event_Inner_Implementation(FName InEvent, UObject* EventSource)
 {
 	for (auto& Data : this->Combos)
 	{
