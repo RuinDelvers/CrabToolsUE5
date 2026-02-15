@@ -49,8 +49,14 @@ void UAIMoveToInteractNode::EnterWithData_Inner_Implementation(UObject* Data)
 	}
 	else
 	{
+		this->CurrentData = nullptr;
 		Super::EnterWithData_Inner_Implementation(Data);
 	}
+}
+
+void UAIMoveToInteractNode::EventWithData_Inner_Implementation(FName InEvent, UObject* Data, UObject* EventSource)
+{
+	this->EnterWithData_Inner(Data);
 }
 
 void UAIMoveToInteractNode::Exit_Inner_Implementation()
@@ -155,6 +161,7 @@ void UAIMoveToInteractNode::OnInteractableAdded(UInteractableComponent* Interact
 {
 	if (Interactable == this->GetInteractable())
 	{
+		this->GetAIController()->StopMovement();
 		this->EmitEvent(Events::AI::ARRIVE);
 	}
 }

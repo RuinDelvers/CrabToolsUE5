@@ -33,6 +33,7 @@ public:
 	virtual void Exit_Inner_Implementation() override;
 	virtual void Enter_Inner_Implementation() override;
 	virtual void EnterWithData_Inner_Implementation(UObject* Data) override;
+	virtual void EventWithData_Inner_Implementation(FName InEvent, UObject* Data, UObject* EventSource) override;
 
 private:
 	

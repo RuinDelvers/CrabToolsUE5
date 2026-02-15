@@ -68,15 +68,14 @@ void UAISimpleMoveToNode::SetActive_Inner_Implementation(bool bNewActive)
 
 void UAISimpleMoveToNode::EventWithData_Inner_Implementation(FName InEvent, UObject* Data, UObject* Source)
 {
+	this->UnbindCallback();
+
 	if (auto Actor = UStateMachinePipedData::FindDataOfType<AActor>(Data))
-	{
-		this->UnbindCallback();
-		this->StopMovement();
+	{		
 		this->EnterWithData_Inner(Actor);
 	}
 	else if (auto Request = UStateMachinePipedData::FindDataImplementing<UMovementRequestInterface>(Data).GetObject())
 	{
-		this->UnbindCallback();
 		switch (IMovementRequestInterface::Execute_GetRequestType(Request))
 		{
 			case EAIMovementRequestType::TO_ACTOR: StopMovement(); break;
@@ -90,26 +89,35 @@ void UAISimpleMoveToNode::EnterWithData_Inner_Implementation(UObject* Data)
 {
 	if (auto Actor = UStateMachinePipedData::FindDataOfType<AActor>(Data))
 	{
+		UE_LOG(LogTemp, Warning, TEXT("moving towards actor: %s"), *Actor->GetName());
+		this->MoveData.ResetGoal();
 		this->MoveData.DestinationActor = Actor;
+		this->StopMovement();
 		this->Enter_Inner();
 	}
 	else if (auto Request = UStateMachinePipedData::FindDataImplementing<UMovementRequestInterface>(Data).GetObject())
 	{
 		switch (IMovementRequestInterface::Execute_GetRequestType(Request))
 		{
-			case EAIMovementRequestType::TO_ACTOR: 
+			case EAIMovementRequestType::TO_ACTOR:
+				this->MoveData.ResetGoal();
 				this->MoveData.DestinationActor = IMovementRequestInterface::Execute_GetActor(Request);
+				this->Enter_Inner();
 				break;
 			case EAIMovementRequestType::TO_LOCATION:
+				this->MoveData.ResetGoal();
 				this->SetOverrideLocation(IMovementRequestInterface::Execute_GetLocation(Request));
+				this->Enter_Inner();
 				break;
 			case EAIMovementRequestType::PAUSE:
+				this->BindCallback();
 				if (!this->MoveData.PauseMove(this->GetAIController()))
 				{
 					this->EmitEvent(Events::AI::LOST);
 				}
 				break;
 			case EAIMovementRequestType::RESUME:
+				this->BindCallback();
 				if (!this->MoveData.ResumeMove(this->GetAIController()))
 				{
 					this->EmitEvent(Events::AI::LOST);
@@ -132,6 +140,7 @@ void UAISimpleMoveToNode::StopMovement()
 
 void UAISimpleMoveToNode::OnMoveCompleted(FAIRequestID RequestID, EPathFollowingResult::Type MoveResult)
 {
+	this->MoveData.ResetGoal();
 	this->MovementResult = MoveResult;
 
 	switch (MoveResult)
