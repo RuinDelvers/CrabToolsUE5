@@ -43,7 +43,6 @@ protected:
 	FORCEINLINE EPathFollowingResult::Type GetMovementResult() const { return this->MovementResult; }
 
 	void StopMovement();
-	void SetOverrideLocation(FVector Location);
 
 	UFUNCTION()
 	void EventNotify_PauseMovement(FName InEvent, UObject* EventSource);
@@ -51,10 +50,24 @@ protected:
 	UFUNCTION()
 	void EventNotify_ResumeMovement(FName InEvent, UObject* EventSource);
 
+	/*
+	 * Call this to begin movement to a preset location. If the property binding is bound, then it will be used.
+	 * Otherwise, it will attempt to make a request to move to a specific location, if the flag is set in MoveToData.
+	 */
+	void MoveToPreset();
+
+	/*
+	 * Call this to move according to a request implement the MovementRequestInterface.
+	 */
+	void MoveToRequest(UObject* Request);
+
+	UFUNCTION(BlueprintNativeEvent, Category="Movement")
+	void OnMoveCompleted(FAIRequestID RequestID, EPathFollowingResult::Type MoveResult);
+	virtual void OnMoveCompleted_Implementation(FAIRequestID RequestID, EPathFollowingResult::Type MoveResult);
+
 private:
 
-	UFUNCTION()
-	void OnMoveCompleted(FAIRequestID RequestID, EPathFollowingResult::Type MoveResult);
+	
 
 	void BindCallback();
 	void UnbindCallback();

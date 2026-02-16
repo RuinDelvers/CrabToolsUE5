@@ -359,6 +359,11 @@ void UStateMachine::SendEventWithData(FName InEvent, UObject* Data, UObject* Sou
 
 void UStateMachine::SendEvent_Internal(FName InEvent, UObject* Data, bool bNeedsData, UObject* Source)
 {
+	UE_VLOG(this->GetOwner(), LogStateMachine, Verbose, TEXT("Received Event (%s) from %s. (%s)"),
+		*InEvent.ToString(),
+		IsValid(Source) ? *Source->GetName() : *FString("None"),
+		*this->GetName());
+
 	#if STATEMACHINE_DEBUG_DATA
 		if (!this->bWasInitialized)
 		{

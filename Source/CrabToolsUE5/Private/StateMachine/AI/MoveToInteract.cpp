@@ -135,7 +135,7 @@ void UAIMoveToInteractNode::ComputeTarget()
 			if (Locations.Num() > 0 && !Interactable->bTravelToActor)
 			{
 				auto Dest = UPathFindingUtilsLibrary::ChooseNearLocation(this->GetAIController(), Locations);
-				this->SetOverrideLocation(Dest);
+				this->MoveData.SetOverrideLocation(Dest);
 			}
 		}
 	}
@@ -150,7 +150,7 @@ void UAIMoveToInteractNode::BindEvents()
 {
 	if (auto Comp = this->GetInteractionComponent())
 	{
-		this->GetInteractionComponent()->OnInteractableAddedEvent.AddDynamic(
+		this->GetInteractionComponent()->OnInteractableAddedEvent.AddUniqueDynamic(
 			this,
 			&UAIMoveToInteractNode::OnInteractableAdded);
 	}
