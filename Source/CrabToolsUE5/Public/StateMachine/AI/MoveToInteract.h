@@ -4,6 +4,7 @@
 #include "MoveToInteract.generated.h"
 
 class UAIInteractionData;
+class UInteractionComponent;
 
 /**
  * Simple node for making an entity move to a given actor. Also functions as a MoveTo node.
@@ -16,38 +17,41 @@ class CRABTOOLSUE5_API UAIMoveToInteractNode : public UAISimpleMoveToNode
 private:
 
 	UPROPERTY()
-	TObjectPtr<UAIInteractionData> CurrentData;
+	TObjectPtr<UInteractionComponent> Component;
 
-	/*
-	 * If true, the most recent interactio ndata will not be nulled upon exiting. It will be nulled upon completing
-	 * the interaction, however.
-	 */
-	UPROPERTY(EditAnywhere, Category="Interaction")
-	bool bCacheInteractionData = false;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Interaction", meta=(AllowPrivateAccess))
+	TObjectPtr<UAIInteractionData> CurrentData;
 
 public:
 
 	UAIMoveToInteractNode();
 
+protected:
+
 	virtual void Initialize_Inner_Implementation() override;
 	virtual void Exit_Inner_Implementation() override;
-	virtual void Enter_Inner_Implementation() override;
+	//virtual void Enter_Inner_Implementation() override;
 	virtual void EnterWithData_Inner_Implementation(UObject* Data) override;
 	virtual void EventWithData_Inner_Implementation(FName InEvent, UObject* Data, UObject* EventSource) override;
+	virtual void OnMoveCompleted_Implementation(FAIRequestID RequestID, EPathFollowingResult::Type MoveResult);
+
+	UAIInteractionData* GetCurrentInteractionData() const { return this->CurrentData; }
 
 private:
 	
 	UInteractableComponent* GetInteractable() const;
 
 	void BindEvents();
+	void UnbindEvents();
 
 	UFUNCTION()
 	void OnInteractableAdded(UInteractableComponent* Interactable);
 
-	void ComputeTarget();
-
-	class UInteractionSystem* GetInteractionComponent() const;
+	//void ComputeTarget();
 
 	bool HandleInteraction();
 	bool HasInteractable() const;
+
+	void InteractWithRequest(UAIInteractionData* Interaction);
+	void RouteRequest(UObject* InData);
 };

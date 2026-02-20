@@ -3,11 +3,11 @@
 #include "Components/SceneComponent.h"
 #include "Components/PrimitiveComponent.h"
 #include "Widgets/ContextMenuInterface.h"
-#include "StateMachine/StateMachineInterface.h"
 #include "StateMachine/DataStructures.h"
-#include "GameplayTagContainer.h"
+#include "AI/MovementRequest.h"
 #include "InteractableComponent.generated.h"
 
+class AAIController;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FActorInteraction, AActor*, Interactor, UObject*, Data);
 
@@ -60,7 +60,7 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Interaction")
 	FEventSlot MoveLogicEvent;
 
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere, Category="Interaction")
 	TSet<TObjectPtr<AActor>> ValidActors;
 
 public:
@@ -90,10 +90,10 @@ public:
 	void SetInteractionState(FName Interaction, const FInteractableStateData& NewData);
 
 	UFUNCTION(BlueprintCallable, Category="Interaction")
-	void InteractDefault(AActor* Interactor, UObject* Data);
+	void InteractDefault(UInteractionComponent* Interactor, UObject* Data);
 
 	UFUNCTION(BlueprintCallable, Category = "Interaction")
-	void Interact(FName Interaction, AActor* Interactor, UObject* Data);
+	void Interact(FName Interaction, UInteractionComponent* Interactor, UObject* Data);
 
 	UFUNCTION(BlueprintCallable, Category = "Interaction")
 	void EndInteraction(AActor* Interactor, UObject* Data);
@@ -157,7 +157,7 @@ private:
  * Intermediate data for interactions.
  */
 UCLASS(Blueprintable, Category = "Interaction")
-class CRABTOOLSUE5_API UAIInteractionData : public UObject
+class CRABTOOLSUE5_API UAIInteractionData : public UObject, public IMovementRequestInterface
 {
 	GENERATED_BODY()
 
@@ -165,12 +165,17 @@ public:
 
 	/* Convenience function for quickly makine of these object in a pure manner. */
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Interaction")
+
 	static UAIInteractionData* MakeInteractionData(
+		AActor* InitInteractor,
 		FName InitInteraction,
-		AActor* InitInteractable,
+		UInteractableComponent* InitInteractable,
 		UObject* InitData);
 
 public:
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Interaction", meta = (ExposeOnSpawn = true))
+	TObjectPtr<AActor> Interactor;
 
 	/* Name of the interaction. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Interaction", meta = (ExposeOnSpawn = true))
@@ -178,13 +183,25 @@ public:
 
 	/* The actor to perform the interaction upon. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Interaction", meta = (ExposeOnSpawn = true))
-	TObjectPtr<AActor> Interactable;
+	TObjectPtr<UInteractableComponent> Interactable;
 
 	/* The data payload. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Interaction", meta = (ExposeOnSpawn = true))
 	TObjectPtr<UObject> Data;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Interaction", meta = (ExposeOnSpawn = true))
+	bool bFindShortestPath = true;
+
 public:
 
 	bool IsValidData() const;
+
+	virtual EAIMovementRequestType GetRequestType_Implementation() const override;
+	virtual AActor* GetActor_Implementation() const override;
+	virtual FVector GetLocation_Implementation() const override;
+
+private:
+
+	FVector GetClosestPoint(AAIController* Ctrl) const;
+
 };

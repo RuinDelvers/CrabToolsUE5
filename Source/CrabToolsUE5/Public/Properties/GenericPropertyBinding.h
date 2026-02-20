@@ -25,8 +25,9 @@ namespace Helpers
 }
 
 
-UCLASS(BlueprintType, MinimalAPI, EditInlineNew, DefaultToInstanced, CollapseCategories)
-class UGenericPropertyBinding : public UObject
+
+UCLASS(BlueprintType, EditInlineNew, DefaultToInstanced, CollapseCategories)
+class CRABTOOLSUE5_API UGenericPropertyBinding : public UObject
 {
 	GENERATED_BODY()
 

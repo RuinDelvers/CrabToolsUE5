@@ -61,6 +61,9 @@ namespace Events::AI
 	// Event for when a path following entity has arrived at their desitnation.
 	constexpr char ARRIVE[] = "AI_ON_ARRIVE";
 
+	// Event for when an Abort was received on a movement request
+	constexpr char ABORT[] = "AI_ON_ABORT";
+
 	// Event for when a path following entity cannot reach their desitnation for some reason.
 	constexpr char LOST[] = "AI_ON_LOST";
 

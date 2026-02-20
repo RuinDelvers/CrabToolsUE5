@@ -7,7 +7,7 @@
 #include "SimpleMoveTo.generated.h"
 
 /**
- * Simple node for making an a pawn or AI Controller 
+ * Simple node for making an a pawn or AI Controller move to a location or actor.
  */
 UCLASS(Blueprintable, Category = "StateMachine|AI")
 class CRABTOOLSUE5_API UAISimpleMoveToNode : public UAIBaseNode
@@ -16,10 +16,8 @@ class CRABTOOLSUE5_API UAISimpleMoveToNode : public UAIBaseNode
 
 private:
 
-	UPROPERTY(VisibleAnywhere, Category = "AI", meta = (ShowInnerProperties))
+	UPROPERTY(VisibleAnywhere, Category = "Binding", meta = (ShowInnerProperties))
 	TObjectPtr<UGenericPropertyBinding> Property;
-
-	EPathFollowingResult::Type MovementResult;
 
 protected:
 
@@ -39,8 +37,6 @@ public:
 	virtual void SetActive_Inner_Implementation(bool bNewActive) override;
 
 protected:
-
-	FORCEINLINE EPathFollowingResult::Type GetMovementResult() const { return this->MovementResult; }
 
 	void StopMovement();
 
@@ -65,10 +61,13 @@ protected:
 	void OnMoveCompleted(FAIRequestID RequestID, EPathFollowingResult::Type MoveResult);
 	virtual void OnMoveCompleted_Implementation(FAIRequestID RequestID, EPathFollowingResult::Type MoveResult);
 
+	/* This is called prior to setting up a new movement request. Useful for setting up listeners for OnMoveCompleted. */
+	UFUNCTION(BlueprintNativeEvent, Category = "Movement")
+	void OnRequestStarted();
+	virtual void OnRequestStarted_Implementation() {}
+
 private:
-
 	
-
 	void BindCallback();
 	void UnbindCallback();
 };

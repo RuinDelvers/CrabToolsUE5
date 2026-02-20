@@ -3,7 +3,7 @@
 #include "StateMachine/Events.h"
 #include "Components/Interaction/InteractionSystem.h"
 #include "Components/Interaction/InteractableComponent.h"
-#include "Utils/PathFindingUtils.h"
+#include "Components/Interaction/InteractionSystem.h"
 
 
 UAIMoveToInteractNode::UAIMoveToInteractNode()
@@ -15,40 +15,32 @@ void UAIMoveToInteractNode::Initialize_Inner_Implementation()
 {
 	Super::Initialize_Inner_Implementation();
 
-	check(IsValid(this->GetInteractionComponent()));
-}
-
-void UAIMoveToInteractNode::Enter_Inner_Implementation()
-{
-	if (this->HasInteractable())
-	{
-		this->EmitEvent(Events::AI::ARRIVE);
-	}
-	else
-	{
-		this->ComputeTarget();
-		Super::Enter_Inner_Implementation();
-	}
+	this->Component = this->GetActorOwner()->FindComponentByClass<UInteractionComponent>();
 }
 
 void UAIMoveToInteractNode::EnterWithData_Inner_Implementation(UObject* Data)
 {
 	if (auto Interaction = UStateMachinePipedData::FindDataOfType<UAIInteractionData>(Data))
 	{
-		if (Interaction->IsValidData())
+		this->InteractWithRequest(Interaction);
+	}
+	else if (auto Request = UStateMachinePipedData::FindDataImplementing<UMovementRequestInterface>(Data).GetObject())
+	{		
+		switch (IMovementRequestInterface::Execute_GetRequestType(Request))
 		{
-			this->CurrentData = Interaction;
-			this->BindEvents();
-		}
-		else
-		{
-			this->CurrentData = nullptr;
+			case EAIMovementRequestType::NONE: break;
+			case EAIMovementRequestType::PAUSE: break;
+			case EAIMovementRequestType::RESUME: break;
+			default:
+				this->UnbindEvents();
+				this->CurrentData = nullptr;
 		}
 
-		Super::EnterWithData_Inner_Implementation(Interaction->Interactable);
+		Super::MoveToRequest(Data);
 	}
 	else
 	{
+		this->UnbindEvents();
 		this->CurrentData = nullptr;
 		Super::EnterWithData_Inner_Implementation(Data);
 	}
@@ -56,51 +48,65 @@ void UAIMoveToInteractNode::EnterWithData_Inner_Implementation(UObject* Data)
 
 void UAIMoveToInteractNode::EventWithData_Inner_Implementation(FName InEvent, UObject* Data, UObject* EventSource)
 {
-	this->EnterWithData_Inner(Data);
+	if (auto Interaction = UStateMachinePipedData::FindDataOfType<UAIInteractionData>(Data))
+	{
+		this->InteractWithRequest(Interaction);
+	}
+	else if (auto Request = UStateMachinePipedData::FindDataImplementing<UMovementRequestInterface>(Data).GetObject())
+	{
+		switch (IMovementRequestInterface::Execute_GetRequestType(Request))
+		{
+			case EAIMovementRequestType::NONE: break;
+			case EAIMovementRequestType::PAUSE: break;
+			case EAIMovementRequestType::RESUME: break;
+			default:
+				this->UnbindEvents();
+				this->CurrentData = nullptr;
+		}
+
+		Super::EventWithData_Inner_Implementation(InEvent, Data, EventSource);
+	}
+	else
+	{
+		this->UnbindEvents();
+		this->CurrentData = nullptr;
+		Super::EventWithData_Inner_Implementation(InEvent, Data, EventSource);
+	}
+}
+
+void UAIMoveToInteractNode::OnMoveCompleted_Implementation(FAIRequestID RequestID, EPathFollowingResult::Type MoveResult)
+{
+	this->HandleInteraction();
+	this->UnbindEvents();
+	this->CurrentData = nullptr;
+
+	Super::OnMoveCompleted_Implementation(RequestID, MoveResult);
 }
 
 void UAIMoveToInteractNode::Exit_Inner_Implementation()
 {
 	Super::Exit_Inner_Implementation();
-
-	if (this->GetMovementResult() == EPathFollowingResult::Success)
-	{
-		this->HandleInteraction();
-	}
-	else if (this->GetMovementResult() == EPathFollowingResult::Aborted)
-	{
-		this->HandleInteraction();
-	}
-
-	if (!this->bCacheInteractionData)
-	{
-		this->CurrentData = nullptr;
-	}
-
-	if (auto Component = this->GetInteractionComponent())
-	{
-		Component->OnInteractableAddedEvent.RemoveAll(this);
-	}
+	this->UnbindEvents();
 }
 
 bool UAIMoveToInteractNode::HandleInteraction()
 {
 	bool bDidInteract = false;
 
-	auto InteractComp = this->GetInteractionComponent();
+	auto InteractComp = this->Component;
 	auto Interactable = this->GetInteractable();
 
 	if (InteractComp->HasObject(Interactable))
 	{
 		if (this->CurrentData->Interaction.IsNone())
 		{
-			Interactable->InteractDefault(this->GetActorOwner(), this->CurrentData->Data);
+			Interactable->InteractDefault(this->Component, this->CurrentData->Data);
 		}
 		else
 		{
 			Interactable->Interact(
 				this->CurrentData->Interaction,
-				this->GetActorOwner(),
+				this->Component,
 				this->CurrentData->Data);
 		}
 
@@ -112,9 +118,9 @@ bool UAIMoveToInteractNode::HandleInteraction()
 
 bool UAIMoveToInteractNode::HasInteractable() const
 {
-	if (auto Component = this->GetInteractionComponent())
+	if (this->Component)
 	{
-		return Component->HasObject(this->GetInteractable());
+		return this->Component->HasObject(this->GetInteractable());
 	}
 	else
 	{
@@ -123,45 +129,58 @@ bool UAIMoveToInteractNode::HasInteractable() const
 	
 }
 
-void UAIMoveToInteractNode::ComputeTarget()
+void UAIMoveToInteractNode::InteractWithRequest(UAIInteractionData* Interaction)
 {
-	if (IsValid(this->CurrentData))
-	{	
-		if (auto Interactable = this->GetInteractable())
-		{
-			TArray<FVector> Locations;
-			Interactable->GetInteractionPoints(Locations);
+	this->UnbindEvents();
+	this->CurrentData = Interaction;
 
-			if (Locations.Num() > 0 && !Interactable->bTravelToActor)
-			{
-				auto Dest = UPathFindingUtilsLibrary::ChooseNearLocation(this->GetAIController(), Locations);
-				this->MoveData.SetOverrideLocation(Dest);
-			}
+	if (this->HasInteractable())
+	{
+		if (this->HandleInteraction())
+		{
+			this->EmitEvent(Events::AI::ARRIVE);
 		}
+	}
+	else if (Interaction->IsValidData())
+	{
+		this->CurrentData = Interaction;
+		this->BindEvents();
+		Super::MoveToRequest(Interaction);
+	}
+	else
+	{
+		this->EmitEvent(Events::AI::CANNOT_INTERACT);
 	}
 }
 
-UInteractionSystem* UAIMoveToInteractNode::GetInteractionComponent() const
+void UAIMoveToInteractNode::RouteRequest(UObject* InData)
 {
-	return this->GetActorOwner()->FindComponentByClass<UInteractionSystem>();
 }
 
 void UAIMoveToInteractNode::BindEvents()
 {
-	if (auto Comp = this->GetInteractionComponent())
+	if (this->Component)
 	{
-		this->GetInteractionComponent()->OnInteractableAddedEvent.AddUniqueDynamic(
+		this->Component->OnInteractableAddedEvent.AddUniqueDynamic(
 			this,
 			&UAIMoveToInteractNode::OnInteractableAdded);
 	}
 	
 }
 
+void UAIMoveToInteractNode::UnbindEvents()
+{
+	if (this->Component)
+	{
+		this->Component->OnInteractableAddedEvent.RemoveAll(this);
+	}
+}
+
 void UAIMoveToInteractNode::OnInteractableAdded(UInteractableComponent* Interactable)
 {
 	if (Interactable == this->GetInteractable())
 	{
-		this->GetAIController()->StopMovement();
+		this->StopMovement();
 		this->EmitEvent(Events::AI::ARRIVE);
 	}
 }
@@ -170,7 +189,7 @@ UInteractableComponent* UAIMoveToInteractNode::GetInteractable() const
 {
 	if (this->CurrentData)
 	{
-		return this->CurrentData->Interactable->GetComponentByClass<UInteractableComponent>();
+		return this->CurrentData->Interactable;
 	}
 	else
 	{

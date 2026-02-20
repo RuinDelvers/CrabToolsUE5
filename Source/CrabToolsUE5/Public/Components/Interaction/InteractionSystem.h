@@ -12,7 +12,7 @@ class UInteractableComponent;
  * Ammo, Levers, or otherwise, and multiple of them can be available at a time.
  */
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
-class CRABTOOLSUE5_API UInteractionSystem : public UActorComponent
+class CRABTOOLSUE5_API UInteractionComponent : public UActorComponent
 {
 	GENERATED_BODY()
 	
@@ -21,6 +21,7 @@ class CRABTOOLSUE5_API UInteractionSystem : public UActorComponent
 
 public:
 
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FInteractionUsed, UInteractableComponent*, Selected, FName, Interaction);
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FInteractionSelected, UInteractableComponent*, Selected);
 
 	/* Called when a new interactable is made available. */
@@ -39,9 +40,13 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Interaction")
 	FInteractionSelected OnInteractableActivatedEvent;
 
+	UPROPERTY(BlueprintAssignable, Category = "Interaction")
+	FInteractionUsed OnInteractionUsed;
+
+
 public:	
 
-	UInteractionSystem();
+	UInteractionComponent();
 	
 	UFUNCTION(BlueprintCallable, Category="Interaction")
 	void AddInteractable(UInteractableComponent* Obj);

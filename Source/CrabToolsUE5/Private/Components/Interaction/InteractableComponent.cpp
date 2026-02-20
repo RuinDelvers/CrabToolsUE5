@@ -1,7 +1,7 @@
 #include "Components/Interaction/InteractableComponent.h"
 #include "Components/Interaction/InteractionSystem.h"
 #include "StateMachine/EventListener.h"
-#include "StateMachine/Events.h"
+#include "Utils/PathFindingUtils.h"
 
 void UInteractableComponent::BeginPlay()
 {
@@ -45,15 +45,16 @@ void UInteractableComponent::BeginPlay()
 	}
 }
 
-void UInteractableComponent::InteractDefault(AActor* Interactor, UObject* Data)
+void UInteractableComponent::InteractDefault(UInteractionComponent* Interactor, UObject* Data)
 {
-	if (this->ValidActors.Contains(Interactor))
+	if (this->ValidActors.Contains(Interactor->GetOwner()))
 	{
 		if (auto IntData = this->Interactions.Find(this->DefaultInteraction))
 		{
 			if (IntData->State.bIsEnabled)
 			{
-				IntData->Interaction.Broadcast(Interactor, Data);
+				IntData->Interaction.Broadcast(Interactor->GetOwner(), Data);
+				Interactor->OnInteractionUsed.Broadcast(this, this->DefaultInteraction);
 			}
 		}
 	}
@@ -75,15 +76,16 @@ void UInteractableComponent::SetDefaultInteraction(FName NewDefaultInteraction)
 	}
 }
 
-void UInteractableComponent::Interact(FName Interaction, AActor* Interactor, UObject* Data)
+void UInteractableComponent::Interact(FName Interaction, UInteractionComponent* Interactor, UObject* Data)
 {
-	if (this->ValidActors.Contains(Interactor))
+	if (this->ValidActors.Contains(Interactor->GetOwner()))
 	{
 		if (auto IntData = this->Interactions.Find(Interaction))
 		{
 			if (IntData->State.bIsEnabled)
 			{
-				IntData->Interaction.Broadcast(Interactor, Data);
+				IntData->Interaction.Broadcast(Interactor->GetOwner(), Data);
+				Interactor->OnInteractionUsed.Broadcast(this, Interaction);
 			}
 		}
 	}
@@ -112,7 +114,7 @@ void UInteractableComponent::GetInteractionPoints(TArray<FVector>& Points) const
 
 void UInteractableComponent::OnBeginActorOverlap(AActor* OverlappedActor, AActor* OtherActor)
 {
-	if (auto IntSys = OtherActor->GetComponentByClass<UInteractionSystem>())
+	if (auto IntSys = OtherActor->GetComponentByClass<UInteractionComponent>())
 	{
 		this->ValidActors.Add(OtherActor);
 		IntSys->AddInteractable(this);
@@ -121,7 +123,7 @@ void UInteractableComponent::OnBeginActorOverlap(AActor* OverlappedActor, AActor
 
 void UInteractableComponent::OnEndActorOverlap(AActor* OverlappedActor, AActor* OtherActor)
 {
-	if (auto IntSys = OtherActor->GetComponentByClass<UInteractionSystem>())
+	if (auto IntSys = OtherActor->GetComponentByClass<UInteractionComponent>())
 	{
 		this->ValidActors.Remove(OtherActor);
 		IntSys->RemoveInteractable(this);
@@ -136,7 +138,7 @@ void UInteractableComponent::OnComponentBeginOverlap(
 	bool bFromSweep,
 	const FHitResult& SweepResult)
 {
-	if (auto IntSys = OtherActor->GetComponentByClass<UInteractionSystem>())
+	if (auto IntSys = OtherActor->GetComponentByClass<UInteractionComponent>())
 	{
 		this->ValidActors.Add(OtherActor);
 		IntSys->AddInteractable(this);
@@ -145,7 +147,7 @@ void UInteractableComponent::OnComponentBeginOverlap(
 
 void UInteractableComponent::OnComponentEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	if (auto IntSys = OtherActor->GetComponentByClass<UInteractionSystem>())
+	if (auto IntSys = OtherActor->GetComponentByClass<UInteractionComponent>())
 	{
 		this->ValidActors.Remove(OtherActor);
 		IntSys->RemoveInteractable(this);
@@ -181,7 +183,7 @@ TArray<UContextMenuEntry*> UInteractableComponent::GatherEntries_Implementation(
 
 void UInteractableComponent::MoveToInteract(FName Interaction, AActor* Interactor, UObject* Data)
 {
-	auto AIData = UAIInteractionData::MakeInteractionData(Interaction, this->GetOwner(), Data);
+	auto AIData = UAIInteractionData::MakeInteractionData(Interactor, Interaction, this, Data);
 	IEventListenerInterface::Execute_EventWithData(Interactor, this->MoveLogicEvent, AIData, this->GetOwner());
 }
 
@@ -260,12 +262,14 @@ TArray<FString> UInteractableComponent::GetInteractionOptions() const
 #endif
 
 UAIInteractionData* UAIInteractionData::MakeInteractionData(
+	AActor* InitInteractor,
 	FName InitInteraction,
-	AActor* InitInteractable,
+	UInteractableComponent* InitInteractable,
 	UObject* InitData)
 {
 	auto Obj = NewObject<UAIInteractionData>(InitInteractable);
 
+	Obj->Interactor = InitInteractor;
 	Obj->Interaction = InitInteraction;
 	Obj->Interactable = InitInteractable;
 	Obj->Data = InitData;
@@ -275,14 +279,77 @@ UAIInteractionData* UAIInteractionData::MakeInteractionData(
 
 bool UAIInteractionData::IsValidData() const
 {
-	bool BaseValid = IsValid(this->Interactable);
+	return IsValid(this->Interactable);
+}
 
-	if (BaseValid)
+EAIMovementRequestType UAIInteractionData::GetRequestType_Implementation() const
+{
+	if (this->Interactable)
 	{
-		return IsValid(this->Interactable->GetComponentByClass<UInteractableComponent>());
+		if (this->Interactable->bTravelToActor)
+		{
+			return EAIMovementRequestType::TO_ACTOR;
+		}
+		else
+		{
+			return EAIMovementRequestType::TO_LOCATION;
+		}		
 	}
 	else
 	{
-		return false;
+		return EAIMovementRequestType::NONE;
 	}
+}
+
+AActor* UAIInteractionData::GetActor_Implementation() const
+{
+	return this->Interactable->GetOwner();
+}
+
+FVector UAIInteractionData::GetLocation_Implementation() const
+{
+	FVector Location;
+
+	if (IsValid(this->Interactable))
+	{
+		if (IsValid(this->Interactor))
+		{
+			if (auto Pawn = Cast<APawn>(this->Interactor))
+			{
+				if (auto Ctrl = Cast<AAIController>(Pawn->GetController()))
+				{
+					Location = this->GetClosestPoint(Ctrl);
+				}
+				else
+				{
+					Location = this->Interactable->GetOwner()->GetActorLocation();
+				}
+			}
+			else if (auto AICtrl = Cast<AAIController>(this->Interactor))
+			{
+				Location = this->GetClosestPoint(AICtrl);
+			}
+			else
+			{
+				Location = this->Interactable->GetOwner()->GetActorLocation();
+			}
+		}
+	}
+	
+	return Location;
+}
+
+FVector UAIInteractionData::GetClosestPoint(AAIController* Ctrl) const
+{
+	TArray<FVector> Locations;
+	this->Interactable->GetInteractionPoints(Locations);
+
+	if (Locations.Num() > 0)
+	{
+		return UPathFindingUtilsLibrary::ChooseNearLocation(Ctrl, Locations);
+	}
+	else
+	{
+		return this->Interactable->GetOwner()->GetActorLocation();
+	}	
 }

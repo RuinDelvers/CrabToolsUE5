@@ -1,5 +1,6 @@
 #include "StateMachine/AI/AIStructs.h"
 #include "NavFilters/NavigationQueryFilter.h"
+#include "NavigationPath.h"
 
 
 void FMoveToData::SetOverrideLocation(FVector NewLocation)
@@ -60,27 +61,7 @@ bool FMoveToData::MakeRequest(AAIController* Ctrl)
 
 	if (this->DestinationActor || this->bUseLocationIfNoGoal || this->bUseOverrideLocation)
 	{
-		FAIMoveRequest Request;
-
-		Request.SetUsePathfinding(this->bUsePathfinding);
-		Request.SetAllowPartialPath(this->bAllowPartialPaths);
-		Request.SetNavigationFilter(*this->FilterClass ? this->FilterClass : Ctrl->GetDefaultNavigationFilterClass());
-		Request.SetAcceptanceRadius(this->AcceptanceRadius);
-		Request.SetReachTestIncludesAgentRadius(this->bStopOnOverlap);
-		Request.SetCanStrafe(this->bCanStrafe);
-
-		if (this->DestinationActor && !this->bUseOverrideLocation)
-		{
-			Request.SetGoalActor(this->DestinationActor);		
-		}
-		else
-		{
-			Request.SetGoalLocation(
-				this->bUseOverrideLocation
-				? this->OverrideDestinationLocation
-				: this->DestinationLocation);
-		}
-
+		FAIMoveRequest Request = this->ConstructRequest(Ctrl);
 		this->Result = Ctrl->MoveTo(Request, &this->SavedPath);
 		return true;
 	}
@@ -89,4 +70,53 @@ bool FMoveToData::MakeRequest(AAIController* Ctrl)
 		this->Result = FPathFollowingRequestResult();
 		return false;
 	}
+}
+
+bool FMoveToData::MakeRequest(AAIController* Ctrl, UNavigationPath* Path)
+{
+	check(Ctrl);
+	check(Path);
+
+	auto ID = Ctrl->RequestMove(this->ConstructRequest(Ctrl), Path->GetPath());
+
+	if (ID.IsValid())
+	{
+		this->Result.Code = EPathFollowingRequestResult::RequestSuccessful;
+		this->Result.MoveId = ID;
+
+		return true;
+	}
+	else
+	{
+		this->Result.Code = EPathFollowingRequestResult::Failed;
+		this->Result.MoveId = FAIRequestID::InvalidRequest;
+
+		return false;
+	}
+}
+
+FAIMoveRequest FMoveToData::ConstructRequest(AAIController* Ctrl) const
+{
+	FAIMoveRequest Request;
+
+	Request.SetUsePathfinding(this->bUsePathfinding);
+	Request.SetAllowPartialPath(this->bAllowPartialPaths);
+	Request.SetNavigationFilter(*this->FilterClass ? this->FilterClass : Ctrl->GetDefaultNavigationFilterClass());
+	Request.SetAcceptanceRadius(this->AcceptanceRadius);
+	Request.SetReachTestIncludesAgentRadius(this->bStopOnOverlap);
+	Request.SetCanStrafe(this->bCanStrafe);
+
+	if (this->DestinationActor && !this->bUseOverrideLocation)
+	{
+		Request.SetGoalActor(this->DestinationActor);
+	}
+	else
+	{
+		Request.SetGoalLocation(
+			this->bUseOverrideLocation
+			? this->OverrideDestinationLocation
+			: this->DestinationLocation);
+	}
+
+	return Request;
 }

@@ -3,6 +3,7 @@
 #include "Actors/Paths/PatrolPath.h"
 #include "Actors/DynamicActorSpawner.h"
 #include "PropertyCustomization/EventSlot/EventSlotCustomization.h"
+#include "PropertyCustomization/GenericPropertyBinding/GenericPropertyBindingCustomization.h"
 #include "Styles/StyleRoot.h"
 
 #define LOCTEXT_NAMESPACE "FCrabToolsUE5EditorModule"
@@ -41,7 +42,13 @@ void FCrabToolsUE5EditorModule::OnPostEngineInit()
 void FCrabToolsUE5EditorModule::InitializeCustomization()
 {
 	FPropertyEditorModule& PropertyModule = FModuleManager::LoadModuleChecked<FPropertyEditorModule>("PropertyEditor");
-	PropertyModule.RegisterCustomPropertyTypeLayout("EventSlot", FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FEventSlotCustomization::MakeInstance));
+	PropertyModule.RegisterCustomPropertyTypeLayout(
+		"EventSlot",
+		FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FEventSlotCustomization::MakeInstance));
+
+	PropertyModule.RegisterCustomClassLayout(
+		"GenericPropertyBinding",
+		FOnGetDetailCustomizationInstance::CreateStatic(&FGenericPropertyBindingCustomization::MakeInstance));
 
 	PropertyModule.NotifyCustomizationModuleChanged();
 }

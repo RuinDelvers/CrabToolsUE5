@@ -1,13 +1,13 @@
 #include "Components/Interaction/InteractionSystem.h"
 #include "Components/Interaction/InteractableComponent.h"
 
-UInteractionSystem::UInteractionSystem()
+UInteractionComponent::UInteractionComponent()
 {
 	this->PrimaryComponentTick.bCanEverTick = false;
 }
 
 
-void UInteractionSystem::AddInteractable(UInteractableComponent* Obj)
+void UInteractionComponent::AddInteractable(UInteractableComponent* Obj)
 {
 	if (IsValid(Obj))
 	{
@@ -22,7 +22,7 @@ void UInteractionSystem::AddInteractable(UInteractableComponent* Obj)
 }
 
 
-void UInteractionSystem::RemoveInteractable(UInteractableComponent* Obj)
+void UInteractionComponent::RemoveInteractable(UInteractableComponent* Obj)
 {
 
 	if (IsValid(Obj))
@@ -49,23 +49,23 @@ void UInteractionSystem::RemoveInteractable(UInteractableComponent* Obj)
 }
 
 
-void UInteractionSystem::Interact(UObject* Data) {
+void UInteractionComponent::Interact(UObject* Data) {
 	this->InteractWith(this->GetOwner(), Data);
 }
 
 
-void UInteractionSystem::InteractWith(AActor* Redirect,UObject* Data)
+void UInteractionComponent::InteractWith(AActor* Redirect,UObject* Data)
 {
 	if (this->InteractableObjects.Num() > 0)
 	{
 		if (auto Interactable = this->GetSelected())
 		{
-			Interactable->InteractDefault(Redirect, Data);
+			Interactable->InteractDefault(Redirect->GetComponentByClass<UInteractionComponent>(), Data);
 		}
 	}
 }
 
-void UInteractionSystem::Cycle()
+void UInteractionComponent::Cycle()
 {
 	if (this->InteractableObjects.Num() == 0) { return; }
 
@@ -74,7 +74,7 @@ void UInteractionSystem::Cycle()
 	this->OnInteractableSelectedEvent.Broadcast(this->GetSelected());
 }
 
-UInteractableComponent* UInteractionSystem::GetSelected()
+UInteractableComponent* UInteractionComponent::GetSelected()
 {
 	if (this->InteractableObjects.Num() > 0)
 	{
@@ -95,7 +95,7 @@ UInteractableComponent* UInteractionSystem::GetSelected()
 	return nullptr;
 }
 
-int UInteractionSystem::IndexOf(UInteractableComponent* Obj)
+int UInteractionComponent::IndexOf(UInteractableComponent* Obj)
 {
 	return this->InteractableObjects.IndexOfByPredicate([&](const TWeakObjectPtr<UObject> TObj)
 		{
@@ -103,7 +103,7 @@ int UInteractionSystem::IndexOf(UInteractableComponent* Obj)
 		});
 }
 
-void UInteractionSystem::Select(UInteractableComponent* Obj)
+void UInteractionComponent::Select(UInteractableComponent* Obj)
 {
 	this->SelectedIndex = this->InteractableObjects.IndexOfByPredicate([&](const TWeakObjectPtr<UObject> TObj)
 		{
@@ -111,7 +111,7 @@ void UInteractionSystem::Select(UInteractableComponent* Obj)
 		});
 }
 
-bool UInteractionSystem::HasObject(UInteractableComponent* Obj, bool& bHasObject)
+bool UInteractionComponent::HasObject(UInteractableComponent* Obj, bool& bHasObject)
 {
 	auto index = this->InteractableObjects.IndexOfByPredicate([&](const TWeakObjectPtr<UObject> TObj)
 		{
@@ -123,7 +123,7 @@ bool UInteractionSystem::HasObject(UInteractableComponent* Obj, bool& bHasObject
 	return Check;
 }
 
-bool UInteractionSystem::HasObject(UInteractableComponent* Obj)
+bool UInteractionComponent::HasObject(UInteractableComponent* Obj)
 {
 	bool Check = false;
 
