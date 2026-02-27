@@ -147,10 +147,14 @@ FStateArchetypeData UEdStateNode::CompileState(FNodeVerificationContext& Context
 
 		for (auto& Node : this->Nodes)
 		{
-			ArrayNode->AddNode(DuplicateObject(
-				Node, 
-				ArrayNode, 
-				Naming::GenerateStateNodeName(Node, this->GetStateName())));
+			if (Node)
+			{
+				ArrayNode->AddNode(DuplicateObject(
+					Node,
+					ArrayNode,
+					Naming::GenerateStateNodeName(Node, this->GetStateName())));
+			}
+
 		}
 
 		Data.GetArchetype()->AppendNode(ArrayNode);

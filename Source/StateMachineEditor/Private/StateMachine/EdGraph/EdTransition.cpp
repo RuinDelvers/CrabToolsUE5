@@ -111,6 +111,11 @@ TArray<FString> UEdTransition::GetEventOptions() const
 	}
 
 	EventNames.Append(this->GetStartNode()->GetEventOptions());
+	
+	for (const auto& Pair : this->EventToConditionMap)
+	{
+		EventNames.Remove(Pair.Key.ToString());
+	}
 
 	EventNames.Sort([&](const FString& A, const FString& B) { return A < B; });
 

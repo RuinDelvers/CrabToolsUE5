@@ -5,7 +5,7 @@
 
 class UNavigationPath;
 
-UENUM()
+UENUM(BlueprintType)
 enum class EAIMovementRequestType : uint8
 {
 	/* Empty request, useful when it isn't defined for other types of behaviour. */
@@ -21,7 +21,7 @@ enum class EAIMovementRequestType : uint8
 };
 
 
-UINTERFACE(MinimalAPI)
+UINTERFACE(MinimalAPI, BlueprintType)
 class UMovementRequestInterface : public UInterface
 {
 	GENERATED_BODY()
@@ -51,10 +51,18 @@ public:
 	virtual UNavigationPath* GetNavPath_Implementation() const { return nullptr; }
 }; 
 
-UCLASS(Blueprintable, Category = "StateMachine|AI")
+UCLASS(Blueprintable, Category = "AI")
 class CRABTOOLSUE5_API UAISimpleMovementRequest : public UObject, public IMovementRequestInterface
 {
 	GENERATED_BODY()
+
+public:
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category="AI")
+	static FVector GetEndLocation(UNavigationPath* Path);
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "AI")
+	static FVector GetStartLocation(UNavigationPath* Path);
 
 public:
 
@@ -69,6 +77,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI",
 		meta = (ExposeOnSpawn))
 	FVector LocationDestination;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="AI", meta=(ExposeOnSpawn))
+	TObjectPtr<UNavigationPath> Path;
 
 public:
 

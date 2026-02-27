@@ -20,6 +20,7 @@ class CRABTOOLSUE5_API UAbilityNode : public UStateNode
 	TObjectPtr<UAbility> DefaultAbility;
 
 	/* The ability to start when entering this node. */
+	UPROPERTY(VisibleAnywhere, Category="Ability")
 	TObjectPtr<UAbility> Selected;
 
 	/* Flag used to control immediate ability finish checking. */
