@@ -32,7 +32,8 @@ public class CrabToolsUE5 : ModuleRules
 				"DeveloperSettings",
 				"LevelSequence",
 				"MovieScene",
-			});
+                "AnimGraphRuntime",
+            });
 			
 		
 		PrivateDependencyModuleNames.AddRange(
