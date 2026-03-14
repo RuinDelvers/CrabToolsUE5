@@ -1,12 +1,14 @@
-#include "Animation/Nodes/AnimNode_BoneTransformCustomizer.h"
+#include "Animation/Nodes/AnimNode_CustomizableBoneTransform.h"
+#include "Animation/CustomizableAnimInstance.h"
 #include "Animation/AnimInstanceProxy.h"
 
-FAnimNode_BoneTransformCustomizer::FAnimNode_BoneTransformCustomizer()
+FAnimNode_CustomizableBoneTransform::FAnimNode_CustomizableBoneTransform() : FAnimNode_SkeletalControlBase()
 {
-	
+
 }
 
-void FAnimNode_BoneTransformCustomizer::GatherDebugData(FNodeDebugData& DebugData)
+
+void FAnimNode_CustomizableBoneTransform::GatherDebugData(FNodeDebugData& DebugData)
 {
 	DECLARE_SCOPE_HIERARCHICAL_COUNTER_ANIMNODE(GatherDebugData)
 	FString DebugLine = DebugData.GetNodeName(this);
@@ -19,44 +21,52 @@ void FAnimNode_BoneTransformCustomizer::GatherDebugData(FNodeDebugData& DebugDat
 	this->ComponentPose.GatherDebugData(DebugData);
 }
 
-void FAnimNode_BoneTransformCustomizer::EvaluateSkeletalControl_AnyThread(FComponentSpacePoseContext& Output, TArray<FBoneTransform>& OutBoneTransforms)
+void FAnimNode_CustomizableBoneTransform::Initialize_AnyThread(const FAnimationInitializeContext& Context)
+{
+	
+	if (auto CustomizableInst = Cast<ICustomizableAnimInstanceInterface>(Context.GetAnimInstanceObject()))
+	{
+		for (const auto& Data : this->BonesToModify)
+		{
+			FName Key = Data.Key;
+			CustomizableInst->RegisterFloatValue(
+				Key,
+				FCustomizableFloatListener::CreateLambda([Key, this](float NewAlpha)
+					{
+						this->BonesToModify[Key].Alpha = NewAlpha;
+					}));
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("Attempted to use customizable node in non-customizable anim instance."));
+	}
+	
+
+	Super::Initialize_AnyThread(Context);
+}
+
+void FAnimNode_CustomizableBoneTransform::EvaluateSkeletalControl_AnyThread(FComponentSpacePoseContext& Output, TArray<FBoneTransform>& OutBoneTransforms)
 {
 	DECLARE_SCOPE_HIERARCHICAL_COUNTER_ANIMNODE(EvaluateSkeletalControl_AnyThread)
-	
+
 	check(OutBoneTransforms.Num() == 0);
 
 	for (const auto& Points : this->BonesToModify)
 	{
 		for (const auto& Point : Points.Value.Points)
 		{
-			this->HandleIndividualBoneCase(Point, Output, OutBoneTransforms);
+			this->HandleIndividualBoneCase(Points.Value.Alpha, Point, Output, OutBoneTransforms);
 		}
 	}
 }
-
-bool FAnimNode_BoneTransformCustomizer::IsValidToEvaluate(const USkeleton* Skeleton, const FBoneContainer& RequiredBones)
-{
-	for (const auto& Points : this->BonesToModify)
-	{
-		for (const auto& Point : Points.Value.Points)
-		{
-			if (!Point.BoneToModify.IsValidToEvaluate(RequiredBones))
-			{
-				return false;
-			}
-		}
-	}
-
-	return !this->BonesToModify.IsEmpty();
-}
-
-void FAnimNode_BoneTransformCustomizer::ForEachBone(const FPerDataPointDelegate& Callback) const
+void FAnimNode_CustomizableBoneTransform::ForEachBone(const FPerDataPointDelegate& Callback) const
 {
 	if (Callback.IsBound())
 	{
-		for (const auto& Set : this->BonesToModify)
+		for (const auto& SetPoint : this->BonesToModify)
 		{
-			for (const auto& Point : Set.Value.Points)
+			for (const auto& Point : SetPoint.Value.Points)
 			{
 				Callback.Execute(Point);
 			}
@@ -64,7 +74,7 @@ void FAnimNode_BoneTransformCustomizer::ForEachBone(const FPerDataPointDelegate&
 	}
 }
 
-bool FAnimNode_BoneTransformCustomizer::IsEmpty() const
+bool FAnimNode_CustomizableBoneTransform::IsEmpty() const
 {
 	if (this->BonesToModify.IsEmpty())
 	{
@@ -84,44 +94,44 @@ bool FAnimNode_BoneTransformCustomizer::IsEmpty() const
 	}
 }
 
-void FAnimNode_BoneTransformCustomizer::SetData(const FAnimNode_BoneTransformCustomizer& Other)
+void FAnimNode_CustomizableBoneTransform::SetData(const FAnimNode_CustomizableBoneTransform& Other)
 {
 	this->BonesToModify.Empty();
 	this->BonesToModify.Append(Other.BonesToModify);
+}
 
-	UE_LOG(LogTemp, Warning, TEXT("- After applied data in SetData"));
-	for (const auto& Data : this->BonesToModify)
+
+bool FAnimNode_CustomizableBoneTransform::IsValidToEvaluate(const USkeleton* Skeleton, const FBoneContainer& RequiredBones)
+{
+	if (this->IsEmpty())
 	{
-		for (const auto& Point : Data.Value.Points)
+		return false;
+	}
+	else
+	{
+		for (const auto& Points : this->BonesToModify)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Bone: %s"), *Point.BoneToModify.BoneName.ToString());
+			if (Points.Value.Points.IsEmpty())
+			{
+				return false;
+			}
+
+			for (const auto& Point : Points.Value.Points)
+			{
+				if (!Point.BoneToModify.IsValidToEvaluate(RequiredBones))
+				{
+					return false;
+				}
+			}
 		}
+
+		return true;
 	}
 }
 
-FAnimNode_BoneTransformCustomizer& FAnimNode_BoneTransformCustomizer::operator=(const FAnimNode_BoneTransformCustomizer& Other)
-{
-	this->BonesToModify.Empty();
-	this->BonesToModify.Append(Other.BonesToModify);
-
-	return *this;
-}
-
-void FAnimNode_BoneTransformCustomizer::InitializeBoneReferences(const FBoneContainer& RequiredBones)
-{
-	DECLARE_SCOPE_HIERARCHICAL_COUNTER_ANIMNODE(InitializeBoneReferences)
-
-	for (auto& Points : this->BonesToModify)
-	{
-		for (auto& Point : Points.Value.Points)
-		{
-			Point.BoneToModify.Initialize(RequiredBones);
-		}
-	}
-}
-
-void FAnimNode_BoneTransformCustomizer::HandleIndividualBoneCase(
-	const FAnimNode_BoneTransformCustomizerDataPoint& DataPoint,
+void FAnimNode_CustomizableBoneTransform::HandleIndividualBoneCase(
+	float SetAlpha,
+	const FAnimNode_CustomizableBoneTransformDataPoint& DataPoint,
 	FComponentSpacePoseContext& Output,
 	TArray<FBoneTransform>& OutBoneTransforms)
 {
@@ -137,7 +147,7 @@ void FAnimNode_BoneTransformCustomizer::HandleIndividualBoneCase(
 		// Convert to Bone Space.
 		FAnimationRuntime::ConvertCSTransformToBoneSpace(ComponentTransform, Output.Pose, NewBoneTM, CompactPoseBoneToModify, DataPoint.ScaleSpace);
 
-		FVector Scale = DataPoint.Scale.GetValue(DataPoint.Alpha);
+		FVector Scale = DataPoint.Scale.GetValue(SetAlpha);
 
 		if (DataPoint.ScaleMode == BMM_Additive)
 		{
@@ -156,8 +166,8 @@ void FAnimNode_BoneTransformCustomizer::HandleIndividualBoneCase(
 	{
 		// Convert to Bone Space.
 		FAnimationRuntime::ConvertCSTransformToBoneSpace(ComponentTransform, Output.Pose, NewBoneTM, CompactPoseBoneToModify, DataPoint.RotationSpace);
-		
-		FVector RotVector = DataPoint.Rotation.GetValue(DataPoint.Alpha);
+
+		FVector RotVector = DataPoint.Rotation.GetValue(SetAlpha);
 		FRotator Rotator(RotVector.Y, RotVector.Z, RotVector.X);
 		const FQuat BoneQuat(Rotator);
 
@@ -178,7 +188,7 @@ void FAnimNode_BoneTransformCustomizer::HandleIndividualBoneCase(
 	{
 		// Convert to Bone Space.
 		FAnimationRuntime::ConvertCSTransformToBoneSpace(ComponentTransform, Output.Pose, NewBoneTM, CompactPoseBoneToModify, DataPoint.TranslationSpace);
-		FVector Translation = DataPoint.Translation.GetValue(DataPoint.Alpha);
+		FVector Translation = DataPoint.Translation.GetValue(SetAlpha);
 
 		if (DataPoint.TranslationMode == BMM_Additive)
 		{
@@ -196,4 +206,17 @@ void FAnimNode_BoneTransformCustomizer::HandleIndividualBoneCase(
 	OutBoneTransforms.Add(FBoneTransform(DataPoint.BoneToModify.GetCompactPoseIndex(BoneContainer), NewBoneTM));
 
 	TRACE_ANIM_NODE_VALUE(Output, TEXT("Target"), DataPoint.BoneToModify.BoneName);
+}
+
+void FAnimNode_CustomizableBoneTransform::InitializeBoneReferences(const FBoneContainer& RequiredBones)
+{
+	DECLARE_SCOPE_HIERARCHICAL_COUNTER_ANIMNODE(InitializeBoneReferences)
+
+	for (auto& Points : this->BonesToModify)
+	{
+		for (auto& Point : Points.Value.Points)
+		{
+			Point.BoneToModify.Initialize(RequiredBones);
+		}
+	}
 }

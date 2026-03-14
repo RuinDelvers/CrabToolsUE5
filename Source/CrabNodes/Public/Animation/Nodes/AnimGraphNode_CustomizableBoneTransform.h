@@ -2,27 +2,27 @@
 
 #include "CoreMinimal.h"
 #include "UObject/ObjectMacros.h"
-#include "Animation/Nodes/AnimNode_BoneTransformCustomizer.h"
+#include "Animation/Nodes/AnimNode_CustomizableBoneTransform.h"
 #include "EdGraph/EdGraphNodeUtils.h"
 #include "AnimGraphNode_SkeletalControlBase.h"
-#include "AnimGraphNode_BoneTransformCustomizer.generated.h"
+#include "AnimGraphNode_CustomizableBoneTransform.generated.h"
 
 class FCompilerResultsLog;
 
 UCLASS(meta = (Keywords = "Modify Transform Customization"))
-class UAnimGraphNode_BoneTransformCustomizer : public UAnimGraphNode_SkeletalControlBase
+class UAnimGraphNode_CustomizableBoneTransform : public UAnimGraphNode_SkeletalControlBase
 {
 	GENERATED_BODY()
 
 	FNodeTitleTextTable CachedNodeTitles;
 
-	UPROPERTY(EditAnywhere, Category = Settings)
-	FAnimNode_BoneTransformCustomizer Node;
+	UPROPERTY(EditAnywhere, Category="Settings")
+	FAnimNode_CustomizableBoneTransform Node;
 
 public:
 
-	//UAnimGraphNode_BoneTransformCustomizer();
-	UAnimGraphNode_BoneTransformCustomizer(const FObjectInitializer& Initializer);
+	//UAnimGraphNode_CustomizableBoneTransform();
+	UAnimGraphNode_CustomizableBoneTransform(const FObjectInitializer& Initializer);
 
 	// UEdGraphNode interface
 	virtual FText GetNodeTitle(ENodeTitleType::Type TitleType) const override;

@@ -24,7 +24,7 @@ struct FTexturePackerUtilityChannelData
 	UPROPERTY(EditAnywhere, Category = "Channel",
 		meta = (EditCondition = "Source==ETextureChannelSource::TEXTURE_RED || Source==ETextureChannelSource::TEXTURE_BLUE || Source==ETextureChannelSource::TEXTURE_GREEN || Source==ETextureChannelSource::TEXTURE_ALPHA",
 			EditConditionHides))
-	TObjectPtr<UTexture2D> SourceTexture;
+	TSoftObjectPtr<UTexture2D> SourceTexture;
 
 	UPROPERTY(EditAnywhere, Category = "Channel",
 		meta = (EditCondition = "Source==ETextureChannelSource::INLINE",
@@ -50,15 +50,14 @@ struct FTexturePackerUtilityChannelData
 	FName UVSwapKey;
 };
 
-UCLASS()
-class UTexturePackerUtilityWidget : public UEditorUtilityWidget
+USTRUCT(BlueprintType)
+struct FTexturePackerInnerData
 {
 	GENERATED_BODY()
 
-private:
+public:
 
-	// -------------------------- Red Channel -----------------------------------
-	UPROPERTY(EditAnywhere, Category="Channels")
+	UPROPERTY(EditAnywhere, Category = "Channels")
 	FTexturePackerUtilityChannelData  Red;
 
 	UPROPERTY(EditAnywhere, Category = "Channels")
@@ -68,11 +67,11 @@ private:
 	FTexturePackerUtilityChannelData  Blue;
 
 	UPROPERTY(EditAnywhere, Category = "Channels",
-		meta=(EditCondition="bUsealpha", EditConditionHides))
+		meta = (EditCondition = "bUsealpha", EditConditionHides))
 	FTexturePackerUtilityChannelData  Alpha;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="OutputOptions",
-		meta=(DisplayName="sRGB", AllowPrivateAccess))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "OutputOptions",
+		meta = (DisplayName = "sRGB", AllowPrivateAccess))
 	bool bSRGB = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "OutputOptions",
@@ -93,6 +92,59 @@ private:
 
 public:
 
+	FTexturePackerInnerData();
+};
+
+UCLASS(BlueprintType)
+class UTexturePackerAssetData : public UAssetUserData
+{
+	GENERATED_BODY()
+
+public:
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Data")
+	FTexturePackerInnerData Data;
+	
+public:
+
+	UFUNCTION(BlueprintCallable, Category = "TextureData")
+	static void ApplyPackedTextureDataToMaterial(
+		UMaterialInstanceDynamic* Material,
+		const FTexturePackerInnerData& InData);
+
+	static void UpdateChannelValue(
+		UMaterialInstanceDynamic* Material,
+		const FTexturePackerUtilityChannelData& Data);
+
+	UFUNCTION(BlueprintCallable, Category = "TextureData")
+	static void ApplyPackedTextureDataToRenderTarget(
+		UTextureRenderTarget2D* RenderTarget,
+		const FTexturePackerInnerData& InData);
+
+public:
+
+	UFUNCTION(BlueprintCallable, Category = "TextureData")
+	void CopyData(const FTexturePackerInnerData& InData);
+
+	UFUNCTION(BlueprintCallable, Category = "TextureData")
+	void ApplyPackedTextureAssetDataToMaterial(UMaterialInstanceDynamic* Material) const;
+
+	UFUNCTION(BlueprintCallable, Category = "TextureData")
+	void ApplyPackedTextureAssetDataToRenderTarget(UTextureRenderTarget2D* RenderTarget) const;
+};
+
+UCLASS()
+class UTexturePackerUtilityWidget : public UEditorUtilityWidget
+{
+	GENERATED_BODY()
+
+protected:
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Channels", meta = (ShowOnlyInnerProperties))
+	FTexturePackerInnerData Data;
+
+public:
+
 	UTexturePackerUtilityWidget();
 
 protected:
@@ -104,9 +156,10 @@ protected:
 	UFUNCTION(BlueprintCallable, Category="Material")
 	void UpdatePreviewDisplay();
 
-private:
+	UFUNCTION(BlueprintCallable, Category = "Material")
+	void ApplyToRenderTarget(UTextureRenderTarget2D* RenderTarget) const;
 
-	void UpdateChannelValue(
-		UMaterialInstanceDynamic* Material,
-		const FTexturePackerUtilityChannelData& Data);
+	UFUNCTION(BlueprintCallable, Category = "Texture")
+	void ApplyExtraSettingsToTexture(UTexture2D* NewTexture) const;
+private:
 };
