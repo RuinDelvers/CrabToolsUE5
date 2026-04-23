@@ -18,11 +18,11 @@ class IIntegerRPGProperty
 
 public:
 
-	UFUNCTION(BlueprintNativeEvent, Category="RPGProperty|Integer")
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category="RPGProperty|Integer")
 	int GetIntegerValue() const;
 	virtual int GetIntegerValue_Implementation() const { return 0; }
 
-	UFUNCTION(BlueprintNativeEvent, Category = "RPGProperty|Integer")
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "RPGProperty|Integer")
 	void SetIntegerValue(int NewValue);
 	virtual void SetIntegerValue_Implementation(int NewValue) {}
 };

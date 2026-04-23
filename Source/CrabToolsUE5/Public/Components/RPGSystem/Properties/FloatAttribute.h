@@ -18,11 +18,11 @@ class IFloatRPGProperty
 
 public:
 
-	UFUNCTION(BlueprintNativeEvent, Category = "RPGProperty|Float")
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "RPGProperty|Float")
 	float GetFloatValue() const;
 	virtual float GetFloatValue_Implementation() const { return 0; }
 
-	UFUNCTION(BlueprintNativeEvent, Category = "RPGProperty|Float")
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "RPGProperty|Float")
 	void SetFloatValue(float NewValue);
 	virtual void SetFloatValue_Implementation(float NewValue) {}
 };
