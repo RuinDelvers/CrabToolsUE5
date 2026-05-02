@@ -249,7 +249,7 @@ void URPGComponent::RemoveStatusInstance(UStatus* Status)
 		if (Data->Instances.Contains(Status))
 		{
 			Data->Instances.Remove(Status);
-			Status->Remove();
+			Status->Removed();
 
 			if (Data->Instances.Num() == 0)
 			{
@@ -270,7 +270,7 @@ void URPGComponent::RemoveStatus(FGameplayTag StatusID, bool bAllInstances)
 			for (const auto& Instance : Data->Instances)
 			{
 				this->TickedStatuses.Remove(Instance);
-				Instance->Remove();
+				Instance->Removed();
 			}
 			this->Statuses.Remove(StatusID);
 
@@ -473,11 +473,11 @@ void UStatus::Apply()
 	this->SetTimer();
 }
 
-void UStatus::Remove()
+void UStatus::Removed()
 {
 	this->Timer.Invalidate();
 	this->OnRemoved.Broadcast(this);
-	this->Remove_Inner();
+	this->Removed_Inner();
 }
 
 UWorld* UStatus::GetWorld() const

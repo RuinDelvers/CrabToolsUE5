@@ -19,7 +19,6 @@ class CRABTOOLSUE5_API UAbilityChain : public UAbility
 
 	int ActiveIndex = 0;
 
-
 public:
 
 	UFUNCTION(BlueprintCallable, BlueprintPure=false, Category="Ability",
@@ -28,7 +27,7 @@ public:
 
 protected:
 
-	virtual void Initialize_Inner_Implementation() override;
+	virtual void Initialize_Inner_Implementation(UObject* InitData) override;
 	virtual void Start_Inner_Implementation() override;
 	virtual void Perform_Inner_Implementation() override;
 	virtual void Tick_Inner_Implementation(float DeltaTime) override;

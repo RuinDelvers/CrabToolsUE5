@@ -40,7 +40,10 @@ void UBaseFloatAttribute::Refresh()
 
 	for (auto& Op : this->Operators)
 	{
-		Value = Op->Operate(Value);
+		if (Op)
+		{
+			Value = Op->Operate(Value);
+		}
 	}
 
 	this->CompValue = Value;

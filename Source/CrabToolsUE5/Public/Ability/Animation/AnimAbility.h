@@ -38,7 +38,7 @@ public:
 
 protected:
 
-	void Initialize_Inner_Implementation() override;
+	void Initialize_Inner_Implementation(UObject* InitData) override;
 	void Start_Inner_Implementation() override;
 	void Finish_Inner_Implementation() override;
 	

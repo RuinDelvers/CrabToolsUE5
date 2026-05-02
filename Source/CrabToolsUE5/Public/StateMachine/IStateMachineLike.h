@@ -208,8 +208,13 @@ struct FStateMachinePipedDataValue
     }
 };
 
+/* 
+ * This class acts as a generic composite object. It is used to combine different objects that can be searched
+ * for. For example, in the case of state machines, you may need to carry multiple objects through an event,
+ * and this is how it would be handled.
+ */
 UCLASS()
-class UStateMachinePipedData final : public UObject
+class UCompositeObjectData final : public UObject
 {
     GENERATED_BODY()
 

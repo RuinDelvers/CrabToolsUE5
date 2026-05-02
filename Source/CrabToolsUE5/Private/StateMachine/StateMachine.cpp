@@ -279,7 +279,7 @@ void UStateMachine::UpdateTransitionPipedData(UState* CurrentState, FTransitionQ
 
 		if (Queue.bHasData)
 		{
-			auto ConcatData = UStateMachinePipedData::ConcatData(Cached.Data, PipedData);
+			auto ConcatData = UCompositeObjectData::ConcatData(Cached.Data, PipedData);
 			PipedData = PipedData;
 		}
 

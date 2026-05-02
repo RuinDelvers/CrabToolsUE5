@@ -1,12 +1,12 @@
 #include "Ability/AbilityChain.h"
 
-void UAbilityChain::Initialize_Inner_Implementation()
+void UAbilityChain::Initialize_Inner_Implementation(UObject* InitData)
 {
 	this->ActiveIndex = 0;
 	
 	for (auto& Abi : this->AbilityChain)
 	{
-		Abi->Initialize(this->GetOwner());
+		Abi->Initialize(this->Owner, InitData);
 	}
 }
 
@@ -18,7 +18,7 @@ void UAbilityChain::Start_Inner_Implementation()
 	{
 		auto& Abi = this->AbilityChain[0];
 		Abi->OnAbilityFinished.AddDynamic(this, &UAbilityChain::HandleFinish);
-		Abi->Start();
+		Abi->Start(this->GetStartData());
 	}
 	else
 	{
@@ -76,7 +76,7 @@ void UAbilityChain::HandleFinish(UAbility* _Abi)
 	{
 		auto& AbiNew = this->AbilityChain[this->ActiveIndex];
 		AbiNew->OnAbilityFinished.AddDynamic(this, &UAbilityChain::HandleFinish);
-		AbiNew->Start();
+		AbiNew->Start(this->GetStartData());
 	}
 	else
 	{

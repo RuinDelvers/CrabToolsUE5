@@ -13,7 +13,7 @@ UAnimAbility::UAnimAbility(const FObjectInitializer& ObjectInitializer)
 	this->ComponentName = "CharacterMesh0";
 }
 
-void UAnimAbility::Initialize_Inner_Implementation()
+void UAnimAbility::Initialize_Inner_Implementation(UObject* InitData)
 {
 	bool bFoundComp = false;
 

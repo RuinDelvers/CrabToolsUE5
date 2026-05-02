@@ -1,6 +1,6 @@
 #include "StateMachine/IStateMachineLike.h"
 
-UObject* UStateMachinePipedData::FindDataOfType(TSubclassOf<UObject> Type, UObject* Data, bool& Found)
+UObject* UCompositeObjectData::FindDataOfType(TSubclassOf<UObject> Type, UObject* Data, bool& Found)
 {
 	auto Value = FindDataOfType(Type, Data);
 	Found = IsValid(Value);
@@ -8,7 +8,7 @@ UObject* UStateMachinePipedData::FindDataOfType(TSubclassOf<UObject> Type, UObje
 	return Value;
 }
 
-UObject* UStateMachinePipedData::FindDataOfType(TSubclassOf<UObject> Type, UObject* Data)
+UObject* UCompositeObjectData::FindDataOfType(TSubclassOf<UObject> Type, UObject* Data)
 {
 	UObject* FoundData = nullptr;
 
@@ -18,7 +18,7 @@ UObject* UStateMachinePipedData::FindDataOfType(TSubclassOf<UObject> Type, UObje
 		{
 			FoundData = Data;
 		}
-		else if (auto PipedData = Cast<UStateMachinePipedData>(Data))
+		else if (auto PipedData = Cast<UCompositeObjectData>(Data))
 		{
 			if (auto LookUpData = PipedData->Objects.Find(Type))
 			{
@@ -30,13 +30,13 @@ UObject* UStateMachinePipedData::FindDataOfType(TSubclassOf<UObject> Type, UObje
 	return FoundData;
 }
 
-void UStateMachinePipedData::FindAllDataOfType(TSubclassOf<UObject> Type, UObject* Data, TArray<UObject*>& ReturnValue, bool& Found)
+void UCompositeObjectData::FindAllDataOfType(TSubclassOf<UObject> Type, UObject* Data, TArray<UObject*>& ReturnValue, bool& Found)
 {
 	FindAllDataOfType(Type, Data, ReturnValue);
 	Found = ReturnValue.Num() > 0;
 }
 
-void UStateMachinePipedData::FindAllDataOfType(TSubclassOf<UObject> Type, UObject* Data, TArray<UObject*>& ReturnValue)
+void UCompositeObjectData::FindAllDataOfType(TSubclassOf<UObject> Type, UObject* Data, TArray<UObject*>& ReturnValue)
 {
 	if (IsValid(Data))
 	{
@@ -44,7 +44,7 @@ void UStateMachinePipedData::FindAllDataOfType(TSubclassOf<UObject> Type, UObjec
 		{
 			ReturnValue.Add(Data);
 		}
-		else if (auto PipedData = Cast<UStateMachinePipedData>(Data))
+		else if (auto PipedData = Cast<UCompositeObjectData>(Data))
 		{
 			if (auto LookUpData = PipedData->Objects.Find(Type))
 			{
@@ -54,7 +54,7 @@ void UStateMachinePipedData::FindAllDataOfType(TSubclassOf<UObject> Type, UObjec
 	}
 }
 
-TScriptInterface<UInterface> UStateMachinePipedData::FindDataImplementing(TSubclassOf<UInterface> Type, UObject* Data, bool& Found)
+TScriptInterface<UInterface> UCompositeObjectData::FindDataImplementing(TSubclassOf<UInterface> Type, UObject* Data, bool& Found)
 {
 	auto Value = FindDataImplementing(Type, Data);
 
@@ -68,7 +68,7 @@ TScriptInterface<UInterface> UStateMachinePipedData::FindDataImplementing(TSubcl
 	return nullptr;
 }
 
-TScriptInterface<UInterface> UStateMachinePipedData::FindDataImplementing(TSubclassOf<UInterface> Type, UObject* Data)
+TScriptInterface<UInterface> UCompositeObjectData::FindDataImplementing(TSubclassOf<UInterface> Type, UObject* Data)
 {
 	TScriptInterface<UInterface> FoundData;
 
@@ -78,7 +78,7 @@ TScriptInterface<UInterface> UStateMachinePipedData::FindDataImplementing(TSubcl
 		{
 			FoundData = Data;
 		}
-		else if (auto PipedData = Cast<UStateMachinePipedData>(Data))
+		else if (auto PipedData = Cast<UCompositeObjectData>(Data))
 		{
 			if (auto LookUpData = PipedData->Interfaces.Find(Type))
 			{
@@ -90,7 +90,7 @@ TScriptInterface<UInterface> UStateMachinePipedData::FindDataImplementing(TSubcl
 	return FoundData;
 }
 
-void UStateMachinePipedData::FindAllDataImplementing(TSubclassOf<UInterface> Type, UObject* Data, TArray<TScriptInterface<UInterface>>& ReturnValue)
+void UCompositeObjectData::FindAllDataImplementing(TSubclassOf<UInterface> Type, UObject* Data, TArray<TScriptInterface<UInterface>>& ReturnValue)
 {
 	if (IsValid(Data))
 	{
@@ -98,7 +98,7 @@ void UStateMachinePipedData::FindAllDataImplementing(TSubclassOf<UInterface> Typ
 		{
 			ReturnValue.Add(TScriptInterface<UInterface>(Data));
 		}
-		else if (auto PipedData = Cast<UStateMachinePipedData>(Data))
+		else if (auto PipedData = Cast<UCompositeObjectData>(Data))
 		{
 			if (auto LookUpData = PipedData->Interfaces.Find(Type))
 			{
@@ -111,18 +111,18 @@ void UStateMachinePipedData::FindAllDataImplementing(TSubclassOf<UInterface> Typ
 	}
 }
 
-void UStateMachinePipedData::FindAllDataImplementing(TSubclassOf<UInterface> Type, UObject* Data, TArray<TScriptInterface<UInterface>>& ReturnValue, bool& Found)
+void UCompositeObjectData::FindAllDataImplementing(TSubclassOf<UInterface> Type, UObject* Data, TArray<TScriptInterface<UInterface>>& ReturnValue, bool& Found)
 {
 	FindAllDataImplementing(Type, Data, ReturnValue);
 
 	Found = ReturnValue.Num() > 0;
 }
 
-UObject* UStateMachinePipedData::ConcatData(UObject* Data1, UObject* Data2)
+UObject* UCompositeObjectData::ConcatData(UObject* Data1, UObject* Data2)
 {
-	if (auto SMData1 = Cast<UStateMachinePipedData>(Data1))
+	if (auto SMData1 = Cast<UCompositeObjectData>(Data1))
 	{
-		if (auto SMData2 = Cast<UStateMachinePipedData>(Data2))
+		if (auto SMData2 = Cast<UCompositeObjectData>(Data2))
 		{
 			SMData2->Objects.Append(SMData2->Objects);
 			SMData2->Interfaces.Append(SMData2->Interfaces);
@@ -135,7 +135,7 @@ UObject* UStateMachinePipedData::ConcatData(UObject* Data1, UObject* Data2)
 			return SMData1;
 		}
 	}
-	else if (auto SMData2 = Cast<UStateMachinePipedData>(Data2))
+	else if (auto SMData2 = Cast<UCompositeObjectData>(Data2))
 	{
 		SMData2->Add(Data1);
 		return SMData2;
@@ -146,7 +146,7 @@ UObject* UStateMachinePipedData::ConcatData(UObject* Data1, UObject* Data2)
 		auto ValidData2 = IsValid(Data2);
 		if (ValidData1 || ValidData2)
 		{
-			auto NewData = NewObject<UStateMachinePipedData>(ValidData1 ? Data1 : Data2);
+			auto NewData = NewObject<UCompositeObjectData>(ValidData1 ? Data1 : Data2);
 			NewData->Add(ValidData1 ? Data2 : Data1);
 
 			return NewData;
@@ -158,7 +158,7 @@ UObject* UStateMachinePipedData::ConcatData(UObject* Data1, UObject* Data2)
 	}
 }
 
-UObject* UStateMachinePipedData::ConcatDataArray(const TArray<UObject*>& DataValues)
+UObject* UCompositeObjectData::ConcatDataArray(const TArray<UObject*>& DataValues)
 {
 	int Num = DataValues.Num();
 
@@ -176,14 +176,14 @@ UObject* UStateMachinePipedData::ConcatDataArray(const TArray<UObject*>& DataVal
 
 		for (int i = 1; i < Num; ++i)
 		{
-			Root = UStateMachinePipedData::ConcatData(Root, DataValues[i]);
+			Root = UCompositeObjectData::ConcatData(Root, DataValues[i]);
 		}
 
 		return Root;
 	}
 }
 
-void UStateMachinePipedData::Add(UObject* NewData)
+void UCompositeObjectData::Add(UObject* NewData)
 {
 	if (IsValid(NewData))
 	{

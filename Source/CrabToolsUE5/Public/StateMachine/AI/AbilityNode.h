@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "StateMachine/StateMachine.h"
+#include "StateMachine/StateMachineEnum.h"
 #include "AbilityNode.generated.h"
 
 class UAbility;
@@ -26,6 +27,13 @@ class CRABTOOLSUE5_API UAbilityNode : public UStateNode
 	/* Flag used to control immediate ability finish checking. */
 	bool bNeedsFinishing = false;
 
+	/* Derived data for this is the targeting controller. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Data", meta = (AllowPrivateAccess))
+	EStateMachineGenericPipedDataProcedure PipedDateProcedure = EStateMachineGenericPipedDataProcedure::DERIVED;
+
+	UPROPERTY()
+	TObjectPtr<UObject> CachedPipedData;
+
 public:
 
 	UAbilityNode();
@@ -39,6 +47,10 @@ public:
 
 	virtual bool HasPipedData_Implementation() const override;
 	virtual UObject* GetPipedData_Implementation() override;
+
+protected:
+
+	void StartAbility(UAbility* Abi, UObject* StartData);
 
 private:
 	UFUNCTION()

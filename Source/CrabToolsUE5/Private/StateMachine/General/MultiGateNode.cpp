@@ -137,7 +137,7 @@ UObject* UMultiGateNode::GetPipedData_Implementation()
 		Data.Add(Child.Node->GetPipedData());
 	}
 
-	return UStateMachinePipedData::ConcatDataArray(Data);
+	return UCompositeObjectData::ConcatDataArray(Data);
 }
 
 void UMultiGateNode::SetActive_Inner_Implementation(bool bNewActive)

@@ -184,7 +184,7 @@ UObject* UArrayNode::GetPipedData_Implementation()
 		}
 	}
 	
-	return UStateMachinePipedData::ConcatDataArray(DataArray);
+	return UCompositeObjectData::ConcatDataArray(DataArray);
 }
 
 #if WITH_EDITORONLY_DATA

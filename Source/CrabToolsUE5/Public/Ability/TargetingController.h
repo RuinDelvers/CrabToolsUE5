@@ -6,6 +6,10 @@
 
 class ITargetingControllerInterface;
 
+/*
+ * This interface are for objects or actors that are used for targeting. This is implemented by a
+ * few targeting actors in this plugin.
+ */
 UINTERFACE(MinimalAPI, Blueprintable, BlueprintType)
 class UTargetingControllerInterface : public UInterface
 {

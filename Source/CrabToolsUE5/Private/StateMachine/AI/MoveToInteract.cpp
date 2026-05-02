@@ -20,11 +20,11 @@ void UAIMoveToInteractNode::Initialize_Inner_Implementation()
 
 void UAIMoveToInteractNode::EnterWithData_Inner_Implementation(UObject* Data)
 {
-	if (auto Interaction = UStateMachinePipedData::FindDataOfType<UAIInteractionData>(Data))
+	if (auto Interaction = UCompositeObjectData::FindDataOfType<UAIInteractionData>(Data))
 	{
 		this->InteractWithRequest(Interaction);
 	}
-	else if (auto Request = UStateMachinePipedData::FindDataImplementing<UMovementRequestInterface>(Data).GetObject())
+	else if (auto Request = UCompositeObjectData::FindDataImplementing<UMovementRequestInterface>(Data).GetObject())
 	{		
 		switch (IMovementRequestInterface::Execute_GetRequestType(Request))
 		{
@@ -48,11 +48,11 @@ void UAIMoveToInteractNode::EnterWithData_Inner_Implementation(UObject* Data)
 
 void UAIMoveToInteractNode::EventWithData_Inner_Implementation(FName InEvent, UObject* Data, UObject* EventSource)
 {
-	if (auto Interaction = UStateMachinePipedData::FindDataOfType<UAIInteractionData>(Data))
+	if (auto Interaction = UCompositeObjectData::FindDataOfType<UAIInteractionData>(Data))
 	{
 		this->InteractWithRequest(Interaction);
 	}
-	else if (auto Request = UStateMachinePipedData::FindDataImplementing<UMovementRequestInterface>(Data).GetObject())
+	else if (auto Request = UCompositeObjectData::FindDataImplementing<UMovementRequestInterface>(Data).GetObject())
 	{
 		switch (IMovementRequestInterface::Execute_GetRequestType(Request))
 		{

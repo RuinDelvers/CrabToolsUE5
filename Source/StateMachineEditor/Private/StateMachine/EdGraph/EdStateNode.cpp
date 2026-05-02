@@ -147,7 +147,7 @@ FStateArchetypeData UEdStateNode::CompileState(FNodeVerificationContext& Context
 
 		for (auto& Node : this->Nodes)
 		{
-			if (Node)
+			if (IsValid(Node))
 			{
 				ArrayNode->AddNode(DuplicateObject(
 					Node,

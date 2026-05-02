@@ -36,10 +36,10 @@ private:
 
 protected:
 
-	UPROPERTY(EditDefaultsOnly, Instanced, Category = "Attributes", meta = (AllowPrivateAccess = true))
+	UPROPERTY(EditAnywhere, Instanced, Category = "Attributes", meta = (AllowPrivateAccess = true))
 	TArray<TObjectPtr<UIntOperator>> Operators;
 
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere, Category="Attributes")
 	int CompValue = 0;
 
 public:
@@ -60,6 +60,8 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "RPGProperty")
 	void Refresh();
+
+	const TArray<TObjectPtr<UIntOperator>>& GetOpators() const { return this->Operators; }
 
 	virtual TSubclassOf<URPGSetter> GetSetter_Implementation() const override;
 	virtual TSubclassOf<URPGCompare> GetCompare_Implementation() const override;
@@ -111,7 +113,7 @@ class CRABTOOLSUE5_API UIntAttribute : public UBaseIntAttribute
 
 private:
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attributes", meta = (AllowPrivateAccess = true))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Attributes", meta = (AllowPrivateAccess = true))
 	int BaseValue = 0;
 
 public:
@@ -131,7 +133,7 @@ class CRABTOOLSUE5_API UIntOperator : public UObject
 	GENERATED_BODY()
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
-	int Priority;
+	int Priority = 0;
 
 	UPROPERTY()
 	TArray<TObjectPtr<UBaseIntAttribute>> Applied;

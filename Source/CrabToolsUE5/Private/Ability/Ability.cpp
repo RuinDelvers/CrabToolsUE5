@@ -7,12 +7,12 @@ UAbility::UAbility(const FObjectInitializer& ObjInit)
 	this->AbilityData = CreateDefaultSubobject<UInlineAbilityData>(TEXT("AbilityData"));
 }
 
-void UAbility::Initialize(AActor* POwner)
+void UAbility::Initialize(AActor* POwner, UObject* InitData)
 {
 	this->Owner = POwner;
 
-	this->AbilityData->Initialize();
-	this->Initialize_Inner();
+	this->AbilityData->Initialize(InitData);
+	this->Initialize_Inner(InitData);
 }
 
 UAbilityData* UAbility::SetAbilityData(TSubclassOf<UAbilityData> DataClass)
@@ -24,11 +24,13 @@ UAbilityData* UAbility::SetAbilityData(TSubclassOf<UAbilityData> DataClass)
 	return this->AbilityData;
 }
 
-void UAbility::Start()
+void UAbility::Start(UObject* StartData)
 {
 	if (!this->bActive && this->bUseable)
 	{
 		this->bActive = true;
+		this->CurrentStartData = StartData;
+		this->AbilityData->Start(StartData);
 		this->Start_Inner();
 		this->OnAbilityStarted.Broadcast(this);		
 	}
@@ -96,6 +98,7 @@ void UAbility::Finish()
 {
 	if (this->bActive)
 	{
+		this->CurrentStartData = nullptr;
 		this->bActive = false;
 		this->Finish_Inner();
 		this->OnAbilityFinished.Broadcast(this);
@@ -117,4 +120,16 @@ UInlineAbilityData::UInlineAbilityData()
 void UAbilityData::Update()
 {
 	this->OnDataChanged.Broadcast(this);
+}
+
+void UAbilityData::Start(UObject* StartData)
+{
+	this->CurrentStartData = StartData;
+	this->Start_Inner();
+}
+
+void UAbilityData::Finish()
+{
+	this->Finish_Inner();
+	this->CurrentStartData = nullptr;
 }

@@ -34,7 +34,7 @@ void UAISimpleMoveToNode::Exit_Inner_Implementation()
 
 void UAISimpleMoveToNode::EnterWithData_Inner_Implementation(UObject* Data)
 {
-	if (auto Request = UStateMachinePipedData::FindDataImplementing<UMovementRequestInterface>(Data).GetObject())
+	if (auto Request = UCompositeObjectData::FindDataImplementing<UMovementRequestInterface>(Data).GetObject())
 	{
 		this->MoveToRequest(Request);
 	}
@@ -175,7 +175,7 @@ void UAISimpleMoveToNode::SetActive_Inner_Implementation(bool bNewActive)
 void UAISimpleMoveToNode::EventWithData_Inner_Implementation(FName InEvent, UObject* Data, UObject* Source)
 {
 
-	if (auto Request = UStateMachinePipedData::FindDataImplementing<UMovementRequestInterface>(Data).GetObject())
+	if (auto Request = UCompositeObjectData::FindDataImplementing<UMovementRequestInterface>(Data).GetObject())
 	{
 		this->MoveToRequest(Request);
 	}

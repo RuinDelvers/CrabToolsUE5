@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "StateMachine/StateMachine.h"
+#include "StateMachine/StateMachineEnum.h"
 #include "TargetingNode.generated.h"
 
 
@@ -15,6 +16,13 @@ class CRABTOOLSUE5_API UTargetingNode : public UStateNode
 
 	UPROPERTY(Transient)
 	TObjectPtr<UObject> TargetingInterface;
+
+	/* Derived data for this is the targeting controller. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Data", meta=(AllowPrivateAccess))
+	EStateMachineGenericPipedDataProcedure PipedDateProcedure = EStateMachineGenericPipedDataProcedure::DERIVED;
+
+	UPROPERTY()
+	TObjectPtr<UObject> CachedPipedData;
 
 public:
 

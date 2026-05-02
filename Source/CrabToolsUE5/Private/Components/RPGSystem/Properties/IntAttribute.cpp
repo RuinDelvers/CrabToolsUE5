@@ -22,7 +22,7 @@ void UBaseIntAttribute::Operate(UIntOperator* Op)
 	{
 		this->Operators.Add(Op);
 		Op->AddApplied(this);
-		this->Refresh();		
+		this->Refresh();
 	}
 }
 
@@ -42,11 +42,13 @@ void UBaseIntAttribute::Refresh()
 
 	for (auto& Op : this->Operators)
 	{
-		Value = Op->Operate(Value);
+		if (Op)
+		{
+			Value = Op->Operate(Value);
+		}
 	}
 
 	this->CompValue = Value;
-
 	this->OnPropertyChanged.Broadcast(this);
 }
 

@@ -22,7 +22,7 @@ void UAIMovementRouterNode::EnterWithData_Inner_Implementation(UObject* Data)
 {
 	if (EnumHasAnyFlags(static_cast<EAIMovementRouterType>(this->FunctionFlags), EAIMovementRouterType::ENTER))
 	{
-		if (auto Request = UStateMachinePipedData::FindDataImplementing<UMovementRequestInterface>(Data).GetObject())
+		if (auto Request = UCompositeObjectData::FindDataImplementing<UMovementRequestInterface>(Data).GetObject())
 		{
 			this->HandleRouting(IMovementRequestInterface::Execute_GetRequestType(Request), Request);
 		}
@@ -41,7 +41,7 @@ void UAIMovementRouterNode::ExitWithData_Inner_Implementation(UObject* Data)
 {
 	if (EnumHasAnyFlags(static_cast<EAIMovementRouterType>(this->FunctionFlags), EAIMovementRouterType::EXIT))
 	{
-		if (auto Request = UStateMachinePipedData::FindDataImplementing<UMovementRequestInterface>(Data).GetObject())
+		if (auto Request = UCompositeObjectData::FindDataImplementing<UMovementRequestInterface>(Data).GetObject())
 		{
 			this->HandleRouting(IMovementRequestInterface::Execute_GetRequestType(Request), Request);
 		}

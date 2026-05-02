@@ -11,11 +11,16 @@ UTargetingNode::UTargetingNode()
 
 void UTargetingNode::EnterWithData_Inner_Implementation(UObject* Data)
 {
-	if (auto Targeting = UStateMachinePipedData::FindDataImplementing<UTargetingControllerInterface>(Data).GetObject())
+	if (this->PipedDateProcedure == EStateMachineGenericPipedDataProcedure::CACHED)
+	{
+		this->CachedPipedData = Data;
+	}
+
+	if (auto Targeting = UCompositeObjectData::FindDataImplementing<UTargetingControllerInterface>(Data).GetObject())
 	{
 		this->TargetingInterface = Targeting;
 	}
-	else if (auto Spawner = UStateMachinePipedData::FindDataImplementing<USpawnsTargetingInterface>(Data).GetObject())
+	else if (auto Spawner = UCompositeObjectData::FindDataImplementing<USpawnsTargetingInterface>(Data).GetObject())
 	{
 		auto Interface = ISpawnsTargetingInterface::Execute_SpawnTargetingController(Spawner);
 		this->TargetingInterface = Interface.GetObject();
@@ -46,14 +51,28 @@ void UTargetingNode::Exit_Inner_Implementation()
 	{
 		ITargetingControllerInterface::Execute_SetEnabled(this->TargetingInterface, false);
 	}
+
+	this->CachedPipedData = nullptr;
 }
 
 bool UTargetingNode::HasPipedData_Implementation() const
 {
-	return IsValid(this->TargetingInterface);
+	switch (this->PipedDateProcedure)
+	{
+		case EStateMachineGenericPipedDataProcedure::NONE: return false;
+		case EStateMachineGenericPipedDataProcedure::DERIVED: return IsValid(this->TargetingInterface);
+		case EStateMachineGenericPipedDataProcedure::CACHED: return IsValid(this->CachedPipedData);
+		default: return false;
+	}
 }
 
 UObject* UTargetingNode::GetPipedData_Implementation()
 {
-	return this->TargetingInterface;
+	switch (this->PipedDateProcedure)
+	{
+		case EStateMachineGenericPipedDataProcedure::NONE: return nullptr;
+		case EStateMachineGenericPipedDataProcedure::DERIVED: return this->TargetingInterface;
+		case EStateMachineGenericPipedDataProcedure::CACHED: return this->CachedPipedData;
+		default: return nullptr;
+	}
 }

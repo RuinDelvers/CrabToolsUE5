@@ -33,7 +33,10 @@ UCLASS(Abstract, Blueprintable, EditInlineNew, DefaultToInstanced, Within="Abili
 class CRABTOOLSUE5_API UAbilityData : public UObject, public IHasAbilityInterface
 {
 	GENERATED_BODY()
-	
+
+	UPROPERTY(BlueprintReadOnly, Category = "Data", meta=(AllowPrivateAccess))
+	TObjectPtr<UObject> CurrentStartData;
+
 public:
 
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDataChanged, UAbilityData*, Data);
@@ -44,8 +47,8 @@ public:
 public:
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Data")
-	void Initialize();
-	virtual void Initialize_Implementation() {}
+	void Initialize(UObject* InitData);
+	virtual void Initialize_Implementation(UObject* InitData) {}
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Data")
 	bool IsDynamic() const;
@@ -74,6 +77,23 @@ public:
 	UAbility* GetAbilityOwner() const { return CastChecked<UAbility>(this->GetOuter()); }
 
 	virtual UAbility* GetAbility_Implementation() override { return CastChecked<UAbility>(this->GetOuter()); }
+
+	UObject* GetStartData() const { return this->CurrentStartData; }
+
+protected:
+
+	void Start(UObject* StartData);
+	void Finish();
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Targeting", meta=(DisplayName="Start"))
+	void Start_Inner();
+	virtual void Start_Inner_Implementation() {}
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Targeting", meta = (DisplayName = "Finish"))
+	void Finish_Inner();
+	virtual void Finish_Inner_Implementation() {}
+
+	friend class UAbility;
 };
 
 UCLASS(Blueprintable)
@@ -132,6 +152,9 @@ class CRABTOOLSUE5_API UAbility : public UWorldAwareObject, public IHasAbilityIn
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Instanced, Category = "Ability", meta = (AllowPrivateAccess))
 	TObjectPtr<UAbilityData> AbilityData;
 
+	UPROPERTY(BlueprintReadOnly, Transient, DuplicateTransient, Category = "Ability", meta = (AllowPrivateAccess))
+	TObjectPtr<UObject> CurrentStartData;
+
 public:
 
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FAbilityStarted, UAbility*, Ability);
@@ -165,13 +188,18 @@ public:
 	UAbility(const FObjectInitializer& ObjInit);
 
 	UFUNCTION(BlueprintCallable, Category = "Ability")
-	void Initialize(AActor* POwner);
+	void Initialize(AActor* POwner, UObject* InitData);
 
 	UFUNCTION(BlueprintCallable, Category = "Ability")
 	void Detach();
 
+	/*
+	 * Begins the process of starting the ability. StartData is simply passed to Start_Inner. StartData
+	 * can be used to adjust behavior of the ability when it begins. StartData can be null, but you should pass
+	 * what is expected by your project's expected data format.
+	 */
 	UFUNCTION(BlueprintCallable, Category="Ability")
-	void Start();
+	void Start(UObject* StartData = nullptr);
 
 	UFUNCTION(BlueprintCallable, Category="Ability")
 	void Perform();
@@ -225,6 +253,7 @@ public:
 	UAbility* GetParentAs(TSubclassOf<UAbility> ParentClass) const;
 
 	virtual UAbility* GetAbility_Implementation() override { return this; }
+	UObject* GetStartData() const { return this->CurrentStartData; }
 
 protected:
 
@@ -246,8 +275,8 @@ protected:
 
 	UFUNCTION(BlueprintNativeEvent, Category = "Ability",
 		meta = (DisplayName = "Initialize"))
-	void Initialize_Inner();
-	virtual void Initialize_Inner_Implementation() {}
+	void Initialize_Inner(UObject* InitData);
+	virtual void Initialize_Inner_Implementation(UObject* InitData) {}
 
 	UFUNCTION(BlueprintNativeEvent, Category = "Ability",
 		meta = (DisplayName = "Perform"))
@@ -263,5 +292,4 @@ protected:
 		meta = (DisplayName = "Finish"))
 	void Finish_Inner();
 	virtual void Finish_Inner_Implementation() {}
-
 };

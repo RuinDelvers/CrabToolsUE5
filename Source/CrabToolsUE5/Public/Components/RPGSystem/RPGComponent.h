@@ -81,6 +81,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "RPG|Status")
 	void Stack(int Quantity = 1);
 
+	/* Call this to remove the status from the RPG component. */
 	UFUNCTION(BlueprintCallable, Category = "RPG|Status")
 	void Detach();
 
@@ -106,7 +107,9 @@ public:
 protected:
 
 	void Apply();
-	void Remove();
+
+	/* This is called by the status when */
+	void Removed();
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "RPG|Status",
 		meta=(DisplayName="Apply"))
@@ -115,8 +118,8 @@ protected:
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "RPG|Status",
 		meta = (DisplayName = "Remove"))
-	void Remove_Inner();
-	virtual void Remove_Inner_Implementation() {}
+	void Removed_Inner();
+	virtual void Removed_Inner_Implementation() {}
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "RPG|Status",
 		meta = (DisplayName = "Stack"))

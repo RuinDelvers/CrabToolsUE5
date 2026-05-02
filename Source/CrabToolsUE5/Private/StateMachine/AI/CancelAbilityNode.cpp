@@ -15,11 +15,11 @@ void UCancelAbilityNode::Enter_Inner_Implementation()
 
 void UCancelAbilityNode::EnterWithData_Inner_Implementation(UObject* Data)
 {
-	if (auto Abi = UStateMachinePipedData::FindDataOfType<UAbility>(Data))
+	if (auto Abi = UCompositeObjectData::FindDataOfType<UAbility>(Data))
 	{
 		Abi->Cancel();
 	}
-	else if (auto Value = UStateMachinePipedData::FindDataImplementing<UHasAbilityInterface>(Data).GetObject())
+	else if (auto Value = UCompositeObjectData::FindDataImplementing<UHasAbilityInterface>(Data).GetObject())
 	{
 		// Need to get object ref to check validity. if (Value) will always be false.
 		if (auto GetAbi = IHasAbilityInterface::Execute_GetAbility(Value))

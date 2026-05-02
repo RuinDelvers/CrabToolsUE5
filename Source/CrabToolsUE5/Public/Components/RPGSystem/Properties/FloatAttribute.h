@@ -39,8 +39,8 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Instanced, Category = "Attributes", meta = (AllowPrivateAccess = true))
 	TArray<TObjectPtr<UFloatOperator>> Operators;
 
-	UPROPERTY()
-	float CompValue;
+	UPROPERTY(VisibleAnywhere, Category = "Attributes")
+	float CompValue = 0;
 
 public:
 

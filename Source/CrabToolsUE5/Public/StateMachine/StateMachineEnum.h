@@ -4,6 +4,24 @@
 
 #include "StateMachineEnum.generated.h"
 
+/*
+ * This enum is a generic enum for StateNodes that follow a simple procedure for piped data.
+ * The use case for this is used in AbilityNode and TargetingNode, and the general case is as follows:
+ * 
+ * - You send data to the node for it to use.
+ * - The node itself could pipe the data it received, because it is a container for data.
+ * - Or you could just pipe the data the node derives (e.g. a targeting controller) instead.
+ * 
+ * The derived case can be extended by other nodes with further enums, but these cases are the most common.
+ */
+UENUM(BlueprintType)
+enum class EStateMachineGenericPipedDataProcedure : uint8
+{
+	NONE   UMETA(DisplayName = "None"),
+	CACHED UMETA(DisplayName = "Cached"),
+	DERIVED UMETA(DisplayName = "Derived"),
+};
+
 UENUM(BlueprintType)
 enum class EStateMachineAccessibility : uint8
 {
