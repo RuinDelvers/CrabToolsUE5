@@ -124,7 +124,6 @@ protected:
 			.TextStyle(TextStyle);			
 
 		return Text;
-		//return TSharedPtr<SWidget>();
 	}
 };
 

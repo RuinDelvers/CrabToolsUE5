@@ -46,7 +46,7 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Style",
 		meta = (RequiredAssetDataTags = "RowStructure=/Script/CrabToolsUE5.TextMacroDataRow"))
-	TArray<TSoftObjectPtr<UDataTable>> TextTables;
+	TArray<TObjectPtr<UDataTable>> TextTables;
 
 public:
 

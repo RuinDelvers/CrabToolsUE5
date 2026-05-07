@@ -110,6 +110,9 @@ public:
 	virtual void SetMinProp(URPGProperty* Prop) {}
 	virtual void SetMaxProp(URPGProperty* Prop) {}
 
+	URPGProperty* GetMaxRef() const { return this->Maximum; }
+	URPGProperty* GetMinRef() const { return this->Minimum; }
+
 protected:
 
 	UFUNCTION()

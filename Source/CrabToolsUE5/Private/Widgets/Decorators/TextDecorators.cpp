@@ -66,9 +66,7 @@ private:
 	{
 		for (const auto& Table : this->Mapper->TextTables)
 		{
-			Table.LoadSynchronous();
-
-			if (Table->FindRow<FTextMacroDataRow>(RowName, "", false))
+			if (Table && Table->FindRow<FTextMacroDataRow>(RowName, "", false))
 			{
 				return Table.Get();
 			}
