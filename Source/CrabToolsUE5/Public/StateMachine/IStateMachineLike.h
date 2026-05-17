@@ -214,7 +214,7 @@ struct FStateMachinePipedDataValue
  * and this is how it would be handled.
  */
 UCLASS()
-class UCompositeObjectData final : public UObject
+class CRABTOOLSUE5_API UCompositeObjectData final : public UObject
 {
     GENERATED_BODY()
 

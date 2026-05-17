@@ -59,7 +59,7 @@ bool FMoveToData::MakeRequest(AAIController* Ctrl)
 {
 	check(Ctrl);
 
-	if (this->DestinationActor || this->bUseLocationIfNoGoal || this->bUseOverrideLocation)
+	if (IsValid(this->DestinationActor) || this->bUseLocationIfNoGoal || this->bUseOverrideLocation)
 	{
 		FAIMoveRequest Request = this->ConstructRequest(Ctrl);
 		this->Result = Ctrl->MoveTo(Request, &this->SavedPath);

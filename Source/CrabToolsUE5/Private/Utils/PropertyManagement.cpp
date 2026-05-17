@@ -116,9 +116,9 @@ TSet<FFieldClass*>& UPropertyManagementLibrary::ValidInheritablePropertyTypes()
 		FEnumProperty::StaticClass(),
 		FNumericProperty::StaticClass(),
 		FObjectProperty::StaticClass(),
-		FObjectPtrProperty::StaticClass(),
+		//FObjectPtrProperty::StaticClass(),
 		FClassProperty::StaticClass(),
-		FClassPtrProperty::StaticClass(),
+		//FClassPtrProperty::StaticClass(),
 		FOptionalProperty::StaticClass(),
 		FStructProperty::StaticClass(),
 	};

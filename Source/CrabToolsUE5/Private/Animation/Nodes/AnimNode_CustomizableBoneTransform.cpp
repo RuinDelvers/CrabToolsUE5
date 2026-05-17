@@ -205,7 +205,7 @@ void FAnimNode_CustomizableBoneTransform::HandleIndividualBoneCase(
 
 	OutBoneTransforms.Add(FBoneTransform(DataPoint.BoneToModify.GetCompactPoseIndex(BoneContainer), NewBoneTM));
 
-	TRACE_ANIM_NODE_VALUE(Output, TEXT("Target"), DataPoint.BoneToModify.BoneName);
+	//TRACE_ANIM_NODE_VALUE(Output, TEXT("Target"), DataPoint.BoneToModify.BoneName);
 }
 
 void FAnimNode_CustomizableBoneTransform::InitializeBoneReferences(const FBoneContainer& RequiredBones)

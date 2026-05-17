@@ -68,9 +68,11 @@ void UCrabToolsEditorSettings::SyncTables(UDataTable* SourceTable, UDataTable* T
 
 void UCrabToolsEditorSettings::OnAssetsUpdated(const FAssetData& Data)
 {
-	if (auto Table = Cast<UDataTable>(Data.GetAsset()))
+	auto Asset = Data.GetAsset();
+
+	if (auto Table = Cast<UDataTable>(Asset))
 	{
-		if (this->TagKeyTables.Contains(Data.GetAsset()))
+		if (this->TagKeyTables.Contains(Table))
 		{
 			this->SyncTables(Table, this->TagKeyTables[Table].TagTable.LoadSynchronous());
 		}

@@ -23,7 +23,7 @@ class CRABTOOLSUE5_API UAIMovementRouterNode : public UAIBaseNode
 
 private:
 
-	UPROPERTY(EditAnywhere, Category="Movement", meta=(BitMask, BitMaskEnum="EAIMovementRouterType"))
+	UPROPERTY(EditAnywhere, Category="Movement", meta=(BitMask, BitMaskEnum="/Script/CrabToolsUE5.EAIMovementRouterType"))
 	int FunctionFlags = 0;
 
 public:

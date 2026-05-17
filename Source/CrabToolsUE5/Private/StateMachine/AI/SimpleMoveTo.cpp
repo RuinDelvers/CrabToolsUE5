@@ -130,7 +130,6 @@ void UAISimpleMoveToNode::Enter_Inner_Implementation()
 
 void UAISimpleMoveToNode::MoveToPreset()
 {
-	
 	bool bRequestSuccessful = false;
 
 	if (this->Property->IsBound())
@@ -145,7 +144,7 @@ void UAISimpleMoveToNode::MoveToPreset()
 			bRequestSuccessful = Value.MakeRequest(this->GetAIController());
 		}
 	}
-	else if (this->MoveData.bUseLocationIfNoGoal)
+	else
 	{
 		this->BindCallback();
 		this->OnRequestStarted();
