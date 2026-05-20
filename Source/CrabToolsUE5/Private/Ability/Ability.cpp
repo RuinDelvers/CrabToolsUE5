@@ -10,15 +10,19 @@ UAbility::UAbility(const FObjectInitializer& ObjInit)
 void UAbility::Initialize(AActor* POwner, UObject* InitData)
 {
 	this->Owner = POwner;
-
+	this->TickFunction.Ability = this;
 	this->AbilityData->Initialize(InitData);
 	this->Initialize_Inner(InitData);
+
+	if (this->RequiresTick())
+	{
+		this->TickFunction.RegisterTickFunction(this->GetWorld()->GetCurrentLevel());
+	}
 }
 
 UAbilityData* UAbility::SetAbilityData(TSubclassOf<UAbilityData> DataClass)
 {
 	this->AbilityData->OnDataChanged.Clear();
-
 	this->AbilityData = NewObject<UAbilityData>(this, DataClass);
 
 	return this->AbilityData;
@@ -29,6 +33,7 @@ void UAbility::Start(UObject* StartData)
 	if (!this->bActive && this->bUseable)
 	{
 		this->bActive = true;
+		this->TickFunction.SetTickFunctionEnable(true);
 		this->CurrentStartData = StartData;
 		this->AbilityData->Start(StartData);
 		this->Start_Inner();
@@ -100,6 +105,7 @@ void UAbility::Finish()
 	{
 		this->CurrentStartData = nullptr;
 		this->bActive = false;
+		this->TickFunction.SetTickFunctionEnable(false);
 		this->Finish_Inner();
 		this->OnAbilityFinished.Broadcast(this);
 	}
@@ -132,4 +138,28 @@ void UAbilityData::Finish()
 {
 	this->Finish_Inner();
 	this->CurrentStartData = nullptr;
+}
+
+void FAbilityTickFunction::ExecuteTick(float DeltaTime, ELevelTick TickType, ENamedThreads::Type CurrentThread, const FGraphEventRef& MyCompletionGraphEvent)
+{
+	this->Ability->Tick(DeltaTime);
+}
+
+FString FAbilityTickFunction::DiagnosticMessage()
+{
+	return Ability->GetFullName() + TEXT("[TickActor]");
+}
+
+FName FAbilityTickFunction::DiagnosticContext(bool bDetailed)
+{
+	if (bDetailed)
+	{
+		// Format is "ActorNativeClass/ActorClass"
+		FString ContextString = FString::Printf(TEXT("%s/%s"), *GetParentNativeClass(Ability->GetClass())->GetName(), *Ability->GetClass()->GetName());
+		return FName(*ContextString);
+	}
+	else
+	{
+		return GetParentNativeClass(Ability->GetClass())->GetFName();
+	}
 }

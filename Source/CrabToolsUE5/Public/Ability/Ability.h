@@ -2,6 +2,7 @@
 
 #include "Logging/LogMacros.h"
 #include "Utils/WorldAwareObject.h"
+#include "Tickable.h"
 #include "Ability.generated.h"
 
 CRABTOOLSUE5_API DECLARE_LOG_CATEGORY_EXTERN(LogAbility, Log, All);
@@ -135,6 +136,36 @@ public:
 	void SetTargetAttachComponent(USceneComponent* NewComp) { this->AttachComponent = NewComp; }
 };
 
+USTRUCT()
+struct FAbilityTickFunction : public FTickFunction
+{
+	GENERATED_BODY()
+
+public:
+
+	UAbility* Ability = nullptr;
+
+public:
+
+	virtual void ExecuteTick(float DeltaTime, ELevelTick TickType, ENamedThreads::Type CurrentThread, const FGraphEventRef& MyCompletionGraphEvent) override;
+	virtual FString DiagnosticMessage() override;
+	virtual FName DiagnosticContext(bool bDetailed) override;
+
+
+};
+
+template<>
+struct TStructOpsTypeTraits<FAbilityTickFunction> : public TStructOpsTypeTraitsBase2<FAbilityTickFunction>
+{
+	enum
+	{
+#if UE_WITH_REMOTE_OBJECT_HANDLE
+		WithAddStructReferencedObjects = true,
+#endif
+		WithCopy = false
+	};
+};
+
 /**
  * Class for player abilities. Abilities consist of a start, a continuous action,
  * a discrete action that happens on request, and an finish.
@@ -154,6 +185,9 @@ class CRABTOOLSUE5_API UAbility : public UWorldAwareObject, public IHasAbilityIn
 
 	UPROPERTY(BlueprintReadOnly, Transient, DuplicateTransient, Category = "Ability", meta = (AllowPrivateAccess))
 	TObjectPtr<UObject> CurrentStartData;
+
+	UPROPERTY(EditDefaultsOnly, Category="Tick")
+	FAbilityTickFunction TickFunction;
 
 public:
 
@@ -204,7 +238,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Ability")
 	void Perform();
 
-	UFUNCTION(BlueprintCallable, Category="Ability")
+	//UFUNCTION(BlueprintCallable, Category="Ability")
 	void Tick(float DeltaTime);
 
 	UFUNCTION(BlueprintCallable, Category = "Ability", meta=(DeterminesOutputType="DataClass"))

@@ -38,12 +38,10 @@ public:
 
 	UAbilityNode();
 
-	virtual void Tick_Inner_Implementation(float DeltaTime) override;
 	virtual void Initialize_Inner_Implementation() override;
 	virtual void Enter_Inner_Implementation() override;
 	virtual void EnterWithData_Inner_Implementation(UObject* Data) override;
 	virtual void Exit_Inner_Implementation() override;
-	virtual bool RequiresTick_Implementation() const override;
 
 	virtual bool HasPipedData_Implementation() const override;
 	virtual UObject* GetPipedData_Implementation() override;

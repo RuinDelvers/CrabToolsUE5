@@ -71,6 +71,12 @@ void UStateMachine::Initialize(UObject* POwner)
 
 
 		this->Reset();
+
+		this->TickFunction.Machine = this;
+		if (auto World = Owner->GetWorld())
+		{
+			this->TickFunction.RegisterTickFunction(World->GetCurrentLevel());
+		}
 	}
 	else
 	{
@@ -228,8 +234,6 @@ void UStateMachine::UpdateState()
 		{
 			NewState->Enter();
 		}
-
-		this->UpdateTickRequirements(NewState->RequiresTick());
 	}
 
 	if (Cached.Transition) { Cached.Transition->OnTransitionTaken(); }
@@ -268,6 +272,16 @@ void UStateMachine::UpdateState()
 				this->SendEvent(QueuedEvent.EventName, QueuedEvent.Source);
 			}
 		}
+
+		this->UpdateTickingState();
+	}
+}
+
+void UStateMachine::UpdateTickingState()
+{
+	if (auto TickState = this->GetCurrentState())
+	{
+		this->TickFunction.SetTickFunctionEnable(this->bIsActive && TickState->RequiresTick());
 	}
 }
 
@@ -410,16 +424,6 @@ void UStateMachine::SendEvent_Internal(FName InEvent, UObject* Data, bool bNeeds
 			
 		}
 		this->UpdateState();
-	}
-}
-
-void UStateMachine::UpdateTickRequirements(bool NeedsTick)
-{
-	this->OnTickRequirementUpdated.Broadcast(NeedsTick);
-
-	if (this->ParentMachine)
-	{
-		this->ParentMachine->UpdateTickRequirements(NeedsTick);
 	}
 }
 
@@ -1022,6 +1026,31 @@ void FTransitionQueue::Clear()
 	this->TransitionID = 0;
 }
 
+void FStateMachineTickFunction::ExecuteTick(float DeltaTime, ELevelTick TickType, ENamedThreads::Type CurrentThread, const FGraphEventRef& MyCompletionGraphEvent)
+{
+	this->Machine->Tick(DeltaTime);
+}
+
+FString FStateMachineTickFunction::DiagnosticMessage()
+{
+	return Machine->GetFullName() + TEXT("[TickStateMachine]");
+}
+
+FName FStateMachineTickFunction::DiagnosticContext(bool bDetailed)
+{
+	if (bDetailed)
+	{
+		// Format is "ActorNativeClass/ActorClass"
+		FString ContextString = FString::Printf(TEXT("%s/%s"), *GetParentNativeClass(Machine->GetClass())->GetName(), *Machine->GetClass()->GetName());
+		return FName(*ContextString);
+	}
+	else
+	{
+		return GetParentNativeClass(Machine->GetClass())->GetFName();
+	}
+}
+
+
 #pragma endregion
 
 #pragma region NodeCode
@@ -1359,12 +1388,6 @@ UWorld* UStateNode::GetWorld() const
 
 	//Else return null - the latent action will fail to initialize
 	return nullptr;
-}
-
-void UStateNode::UpdateTickRequirements() const
-{
-	this->GetMachine()->UpdateTickRequirements(this->RequiresTick());
-
 }
 
 bool UStateNode::RequiresTick_Implementation() const

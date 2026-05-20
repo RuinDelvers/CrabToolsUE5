@@ -72,15 +72,6 @@ void UHierarchyNode::Enter_Inner_Implementation()
 	}
 }
 
-void UHierarchyNode::Tick_Inner_Implementation(float DeltaTime)
-{
-	if (this->Slot)
-	{
-		this->Slot->Tick(DeltaTime);
-		this->PerformExit();
-	}
-}
-
 void UHierarchyNode::Exit_Inner_Implementation()
 {
 	if (this->Slot)
@@ -119,30 +110,6 @@ void UHierarchyNode::StateChangedCallback(UStateMachine* Data)
 		{
 			this->EmitEvent(this->ExitStates[StateName].GetEvent());
 		}
-
-		if (this->Active())
-		{
-			this->UpdateTickRequirements();
-		}
-	}
-}
-
-bool UHierarchyNode::RequiresTick_Implementation() const
-{
-	if (this->Slot)
-	{
-		if (auto Node = this->Slot->GetCurrentState()->GetNode())
-		{
-			return Node->RequiresTick();
-		}
-		else
-		{
-			return false;
-		}
-	}
-	else
-	{
-		return false;
 	}
 }
 

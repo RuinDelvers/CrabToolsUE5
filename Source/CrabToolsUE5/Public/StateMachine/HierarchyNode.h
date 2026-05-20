@@ -82,9 +82,7 @@ public:
 	virtual void Event_Inner_Implementation(FName InEvent, UObject* EventSource) override;
 	virtual void EventWithData_Inner_Implementation(FName InEvent, UObject* Data, UObject* Source) override;
 	virtual void Enter_Inner_Implementation() override;
-	virtual void Tick_Inner_Implementation(float DeltaTime) override;
 	virtual void Exit_Inner_Implementation() override;
-	virtual bool RequiresTick_Implementation() const override;
 	virtual void SetActive_Inner_Implementation(bool bNewActive) override;
 	virtual bool UsesEnteringEvents_Implementation() const override { return this->bPropagateEnterEvent; }
 

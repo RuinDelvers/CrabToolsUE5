@@ -64,7 +64,10 @@ public:
 	void Cycle();
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Interaction")
-	int Num() { return this->InteractableObjects.Num(); }
+	int Num() const { return this->InteractableObjects.Num(); }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Interaction")
+	bool HasInteractable() const { return !this->InteractableObjects.IsEmpty(); }
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Interaction")
 	UInteractableComponent* GetObj(int index) { return index >= 0 && index < this->InteractableObjects.Num() ? this->InteractableObjects[index].Get() : nullptr; }

@@ -402,9 +402,6 @@ public:
 
 protected:
 
-	UFUNCTION(BlueprintCallable, Category = "StateMachine")
-	void UpdateTickRequirements() const;
-
 	/* Override this with your verification code. */
 	virtual bool Verify_Inner(FNodeVerificationContext& Context) const { return true; }
 
@@ -596,6 +593,36 @@ public:
 	{}
 };
 
+USTRUCT()
+struct FStateMachineTickFunction : public FTickFunction
+{
+	GENERATED_BODY()
+
+public:
+
+	UStateMachine* Machine = nullptr;
+
+public:
+
+	virtual void ExecuteTick(float DeltaTime, ELevelTick TickType, ENamedThreads::Type CurrentThread, const FGraphEventRef& MyCompletionGraphEvent) override;
+	virtual FString DiagnosticMessage() override;
+	virtual FName DiagnosticContext(bool bDetailed) override;
+
+
+};
+
+template<>
+struct TStructOpsTypeTraits<FStateMachineTickFunction> : public TStructOpsTypeTraitsBase2<FStateMachineTickFunction>
+{
+	enum
+	{
+#if UE_WITH_REMOTE_OBJECT_HANDLE
+		WithAddStructReferencedObjects = true,
+#endif
+		WithCopy = false
+	};
+};
+
 /**
  * State Machine class. This is the base class for any State Machine, and manages all
  * appropriate state machine behaviour.
@@ -684,15 +711,13 @@ private:
 	 */
 	bool bIsActive = true;
 	
+	UPROPERTY(EditDefaultsOnly, Category="Tick")
+	FStateMachineTickFunction TickFunction;
+
 	UPROPERTY()
 	TSet<EDefaultStateMachineEvents> ActiveDefaultEvents;
 
 public:
-
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FTickRequirementUpdated, bool, NeedsTick);
-
-	UPROPERTY(BlueprintAssignable, Category = "StateMachine", meta = (IgnorePropertySearch))
-	FTickRequirementUpdated OnTickRequirementUpdated;
 
 	UPROPERTY(BlueprintAssignable, Category="StateMachine", meta = (IgnorePropertySearch))
 	FStateChangedEvent OnStateChanged;
@@ -845,8 +870,6 @@ public:
 	void AddStateData(FName StateName, UState* Data);
 	// End Procedural Construction functions
 
-	void UpdateTickRequirements(bool NeedsTick);
-
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "StateMachine", meta=(DeterminesOutputType="MachineClass"))
 	UStateMachine* FindMachineByClass(TSubclassOf<UStateMachine> MachineClass);
 
@@ -882,5 +905,6 @@ private:
 	void SetupStateChangedData();
 	bool DidPreempt(const FTransitionQueue& Cached) const;
 	void GetPreemptTransition(FTransitionQueue& Cached) const;
+	void UpdateTickingState();
 	/* End Helpers for UpdateState */
 };

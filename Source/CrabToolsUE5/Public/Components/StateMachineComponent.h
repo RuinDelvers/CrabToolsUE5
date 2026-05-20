@@ -26,12 +26,6 @@ protected:
 	virtual void BeginPlay() override;
 
 public:	
-	// Called every frame
-	virtual void TickComponent(
-		float DeltaTime, 
-		ELevelTick TickType, 
-		FActorComponentTickFunction* ThisTickFunction)
-		override;
 
 	virtual void Event_Implementation(FName InEvent, UObject* Source) override final { this->Event_Direct(InEvent, Source); }
 	void Event_Direct(FName InEvent, UObject* Source);
@@ -54,7 +48,4 @@ public:
 private:
 
 	bool HasMachine();
-
-	UFUNCTION()
-	void TickUpdated(bool NeedsTick);
 };

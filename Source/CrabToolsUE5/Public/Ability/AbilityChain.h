@@ -30,9 +30,7 @@ protected:
 	virtual void Initialize_Inner_Implementation(UObject* InitData) override;
 	virtual void Start_Inner_Implementation() override;
 	virtual void Perform_Inner_Implementation() override;
-	virtual void Tick_Inner_Implementation(float DeltaTime) override;
 	virtual void Finish_Inner_Implementation() override;
-	virtual bool RequiresTick_Implementation() const override;
 	virtual void Detach_Inner_Implementation() override;
 
 private:

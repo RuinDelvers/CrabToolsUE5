@@ -31,30 +31,12 @@ void UAbilityChain::Perform_Inner_Implementation()
 	this->AbilityChain[this->ActiveIndex]->Perform();
 }
 
-void UAbilityChain::Tick_Inner_Implementation(float DeltaTime)
-{
-	this->AbilityChain[this->ActiveIndex]->Tick(DeltaTime);
-}
-
 void UAbilityChain::Finish_Inner_Implementation()
 {
 	if (this->ActiveIndex < this->AbilityChain.Num())
 	{
 		this->AbilityChain[this->ActiveIndex]->OnAbilityFinished.RemoveAll(this);
 	}
-}
-
-bool UAbilityChain::RequiresTick_Implementation() const
-{
-	for (auto& Abi : this->AbilityChain)
-	{
-		if (Abi->RequiresTick())
-		{
-			return true;
-		}
-	}
-
-	return false;
 }
 
 void UAbilityChain::Detach_Inner_Implementation()

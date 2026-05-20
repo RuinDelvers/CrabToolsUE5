@@ -32,16 +32,6 @@ void UAbilityNode::Exit_Inner_Implementation()
 	this->CachedPipedData = nullptr;
 }
 
-bool UAbilityNode::RequiresTick_Implementation() const
-{
-	if (this->Selected)
-	{
-		return this->Selected->RequiresTick();
-	}
-	
-	return false;
-}
-
 bool UAbilityNode::HasPipedData_Implementation() const
 {
 	switch (this->PipedDateProcedure)
@@ -91,14 +81,6 @@ void UAbilityNode::EnterWithData_Inner_Implementation(UObject* Data)
 	}
 
 	this->StartAbility(this->Selected, Data);
-}
-
-void UAbilityNode::Tick_Inner_Implementation(float DeltaTime)
-{
-	if (this->Selected)
-	{
-		this->Selected->Tick(DeltaTime);
-	}
 }
 
 void UAbilityNode::StartAbility(UAbility* Abi, UObject* StartData)
