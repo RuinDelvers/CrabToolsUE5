@@ -13,6 +13,13 @@ enum class ETraceTargetingPointSource: uint8
 	CUSTOM     UMETA(DisplayName = "Custom"),
 };
 
+UENUM()
+enum class ETraceTargetingAction : uint8
+{
+	SEARCH UMETA(DisplayName="Search"),
+	LINE_OF_SIGHT UMETA(DisplayName = "Line of Sight"),
+};
+
 
 UCLASS(Abstract, Blueprintable)
 class ABaseTraceTargetingActor : public ABaseTargetingActor
@@ -44,12 +51,33 @@ protected:
 		meta = (AllowPrivateAccess))
 	bool bIgnoreSelf = true;
 
-	UPROPERTY(BlueprintreadOnly, Category = "Targeting|Trace")
+	UPROPERTY(BlueprintReadOnly, Category = "Targeting|Trace")
 	FTargetingData TracedTarget;
 
 	/* The point received via the GetEndPoint interface call. */
-	UPROPERTY(BlueprintreadOnly, Category = "Targeting|Trace")
+	UPROPERTY(BlueprintReadOnly, Category = "Targeting|Trace")
 	FVector TargetLocation;
+
+	/* This is used when we want to use the targeter as a trace checker, instead of finder. */
+	UPROPERTY(BlueprintReadOnly, Category = "Targeting|Trace")
+	TObjectPtr<AActor> GoalActor;
+
+	/*
+	 * The type of action that this trace targeting actor should do.
+	 * 
+	 * - Searching means that it'll use end points to create a trace, and the trace will be used to
+	 *   choose which actor to check.
+	 * - Line of Sight means that this actor is given a goal actor, and is just verifying that it is
+	 *   line of sight.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Targeting|Trace")
+	ETraceTargetingAction Action = ETraceTargetingAction::SEARCH;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Targeting|Trace")
+	FText BlockedTargetError;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Targeting|Trace")
+	FText InvalidTargetError;
 
 public:
 
@@ -82,8 +110,12 @@ public:
 	FVector GetTargetEndPoint() const { return this->TargetLocation; }
 
 	UFUNCTION(BlueprintNativeEvent, Category = "Targeting|Trace")
-	void HandleTrace();
-	virtual void HandleTrace_Implementation() {}
+	void HandleTrace(UPARAM(Ref) FTargetingData& OutData);
+	virtual void HandleTrace_Implementation(UPARAM(Ref) FTargetingData& OutData) {}
+
+	UFUNCTION(BlueprintNativeEvent, Category = "Targeting|Trace")
+	void HandleLineOfSight(UPARAM(Ref) FTargetingData& OutData);
+	virtual void HandleLineOfSight_Implementation(FTargetingData& OutData) {  }
 
 	virtual FTargetingData GetPendingData_Implementation() const override { return this->TracedTarget; }
 
@@ -94,6 +126,8 @@ protected:
 	void InvalidateTargetData();
 
 private:
+
+	void RouteAction();
 
 	UFUNCTION()
 	void HandleMouseOver(UMouseOverComponent* Comp);

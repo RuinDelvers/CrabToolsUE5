@@ -1,10 +1,8 @@
 #include "Actors/Targeting/MouseTraceTargetingActor.h"
 #include "Actors/Targeting/ITargeter.h"
 
-void AMouseTraceTargetingActor::HandleTrace_Implementation()
+void AMouseTraceTargetingActor::HandleTrace_Implementation(FTargetingData& OutData)
 {
-	Super::HandleTrace_Implementation();
-
 	if (auto PlayerController = Cast<APlayerController>(Cast<APawn>(this->GetUsingActor())->GetController())) 
 	{
 		FVector MousePos;
@@ -37,18 +35,10 @@ void AMouseTraceTargetingActor::HandleTrace_Implementation()
 
 		if (FoundTarget)
 		{
-			auto CheckActor = Result.GetActor();
-			FTargetingData InData;
-
-			InData.TargetActor = CheckActor;
-			InData.TargetLocation = Result.ImpactPoint;
-			InData.TargetNormal = Result.ImpactNormal;
-
-			this->UpdateTraces(InData);
-		}
-		else
-		{
-			this->InvalidateTargetData();
+			OutData.TargetActor = Result.GetActor();
+			OutData.TargetLocation = Result.ImpactPoint;
+			OutData.TargetNormal = Result.ImpactNormal;
+			OutData.SourcePoint = this->GetActorLocation();
 		}
 	}	
 }

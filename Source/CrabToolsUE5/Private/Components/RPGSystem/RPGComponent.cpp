@@ -3,8 +3,6 @@
 #include "Engine/SimpleConstructionScript.h"
 #include "Engine/SCS_Node.h"
 
-
-
 #define LOCTEXT_NAMESPACE "RPGComponent"
 
 #pragma region Component Code
@@ -56,12 +54,6 @@ void URPGComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorCo
 	}
 }
 
-UStatus* URPGComponent::MakeStatus(TSubclassOf<UStatus> StatusClass)
-{
-	auto Status = NewObject<UStatus>(this, StatusClass);
-	return Status;
-}
-
 void URPGComponent::TurnStart()
 {
 	for (auto& StatusData : this->Statuses)
@@ -69,6 +61,7 @@ void URPGComponent::TurnStart()
 		for (auto& Status : StatusData.Value.Instances)
 		{
 			Status->TurnStart();
+			Status->AddTurns(-1);
 		}
 	}
 
@@ -83,6 +76,7 @@ void URPGComponent::TurnEnd()
 		for (auto& Status : StatusData.Value.Instances)
 		{
 			Status->TurnEnd();
+			Status->AddTurns(-1);
 		}
 	}
 
@@ -386,6 +380,11 @@ void URPGComponent::UnpauseStatus()
 
 #pragma region Statuses
 
+void UStatus::Initialize(const FStatusInitData& NewInitData)
+{
+	this->StatusData = NewInitData;
+}
+
 URPGComponent* UStatus::GetOwner() const
 {
 	return CastChecked<URPGComponent>(this->GetOuter());
@@ -393,7 +392,15 @@ URPGComponent* UStatus::GetOwner() const
 
 float UStatus::GetRemainingTime() const
 {
-	return this->GetWorld()->GetTimerManager().GetTimerRemaining(this->Timer);
+	switch (this->StatusData.TimingMethod)
+	{
+		case EStatusTimingMethod::GAME_TIME:
+			this->GetWorld()->GetTimerManager().GetTimerRemaining(this->Timer);
+		case EStatusTimingMethod::TURN_TIME_END:
+		case EStatusTimingMethod::TURN_TIME_START:
+			return this->RemainingTurns * this->StatusData.TurnRealDuration;
+		default: return 0.0;
+	}
 }
 
 void UStatus::Refresh()
@@ -403,7 +410,7 @@ void UStatus::Refresh()
 
 void UStatus::RefreshSum()
 {
-	this->AddTimer(this->GetDuration());
+	this->AddTimer(this->StatusData.InitDuration);
 }
 
 void UStatus::PauseTimer()
@@ -418,28 +425,97 @@ void UStatus::UnpauseTimer()
 
 void UStatus::SetTimer()
 {
-	this->Timer.Invalidate();
-	this->GetWorld()->GetTimerManager().SetTimer(
-		this->Timer,
-		this,
-		&UStatus::OnDurationExpired,
-		this->GetDuration(),
-		false);
+	switch (this->StatusData.TimingMethod)
+	{
+		case EStatusTimingMethod::GAME_TIME:
+		{
+			this->Timer.Invalidate();
+			this->GetWorld()->GetTimerManager().SetTimer(
+				this->Timer,
+				this,
+				&UStatus::OnDurationExpired,
+				this->StatusData.InitDuration,
+				false);
+		}
+		break;
+
+		case EStatusTimingMethod::TURN_TIME_END:
+		case EStatusTimingMethod::TURN_TIME_START:
+			this->Timer.Invalidate();
+			this->GetWorld()->GetTimerManager().SetTimer(
+				this->Timer,
+				this,
+				&UStatus::OnDurationExpired,
+				this->StatusData.TurnRealDuration,
+				true);
+			break;
+	}
 }
 
 void UStatus::AddTimer(float Amount)
 {
-	this->GetWorld()->GetTimerManager().SetTimer(
-		this->Timer,
-		this,
-		&UStatus::OnDurationExpired,
-		this->GetRemainingTime() + Amount,
-		false);
+	switch (this->StatusData.TimingMethod)
+	{
+		case EStatusTimingMethod::GAME_TIME:
+		{
+			float RemainingTime = this->GetRemainingTime();
+			float NewTime = RemainingTime + Amount;
+
+			if (NewTime <= 0.0)
+			{
+				this->OnExpired.Broadcast(this);
+			}
+			else
+			{
+				this->GetWorld()->GetTimerManager().SetTimer(
+					this->Timer,
+					this,
+					&UStatus::OnDurationExpired,
+					this->GetRemainingTime() + Amount,
+					false);
+			}			
+		}
+	}
+}
+
+void UStatus::AddTurns(int Amount)
+{
+	switch (this->StatusData.TimingMethod)
+	{
+		case EStatusTimingMethod::TURN_TIME_END:
+		case EStatusTimingMethod::TURN_TIME_START:
+			this->RemainingTurns += Amount;
+
+			if (this->RemainingTurns < 1)
+			{
+				this->OnExpired.Broadcast(this);
+			}
+			break;
+	}
+	
 }
 
 void UStatus::OnDurationExpired()
 {
-	this->OnExpired.Broadcast(this);
+	switch (this->StatusData.TimingMethod)
+	{
+		case EStatusTimingMethod::GAME_TIME:
+			this->OnExpired.Broadcast(this);
+			break;
+		case EStatusTimingMethod::TURN_TIME_END:
+		case EStatusTimingMethod::TURN_TIME_START:
+			this->RemainingTurns -= 1;
+
+			this->TickTurnReal();
+
+			if (!this->StatusData.bInfiniteTurns && this->RemainingTurns < 1)
+			{
+				this->OnExpired.Broadcast(this);
+			}
+
+			break;
+	}
+	
 }
 
 void UStatus::Stack(int Quantity)
@@ -475,7 +551,7 @@ void UStatus::Apply()
 
 void UStatus::Removed()
 {
-	this->Timer.Invalidate();
+	this->GetOuter()->GetWorld()->GetTimerManager().ClearTimer(this->Timer);
 	this->OnRemoved.Broadcast(this);
 	this->Removed_Inner();
 }

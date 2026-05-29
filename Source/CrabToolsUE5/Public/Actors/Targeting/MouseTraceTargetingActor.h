@@ -14,5 +14,5 @@ class AMouseTraceTargetingActor : public ABaseTraceTargetingActor
 
 public:
 
-	virtual void HandleTrace_Implementation() override;
+	virtual void HandleTrace_Implementation(FTargetingData& OutData) override;
 };

@@ -24,8 +24,13 @@ public:
 
 	AArcTraceTargetingActor();
 
-	virtual void HandleTrace_Implementation() override;
+	virtual void HandleTrace_Implementation(FTargetingData& OutData) override;
+	virtual void HandleLineOfSight_Implementation(FTargetingData& OutData) override;
 
 	UFUNCTION(BlueprintCallable, Category="Targeting|ArcTrace")
 	void SetSplineEndPoint(FVector Target);
+
+private:
+
+	void DoTrace(FTargetingData& OutData, bool IgnoreSelf);
 };

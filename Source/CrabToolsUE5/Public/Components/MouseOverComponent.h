@@ -213,6 +213,9 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Trace")
 	bool IsOnNavMesh() const;
 
+	UFUNCTION(BlueprintCallable, Category = "Trace")
+	AActor* GetMouseOverActor() const { return this->MouseOverActor; }
+
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Trace")
 	FVector GetLocation() const { return this->Result.ImpactPoint; }
 

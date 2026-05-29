@@ -40,6 +40,9 @@ protected:
 	virtual bool HasPipedData_Implementation() const override;
 	virtual UObject* GetPipedData_Implementation() override;
 
+	UFUNCTION(BlueprintCallable, Category="Category")
+	TScriptInterface<UTargetingControllerInterface> GetTargeting() const { return this->TargetingInterface; }
+
 private:
 
 	UFUNCTION()

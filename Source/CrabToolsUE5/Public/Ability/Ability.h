@@ -71,6 +71,10 @@ public:
 	USceneComponent* TargetAttachComponent() const;
 	virtual USceneComponent* TargetAttachComponent_Implementation() const { return nullptr; }
 
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Targeting")
+	bool UniqueTargets() const;
+	virtual bool UniqueTargets_Implementation() const { return true; }
+
 	UFUNCTION(BlueprintCallable, Category = "Data")
 	void Update();
 
@@ -120,6 +124,10 @@ private:
 		meta = (AllowPrivateAccess))
 	FName AttachPoint = NAME_None;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Ability",
+		meta = (AllowPrivateAccess))
+	bool bUniqueTargets = true;
+
 	UPROPERTY(BlueprintReadWrite, Category = "Ability",
 		meta = (AllowPrivateAccess))
 	TObjectPtr<USceneComponent> AttachComponent;
@@ -132,6 +140,7 @@ public:
 	virtual float Range_Implementation() const override { return this->AbilityRange; }
 	virtual int TargetCount_Implementation() const override { return this->AbilityTargetCount; }
 	virtual FName TargetAttachPoint_Implementation() const override { return this->AttachPoint; }
+	virtual bool UniqueTargets_Implementation() const override { return this->bUniqueTargets; }
 
 	void SetTargetAttachComponent(USceneComponent* NewComp) { this->AttachComponent = NewComp; }
 };

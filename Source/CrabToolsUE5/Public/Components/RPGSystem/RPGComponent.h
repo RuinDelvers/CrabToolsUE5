@@ -9,6 +9,53 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FStatusEvent, UStatus*, Status);
 
 class URPGProperty;
 
+UENUM(BlueprintType)
+enum class EStatusTimingMethod: uint8
+{
+	/* No timing used at all. */
+	NONE UMETA(DisplayName = "None"),
+	/* Uses the game time, and timer implementation to handle duration of the timing. */
+	GAME_TIME UMETA(DisplayName="Game Time"),
+	/* Count the duration in turns, and only decrement when turn starts. */
+	TURN_TIME_START UMETA(DisplayName = "Turn Time Start"),
+	/* Count the duration in turns, and only decrement when turn ends. */
+	TURN_TIME_END UMETA(DisplayName = "Turn Time End"),
+};
+
+USTRUCT(BlueprintType)
+struct FStatusInitData
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Init")
+	TSubclassOf<UStatus> StatusClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Init")
+	EStatusTimingMethod TimingMethod = EStatusTimingMethod::NONE;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Init")
+	int MaxStacks = std::numeric_limits<int>::max();
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Init")
+	float MaxDuration = std::numeric_limits<float>::infinity();
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Init")
+	float InitDuration = 1.0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Init")
+	int MaxTurns = std::numeric_limits<int>::max();
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Init")
+	int InitTurns = 1;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Init")
+	bool bInfiniteTurns = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Init")
+	float TurnRealDuration = -1.0;
+};
+
+
 /* Base class for all Status objects for the RPG System*/
 UCLASS(Blueprintable, DefaultToInstanced, CollapseCategories, EditInlineNew, Within="RPGComponent")
 class CRABTOOLSUE5_API UStatus: public UObject
@@ -17,10 +64,16 @@ class CRABTOOLSUE5_API UStatus: public UObject
 
 private:
 
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere, Category = "Status")
+	FStatusInitData StatusData;
+
+	UPROPERTY(VisibleAnywhere, Category="Status")
 	int Stacks = 0;
 
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere, Category = "Status")
+	int RemainingTurns = 0;
+
+	UPROPERTY(VisibleAnywhere, Category = "Status")
 	bool bAttached = false;
 
 	FTimerHandle Timer;
@@ -38,6 +91,8 @@ public:
 
 public:
 
+	void Initialize(const FStatusInitData& InitData);
+
 	bool IsAttached() const;
 	void Refresh();
 	void RefreshSum();
@@ -54,6 +109,7 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category="RPG|Status")
 	int GetStacks() const { return this->Stacks; }
 
+	/* Returns a constant duration that is used when setting timers & stacking times. */
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "RPG|Status")
 	float GetDuration() const;
 	virtual float GetDuration_Implementation() const { return 0.0f; }
@@ -67,6 +123,11 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category="RPG|Status")
 	void Tick(float DeltaTime);
 	virtual void Tick_Implementation(float DeltaTime) {}
+
+	/* Called when real time turn ticking is active. This will be called during real time play when turns are decremented.*/
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "RPG|Status")
+	void TickTurnReal();
+	virtual void TickTurnReal_Implementation() {}
 
 	/* Used for turn based calls. */
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "RPG|Status")
@@ -95,6 +156,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "RPG|Status")
 	void AddTimer(float Amount);
+
+	UFUNCTION(BlueprintCallable, Category = "RPG|Status")
+	void AddTurns(int Amount);
 
 	UFUNCTION(BlueprintCallable, Category = "Status")
 	void PauseTimer();
@@ -187,21 +251,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Tick")
 	void TurnEnd();
 
-	UFUNCTION(BlueprintCallable, Category = "Status", meta=(DeterminesOutputType="Status"))
-	UStatus* MakeStatus(TSubclassOf<UStatus> Status);
-
 	template <class T>
-	T* MakeStatus()
+	T* MakeStatus(const FStatusInitData& InitData)
 	{
-		auto Status = NewObject<T>(this, T::StaticClass());
-		return Status;
-	}
-
-	template <class T>
-	T* MakeStatus(UClass* StatusClass)
-	{
-		auto Status = NewObject<T>(this, StatusClass);
-		return Status;
+		T* Status = NewObject<T>(this, InitData.StatusClass);
+		Status->Initialize(InitData);
+		return CastChecked<T>(Status);
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "Status")

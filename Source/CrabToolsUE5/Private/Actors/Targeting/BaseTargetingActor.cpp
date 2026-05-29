@@ -61,6 +61,11 @@ void ABaseTargetingActor::AddListener_Implementation(const FConfirmTargetsSingle
 	this->OnConfirmTargets.Add(Callback);
 }
 
+void ABaseTargetingActor::AddTargetAddedListener_Implementation(const FConfirmTargetsSingle& Callback)
+{
+	this->OnTargetAdded.Add(Callback);
+}
+
 void ABaseTargetingActor::AddDestroyedListener_Implementation(const FTargetingUpdated& Callback)
 {
 	this->OnDestroyed.Add(Callback);
@@ -70,6 +75,7 @@ void ABaseTargetingActor::AddDestroyedListener_Implementation(const FTargetingUp
 void ABaseTargetingActor::AddTarget_Implementation(const FTargetingData& TargetData)
 {
 	this->Data.Add(TargetData);
+	this->OnTargetAdded.Broadcast(this);
 	this->PerformTargetCountCheck();
 }
 
@@ -91,8 +97,11 @@ void ABaseTargetingActor::SetEnabled_Implementation(bool bNewEnabled)
 
 void ABaseTargetingActor::Confirm_Implementation()
 {
-	TScriptInterface<ITargetingControllerInterface> Targeter(this);
-	this->OnConfirmTargets.Broadcast(Targeter);
+	if (this->Data.Num() > 0)
+	{
+		TScriptInterface<ITargetingControllerInterface> Targeter(this);
+		this->OnConfirmTargets.Broadcast(Targeter);
+	}
 }
 
 void ABaseTargetingActor::GetTargetData_Implementation(TArray<FTargetingData>& OutData) const
@@ -103,6 +112,7 @@ void ABaseTargetingActor::GetTargetData_Implementation(TArray<FTargetingData>& O
 void ABaseTargetingActor::PopTarget_Implementation()
 {
 	this->Data.Pop();
+	this->OnTargetAdded.Broadcast(this);
 }
 
 const TArray<UTargetFilterComponent*>& ABaseTargetingActor::GetFilters() const

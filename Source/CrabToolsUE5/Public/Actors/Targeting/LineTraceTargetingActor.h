@@ -13,5 +13,6 @@ class ALineTraceTargetingActor : public ABaseTraceTargetingActor
 
 public:
 
-	virtual void HandleTrace_Implementation() override;
+	virtual void HandleTrace_Implementation(FTargetingData& OutData) override;
+	virtual void HandleLineOfSight_Implementation(FTargetingData& OutData) override;
 };

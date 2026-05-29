@@ -1,17 +1,14 @@
 #include "Actors/Targeting/PassThroughTargetingActor.h"
 #include "Actors/Targeting/ITargeter.h"
 
-void APassThroughTargetingActor::HandleTrace_Implementation()
+void APassThroughTargetingActor::HandleTrace_Implementation(FTargetingData& OutData)
 {
-	Super::HandleTrace_Implementation();
-
 	auto Target = ITargeterInterface::Execute_GetTracedActor(this->GetUsingActorNative());
 	auto EndPoint = ITargeterInterface::Execute_GetEndPoint(this->GetUsingActorNative());
 
 	FTargetingData InData;
 
-	InData.TargetActor = Target;
-	InData.TargetLocation = EndPoint;
-
-	this->UpdateTraces(InData);
+	OutData.TargetActor = Target;
+	OutData.TargetLocation = EndPoint;
+	OutData.SourcePoint = this->GetActorLocation();
 }

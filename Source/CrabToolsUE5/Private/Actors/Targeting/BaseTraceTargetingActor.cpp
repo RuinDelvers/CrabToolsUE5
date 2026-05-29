@@ -8,6 +8,8 @@
 ABaseTraceTargetingActor::ABaseTraceTargetingActor()
 {
 	this->PrimaryActorTick.bCanEverTick = true;
+	this->BlockedTargetError = LOCTEXT("BlockedTargetError", "Target blocked");
+	this->InvalidTargetError = LOCTEXT("InvalidTargetError", "Invalid Target");
 }
 
 void ABaseTraceTargetingActor::Initialize_Implementation()
@@ -45,7 +47,51 @@ void ABaseTraceTargetingActor::Tick(float DeltaTime)
 	if (this->PointSource == ETraceTargetingPointSource::TARGETER)
 	{
 		this->TargetLocation = ITargeterInterface::Execute_GetEndPoint(this->GetUsingActorNative());
-		this->HandleTrace();
+		this->GoalActor = ITargeterInterface::Execute_GetTracedActor(this->GetUsingActorNative());
+		this->RouteAction();
+	}
+}
+
+void ABaseTraceTargetingActor::RouteAction()
+{
+	this->InvalidateTargetData();
+
+	switch (this->Action)
+	{
+		case ETraceTargetingAction::SEARCH:
+		{
+			this->HandleTrace(this->TracedTarget);
+
+			if (IsValid(this->TracedTarget.TargetActor))
+			{
+				this->UpdateTraces(this->TracedTarget);
+			}
+			else
+			{
+				this->OnValidateTargeting.Broadcast(
+					false,
+					this->InvalidTargetError);
+			}
+		}
+		case ETraceTargetingAction::LINE_OF_SIGHT: 
+		{
+			this->HandleLineOfSight(this->TracedTarget);
+
+			if (!IsValid(this->TracedTarget.TargetActor) || this->TracedTarget.TargetActor == this->GoalActor)
+			{
+				FTargetingData NewData;
+				NewData.TargetActor = this->GoalActor;
+				NewData.TargetLocation = this->TargetLocation;
+				
+				this->UpdateTraces(NewData);
+			}
+			else
+			{
+				this->OnValidateTargeting.Broadcast(
+					false,
+					this->BlockedTargetError);
+			}			
+		}
 	}
 }
 
@@ -54,11 +100,13 @@ void ABaseTraceTargetingActor::HandleMouseOver(UMouseOverComponent* Comp)
 	if (Comp->HasValidLocation())
 	{
 		this->TargetLocation = Comp->GetLocation();
-		this->HandleTrace();
+		this->GoalActor = Comp->GetMouseOverActor();		
+		this->RouteAction();
 	}
 	else
 	{
 		this->TargetLocation = this->GetActorLocation();
+		this->GoalActor = nullptr;
 		this->InvalidateTargetData();
 	}	
 }
@@ -76,11 +124,14 @@ void ABaseTraceTargetingActor::InvalidateTargetData()
 void ABaseTraceTargetingActor::Confirm_Implementation()
 {
 	Super::Confirm_Implementation();
-	if (this->PointSource == ETraceTargetingPointSource::MOUSE_OVER)
+	if (this->Data.Num() > 0)
 	{
-		if (auto Comp = ITargeterInterface::Execute_GetMouseOver(this->GetUsingActorNative()))
+		if (this->PointSource == ETraceTargetingPointSource::MOUSE_OVER)
 		{
-			Comp->OnMouseOverTick.RemoveAll(this);
+			if (auto Comp = ITargeterInterface::Execute_GetMouseOver(this->GetUsingActorNative()))
+			{
+				Comp->OnMouseOverTick.RemoveAll(this);
+			}
 		}
 	}
 }

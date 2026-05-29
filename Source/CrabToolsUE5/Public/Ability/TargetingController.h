@@ -29,6 +29,10 @@ struct FTargetingData
 
 	UPROPERTY(BlueprintReadWrite, Category = "Targeting")
 	FVector TargetNormal = FVector::UpVector;
+
+	/* This is the source of the targeting. */
+	UPROPERTY(BlueprintReadWrite, Category = "Targeting")
+	FVector SourcePoint = FVector::ZeroVector;
 };
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FConfirmTargetsMulti, TScriptInterface<ITargetingControllerInterface>, Targeter);
@@ -100,6 +104,10 @@ public:
 	int GetTargetCount() const;
 	virtual int GetTargetCount_Implementation() const { return 0; }
 
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Targeting")
+	int GetMaxTargetCount() const;
+	virtual int GetMaxTargetCount_Implementation() const { return 0; }
+
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Targeting")
 	void Confirm();
@@ -109,6 +117,10 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Targeting")
 	void AddListener(const FConfirmTargetsSingle& Callback);
 	virtual void AddListener_Implementation(const FConfirmTargetsSingle& Callback) {}
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Targeting")
+	void AddTargetAddedListener(const FConfirmTargetsSingle& Callback);
+	virtual void AddTargetAddedListener_Implementation(const FConfirmTargetsSingle& Callback) {}
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Targeting")
 	void AddValidationListener(const FValidateTargetingSingle& Callback);

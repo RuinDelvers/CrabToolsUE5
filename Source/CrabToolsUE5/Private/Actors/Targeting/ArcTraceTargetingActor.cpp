@@ -16,18 +16,50 @@ AArcTraceTargetingActor::AArcTraceTargetingActor()
 	this->SetRootComponent(this->PathSpline);
 }
 
-void AArcTraceTargetingActor::HandleTrace_Implementation()
+void AArcTraceTargetingActor::HandleTrace_Implementation(FTargetingData& OutData)
 {
-	Super::HandleTrace_Implementation();
+	this->DoTrace(OutData, false);
+}
 
+void AArcTraceTargetingActor::HandleLineOfSight_Implementation(FTargetingData& OutData)
+{
+	this->DoTrace(OutData, true);
+}
+
+
+void AArcTraceTargetingActor::SetSplineEndPoint(FVector Target)
+{
+	auto Base = this->GetActorLocation();
+
+	// Choose a halfway point between.
+	auto Midpoint = (Target - Base) / 2 + Base;
+	// Adjust the arc to be above both points.
+	Midpoint.Z = FMath::Max(Base.Z, Target.Z) + this->HeightAdjust;
+
+	this->PathSpline->SetSplineWorldPoints({ Base, Midpoint, Target });
+	this->PathSpline->SetTangentAtSplinePoint(0, (Midpoint - Base).GetSafeNormal(),
+		ESplineCoordinateSpace::World, true);
+	this->PathSpline->SetTangentAtSplinePoint(0, FVector::Zero(),
+		ESplineCoordinateSpace::World, true);
+	this->PathSpline->SetTangentAtSplinePoint(2, (Target - Midpoint).GetSafeNormal(),
+		ESplineCoordinateSpace::World, true);
+}
+
+void AArcTraceTargetingActor::DoTrace(FTargetingData& OutData, bool IgnoreSelf)
+{
 	this->SetSplineEndPoint(this->GetTargetEndPoint());
 
-	float Delta = this->PathSpline->Duration/this->SampleSize;
+	float Delta = this->PathSpline->Duration / this->SampleSize;
 	bool bFoundTarget = false;
 
 	TArray<AActor*> IgnoredActors;
 	this->IgnoreActors(IgnoredActors);
-	
+
+	if (IgnoreSelf)
+	{
+		IgnoredActors.Add(this->GetUsingActorNative());
+	}
+
 	for (int i = 0; i < this->SampleSize; ++i)
 	{
 		float t0 = i * Delta;
@@ -57,38 +89,12 @@ void AArcTraceTargetingActor::HandleTrace_Implementation()
 
 		if (bFoundTarget)
 		{
-			FTargetingData InData;
-			InData.TargetActor = Result.GetActor();
-			InData.TargetLocation = Result.ImpactPoint;
-			InData.TargetNormal = Result.ImpactNormal;
-
-			this->UpdateTraces(InData);
+			OutData.TargetActor = Result.GetActor();
+			OutData.TargetLocation = Result.ImpactPoint;
+			OutData.TargetNormal = Result.ImpactNormal;
+			OutData.SourcePoint = this->GetActorLocation();
 
 			break;
 		}
 	}
-
-	if (!bFoundTarget)
-	{
-		this->InvalidateTargetData();
-	}
-}
-
-
-void AArcTraceTargetingActor::SetSplineEndPoint(FVector Target)
-{
-	auto Base = this->GetActorLocation();
-
-	// Choose a halfway point between.
-	auto Midpoint = (Target - Base) / 2 + Base;
-	// Adjust the arc to be above both points.
-	Midpoint.Z = FMath::Max(Base.Z, Target.Z) + this->HeightAdjust;
-
-	this->PathSpline->SetSplineWorldPoints({ Base, Midpoint, Target });
-	this->PathSpline->SetTangentAtSplinePoint(0, (Midpoint - Base).GetSafeNormal(),
-		ESplineCoordinateSpace::World, true);
-	this->PathSpline->SetTangentAtSplinePoint(0, FVector::Zero(),
-		ESplineCoordinateSpace::World, true);
-	this->PathSpline->SetTangentAtSplinePoint(2, (Target - Midpoint).GetSafeNormal(),
-		ESplineCoordinateSpace::World, true);
 }

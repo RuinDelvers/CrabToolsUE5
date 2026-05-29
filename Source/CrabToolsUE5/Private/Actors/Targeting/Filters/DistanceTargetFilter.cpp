@@ -4,7 +4,7 @@
 #define LOCTEXT_NAMESPACE "DistanceTargetFilter"
 
 UDistanceTargetFilterComponent::UDistanceTargetFilterComponent()
-: Range(std::numeric_limits<float>::infinity())
+	: ErrorMessage(LOCTEXT("TooFarResult", "Target is too far."))
 {
 
 }
@@ -50,14 +50,36 @@ void UDistanceTargetFilterComponent::InitFromAbility(UAbilityData* Data)
 	this->Range = Data->Range();
 }
 
+FVector UDistanceTargetFilterComponent::GetTargetPoint(const FTargetingData& Data) const
+{
+	switch (this->TargetPointSource)
+	{
+		case EDistanceTargetFilterLocationSource::TARGET_ACTOR: return Data.TargetActor->GetActorLocation();
+		case EDistanceTargetFilterLocationSource::POINT: return Data.TargetLocation;
+		default: return FVector::ZeroVector;
+	}
+}
+
+FVector UDistanceTargetFilterComponent::GetSourccePoint() const
+{
+	switch (this->SourcePointSource)
+	{
+		case EDistanceSourceFilterLocationSource::TARGETING: return this->GetOwner()->GetActorLocation();
+		case EDistanceSourceFilterLocationSource::USING_ACTOR:
+			return ITargetingControllerInterface::Execute_GetUsingActor(this->GetOwner())->GetActorLocation();
+		default: return FVector::ZeroVector;
+	}
+}
+
 bool UDistanceTargetFilterComponent::Filter_Implementation(const FTargetingData& Data, FText& FailureReason)
 {
-	float Distance = FVector::DistSquared(Data.TargetLocation, this->GetOwner()->GetActorLocation());
+	
+	float Distance = FVector::DistSquared(this->GetTargetPoint(Data), this->GetSourccePoint());
 	bool Result = Distance < this->Range * this->Range;
 
 	if (!Result)
 	{
-		FailureReason = LOCTEXT("TooFarResult", "Target is too far.");
+		FailureReason = this->ErrorMessage;
 	}
 
 	return Result;

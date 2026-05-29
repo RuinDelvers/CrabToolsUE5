@@ -6,7 +6,6 @@
 #include "BaseTargetingActor.generated.h"
 
 UCLASS(Abstract, Blueprintable, CollapseCategories, ClassGroup = (Custom),
-	Within="BaseTargetingActor",
 	meta = (BlueprintSpawnableComponent))
 class CRABTOOLSUE5_API UTargetFilterComponent : public UActorComponent
 {
@@ -42,7 +41,12 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Targeting")
 	FTargetingUpdatedMulti OnEnabledUpdated;
 
+	UPROPERTY(BlueprintAssignable, Category = "Targeting")
 	FConfirmTargetsMulti OnConfirmTargets;
+
+	/* This is called when a target is added or removed. */
+	UPROPERTY(BlueprintAssignable, Category = "Targeting")
+	FConfirmTargetsMulti OnTargetAdded;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Ability",
 		meta=(ExposeOnSpawn))
@@ -71,6 +75,7 @@ public:
 	virtual void Initialize_Implementation() override;
 	virtual void Confirm_Implementation() override;
 	virtual void AddListener_Implementation(const FConfirmTargetsSingle& Callback) override;
+	virtual void AddTargetAddedListener_Implementation(const FConfirmTargetsSingle& Callback) override;
 	virtual void AddValidationListener_Implementation(const FValidateTargetingSingle& Callback) override;
 	virtual void AddDestroyedListener_Implementation(const FTargetingUpdated& Callback) override;
 	virtual void AddDisabledListener_Implementation(const FTargetingUpdated& Callback) override;
@@ -81,6 +86,7 @@ public:
 
 	virtual void SetEnabled_Implementation(bool bNewEnabled) override;
 	virtual bool GetEnabled_Implementation() const override { return this->bEnabled; }
+	virtual int GetMaxTargetCount_Implementation() const { return this->MaxTargetCount; }
 	/* END ITargetControllerInterface functions */
 
 	virtual void SetAbility_Implementation(UAbility* IAbiOwner) override { this->AbilityOwner = IAbiOwner; }
