@@ -78,12 +78,8 @@ void ABaseTraceTargetingActor::RouteAction()
 			this->HandleLineOfSight(this->TracedTarget);
 
 			if (!IsValid(this->TracedTarget.TargetActor) || this->TracedTarget.TargetActor == this->GoalActor)
-			{
-				FTargetingData NewData;
-				NewData.TargetActor = this->GoalActor;
-				NewData.TargetLocation = this->TargetLocation;
-				
-				this->UpdateTraces(NewData);
+			{			
+				this->UpdateTraces(this->TracedTarget);
 			}
 			else
 			{

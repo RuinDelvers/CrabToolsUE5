@@ -15,4 +15,8 @@ public:
 
 	virtual void HandleTrace_Implementation(FTargetingData& OutData) override;
 	virtual void HandleLineOfSight_Implementation(FTargetingData& OutData) override;
+
+private:
+
+	void DoTrace(FTargetingData& OutData, bool IgnoreUsingActor);
 };
