@@ -5,6 +5,11 @@
 
 class STATEMACHINEEDITOR_API FStateMachineConnectionDrawingPolicy : public FConnectionDrawingPolicy
 {
+
+public:
+
+	static const float LINE_SEPARATION_FACTOR;
+
 protected:
 	UEdGraph* GraphObj;
 	TMap<UEdGraphNode*, int32> NodeWidgetMap;

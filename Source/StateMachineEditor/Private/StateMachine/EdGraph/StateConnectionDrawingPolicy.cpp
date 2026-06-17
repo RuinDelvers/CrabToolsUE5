@@ -2,6 +2,8 @@
 #include "StateMachine/EdGraph/EdBaseNode.h"
 #include "StateMachine/EdGraph/EdTransition.h"
 
+const float FStateMachineConnectionDrawingPolicy::LINE_SEPARATION_FACTOR = 8.5f;
+
 // This is used since slate eventually stopped support double vectors, and only using floats.
 #if ENGINE_MINOR_VERSION >= 7
 	using SlateVector = FVector2f;
@@ -24,7 +26,7 @@ void FStateMachineConnectionDrawingPolicy::DetermineWiringStyle(UEdGraphPin* Out
 	const bool bDeemphasizeUnhoveredPins = HoveredPins.Num() > 0;
 	if (bDeemphasizeUnhoveredPins)
 	{
-		ApplyHoverDeemphasis(OutputPin, InputPin, /*inout*/ Params.WireThickness, /*inout*/ Params.WireColor);
+		ApplyHoverDeemphasis(OutputPin, InputPin, Params.WireThickness, Params.WireColor);
 	}
 }
 
@@ -69,21 +71,24 @@ void FStateMachineConnectionDrawingPolicy::DrawSplineWithArrow(const FVector2D& 
 
 void FStateMachineConnectionDrawingPolicy::Internal_DrawLineWithArrow(const FVector2D& StartAnchorPoint, const FVector2D& EndAnchorPoint, const FConnectionParams& Params)
 {
-	//@TODO: Should this be scaled by zoom factor?
-	const float LineSeparationAmount = 4.5f;
-
 	const SlateVector DeltaPos = SlateVector(EndAnchorPoint) - SlateVector(StartAnchorPoint);
 	const SlateVector UnitDelta = DeltaPos.GetSafeNormal();
 	const SlateVector Normal = SlateVector(DeltaPos.Y, -DeltaPos.X).GetSafeNormal();
 
 	// Come up with the final start/end points
-	const SlateVector DirectionBias = Normal * LineSeparationAmount;
+	const SlateVector DirectionBias = Normal * LINE_SEPARATION_FACTOR;
 	const SlateVector LengthBias = ArrowRadius.X * UnitDelta;
 	const SlateVector StartPoint = SlateVector(StartAnchorPoint) + DirectionBias + LengthBias;
 	const SlateVector EndPoint = SlateVector(EndAnchorPoint) + DirectionBias - LengthBias;
 
+	FConnectionParams NewParams;
+
+	// Need to recompute here, because ComputeSplineTangent is no longer called per update.
+	NewParams.StartTangent = this->ComputeSplineTangent(StartAnchorPoint, EndAnchorPoint);
+	NewParams.EndTangent = this->ComputeSplineTangent(StartAnchorPoint, EndAnchorPoint);
+
 	// Draw a line/spline
-	DrawConnection(WireLayerID, StartPoint, EndPoint, Params);
+	DrawConnection(WireLayerID, StartPoint, EndPoint, NewParams);
 
 	// Draw the arrow
 	const SlateVector ArrowDrawPos = SlateVector(EndPoint) - SlateVector(ArrowRadius);
@@ -120,6 +125,8 @@ FVector2D FStateMachineConnectionDrawingPolicy::ComputeSplineTangent(const FVect
 {
 	const FVector2D Delta = End - Start;
 	const FVector2D NormDelta = Delta.GetSafeNormal();
+
+	UE_LOG(LogTemp, Warning, TEXT("- Waffles: %s"), *NormDelta.ToString())
 
 	return NormDelta;
 }
