@@ -2,6 +2,8 @@
 #include "StateMachine/StateMachine.h"
 #include "StateMachine/EdGraph/EdStateNode.h"
 #include "StateMachine/Widgets/Utils.h"
+#include "ContentBrowserModule.h"
+#include "IContentBrowserSingleton.h"
 
 #define LOCTEXT_NAMESPACE "SBaseStateNode"
 
@@ -177,6 +179,22 @@ TSharedPtr<SWidget> SBaseStateNodeDetails::ConstructHeader()
 							]
 					]
 					+ SHorizontalBox::Slot()
+						.VAlign(VAlign_Center)
+						.HAlign(HAlign_Center)
+						[
+							SNew(SButton)
+								.OnClicked(this, &SBaseStateNodeDetails::OnOpenAssetClicked)
+								.ButtonStyle(FAppStyle::Get(), "SimpleButton")
+								.Text(FText::FromString("Open Class Blueprint"))
+								.ContentPadding(FMargin(1, 0))
+								.ToolTipText(LOCTEXT("OpenAssetButton", "Open Node Asset"))
+								[
+									SNew(SImage)
+										.Image(FAppStyle::Get().GetBrush("Icons.Blueprints"))
+										.ColorAndOpacity(FSlateColor::UseForeground())
+								]
+						]
+					+ SHorizontalBox::Slot()
 					.VAlign(VAlign_Center)
 					.HAlign(HAlign_Center)
 					[
@@ -220,3 +238,15 @@ FReply SBaseStateNodeDetails::OnHeaderClicked(const FGeometry& Geometry, const F
 	return FReply::Unhandled();
 }
 
+FReply SBaseStateNodeDetails::OnOpenAssetClicked()
+{
+	if (auto BPClass = Cast<UBlueprintGeneratedClass>(this->StateNode->GetClass()))
+	{
+		FContentBrowserModule& Module = FModuleManager::Get().LoadModuleChecked<FContentBrowserModule>("ContentBrowser");
+
+		TArray<UObject*> Assets = { BPClass };
+
+		Module.Get().SyncBrowserToAssets(Assets);
+	}
+	return FReply::Handled();
+}

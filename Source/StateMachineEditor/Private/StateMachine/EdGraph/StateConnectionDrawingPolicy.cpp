@@ -126,8 +126,6 @@ FVector2D FStateMachineConnectionDrawingPolicy::ComputeSplineTangent(const FVect
 	const FVector2D Delta = End - Start;
 	const FVector2D NormDelta = Delta.GetSafeNormal();
 
-	UE_LOG(LogTemp, Warning, TEXT("- Waffles: %s"), *NormDelta.ToString())
-
 	return NormDelta;
 }
 

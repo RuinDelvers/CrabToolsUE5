@@ -8,6 +8,11 @@
 /**
  * Class for player abilities. Abilities consist of a start, a continuous action,
  * a discrete action that happens on request, and an finish.
+ * 
+ * This node will listen for an AnimNotify_AbilityFinish. You can implement this event either on a per
+ * animation basis, or as a notify in the AnimBP on a transition. E.g. setup automatic transitions for
+ * an ability state, then the notify will be the transition away. That way the AnimBP drives the
+ * ability. This second method saves work by not requiring a notify in every animation asset.
  */
 UCLASS(Blueprintable)
 class CRABTOOLSUE5_API UAnimAbility : public UAbility

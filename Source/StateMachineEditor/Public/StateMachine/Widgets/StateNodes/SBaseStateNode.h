@@ -27,6 +27,7 @@ public:
 
 private:
 
+	FReply OnOpenAssetClicked();
 	FReply OnDeleteClicked();
 	FReply OnExpandClicked();
 	FReply OnMoveUpClicked();
