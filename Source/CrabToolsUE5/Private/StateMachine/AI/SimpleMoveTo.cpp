@@ -26,12 +26,6 @@ void UAISimpleMoveToNode::Initialize_Inner_Implementation()
 	check(this->GetAIController());
 }
 
-void UAISimpleMoveToNode::Exit_Inner_Implementation()
-{
-	//this->UnbindCallback();
-	//this->MoveData.PauseMove(this->GetAIController());
-}
-
 void UAISimpleMoveToNode::EnterWithData_Inner_Implementation(UObject* Data)
 {
 	if (auto Request = UCompositeObjectData::FindDataImplementing<UMovementRequestInterface>(Data).GetObject())

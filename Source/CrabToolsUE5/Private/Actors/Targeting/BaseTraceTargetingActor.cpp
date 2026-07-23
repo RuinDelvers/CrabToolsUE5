@@ -75,18 +75,29 @@ void ABaseTraceTargetingActor::RouteAction()
 		}
 		case ETraceTargetingAction::LINE_OF_SIGHT: 
 		{
-			this->HandleLineOfSight(this->TracedTarget);
+			if (this->GoalActor == this->GetUsingActorNative())
+			{
+				this->TracedTarget.TargetActor = this->GoalActor;
+				this->TracedTarget.TargetLocation = this->GetTargetEndPoint();
+				this->TracedTarget.SourcePoint = this->GetActorLocation();
 
-			if (!IsValid(this->TracedTarget.TargetActor) || this->TracedTarget.TargetActor == this->GoalActor)
-			{			
 				this->UpdateTraces(this->TracedTarget);
 			}
 			else
 			{
-				this->OnValidateTargeting.Broadcast(
-					false,
-					this->BlockedTargetError);
-			}			
+				this->HandleLineOfSight(this->TracedTarget);
+
+				if (!IsValid(this->TracedTarget.TargetActor) || this->TracedTarget.TargetActor == this->GoalActor)
+				{
+					this->UpdateTraces(this->TracedTarget);
+				}
+				else
+				{
+					this->OnValidateTargeting.Broadcast(
+						false,
+						this->BlockedTargetError);
+				}
+			}
 		}
 	}
 }

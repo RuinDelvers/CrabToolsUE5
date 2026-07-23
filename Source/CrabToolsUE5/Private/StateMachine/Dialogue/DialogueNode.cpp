@@ -16,15 +16,7 @@ void UDialogueNode::Initialize_Inner_Implementation()
 	}
 }
 
-void UDialogueNode::GetEmittedEvents(TSet<FName>& Events) const
-{
-	Super::GetEmittedEvents(Events);
 
-	for (const UDialogueData* Choice : this->Choices->DialogueData)
-	{
-		Events.Add(Choice->GetEvent());
-	}
-}
 
 void UDialogueNode::Enter_Inner_Implementation()
 {
@@ -48,6 +40,17 @@ void UDialogueNode::HandleDialogueSelection(const UDialogueData* Data)
 }
 
 #if WITH_EDITOR
+
+void UDialogueNode::GetEmittedEvents(TSet<FName>& Events) const
+{
+	Super::GetEmittedEvents(Events);
+
+	for (const UDialogueData* Choice : this->Choices->DialogueData)
+	{
+		Events.Add(Choice->GetEvent());
+	}
+}
+
 void UDialogueNode::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
 	Super::PostEditChangeProperty(PropertyChangedEvent);
@@ -65,6 +68,11 @@ void UDialogueNode::PostEditChangeProperty(FPropertyChangedEvent& PropertyChange
 #endif
 
 #pragma region Attempt Dialogue Node
+
+UAttemptDialogueNode::UAttemptDialogueNode()
+{
+	this->AddEmittedEvent(Events::Dialogue::DIALOGUE_CONFIRMED);
+}
 
 void UAttemptDialogueNode::EventWithData_Inner_Implementation(FName InEvent, UObject* Data, UObject* Source)
 {
@@ -97,14 +105,12 @@ void UAttemptDialogueNode::HandleComponent(UDialogueStateComponent* Comp)
 		this->EmitEvent(Events::Dialogue::DIALOGUE_CONFIRMED);
 	}
 }
-
-#if WITH_EDITOR
-void UAttemptDialogueNode::GetEmittedEvents(TSet<FName>& Events) const
-{
-	Events.Add(Events::Dialogue::DIALOGUE_CONFIRMED);
-}
-#endif // WITH_EDITOR
 #pragma endregion
+
+UConfirmDialogueNode::UConfirmDialogueNode()
+{
+	this->AddEmittedEvent(Events::Dialogue::DIALOGUE_CONFIRMED);
+}
 
 void UConfirmDialogueNode::Initialize_Inner_Implementation()
 {
@@ -119,11 +125,10 @@ void UConfirmDialogueNode::HandleDialogueStarted()
 	this->EmitEvent(Events::Dialogue::DIALOGUE_CONFIRMED);
 }
 
-void UConfirmDialogueNode::GetEmittedEvents(TSet<FName>& Events) const
+UFinishDialogueNode::UFinishDialogueNode()
 {
-	Events.Add(Events::Dialogue::DIALOGUE_CONFIRMED);
+	this->AddEmittedEvent(Events::Dialogue::DIALOGUE_FINISHED);
 }
-
 
 void UFinishDialogueNode::Initialize_Inner_Implementation()
 {
@@ -143,10 +148,3 @@ void UFinishDialogueNode::HandleDialogueFinished()
 {
 	this->EmitEvent(Events::Dialogue::DIALOGUE_FINISHED);
 }
-
-#if WITH_EDITOR
-void UFinishDialogueNode::GetEmittedEvents(TSet<FName>& Events) const
-{
-	Events.Add(Events::Dialogue::DIALOGUE_FINISHED);
-}
-#endif // WITH_EDITOR

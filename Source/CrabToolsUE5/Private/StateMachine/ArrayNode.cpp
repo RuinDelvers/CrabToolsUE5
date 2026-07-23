@@ -127,18 +127,6 @@ void UArrayNode::SetActive_Inner_Implementation(bool bNewActive)
 	}
 }
 
-bool UArrayNode::UsesEnteringEvents_Implementation() const
-{
-	for (const auto& Child : this->Nodes)
-	{
-		if (Child && Child->UsesEnteringEvents())
-		{
-			return true;
-		}
-	}
-
-	return false;
-}
 
 bool UArrayNode::Verify_Inner(FNodeVerificationContext& Context) const
 {
@@ -188,6 +176,20 @@ UObject* UArrayNode::GetPipedData_Implementation()
 }
 
 #if WITH_EDITORONLY_DATA
+
+bool UArrayNode::UsesEnteringEvents_Implementation() const
+{
+	for (const auto& Child : this->Nodes)
+	{
+		if (Child && Child->UsesEnteringEvents())
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
 void UArrayNode::GetEmittedEvents(TSet<FName>& Events) const
 {
 	Super::GetEmittedEvents(Events);

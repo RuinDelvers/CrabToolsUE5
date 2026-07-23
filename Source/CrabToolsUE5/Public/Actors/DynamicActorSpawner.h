@@ -37,9 +37,9 @@ public:
 protected:
 
 	virtual void BeginPlay() override;
-	virtual void Destroyed() override;
 
 	#if WITH_EDITOR
+		virtual void Destroyed() override;
 		virtual void PostEditChangeProperty(struct FPropertyChangedEvent& Event) override;
 		void ClearPreviews();
 	#endif // WITH_EDITOR

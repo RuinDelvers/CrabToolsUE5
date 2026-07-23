@@ -44,6 +44,9 @@ void ADynamicActorSpawner::SpawnActor()
 	this->GetWorld()->SpawnActor(this->ActorClass.Get(), &Transform);
 }
 
+
+#if WITH_EDITOR
+
 void ADynamicActorSpawner::Destroyed()
 {
 	Super::Destroyed();
@@ -54,8 +57,6 @@ void ADynamicActorSpawner::Destroyed()
 		this->PreviewActor = nullptr;
 	}
 }
-
-#if WITH_EDITOR
 
 void ADynamicActorSpawner::ClearPreviews()
 {

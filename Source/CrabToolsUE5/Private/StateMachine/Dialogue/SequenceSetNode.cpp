@@ -9,6 +9,7 @@
 USequenceSetNode::USequenceSetNode()
 {
 	this->AddEmittedEvent(Events::Dialogue::SEQUENCE_LOADED);
+	this->AddEmittedEvent(Events::Dialogue::NULL_SEQUENCE);
 	this->SeqBinding = CreateDefaultSubobject<UGenericPropertyBinding>(TEXT("SeqBinding"));
 }
 
@@ -114,6 +115,10 @@ void USequenceSetNode::LoadSoftPtr(TSoftObjectPtr<ULevelSequence> Ptr)
 
 			this->EmitEvent(Events::Dialogue::SEQUENCE_LOADED);
 		}
+	}
+	else
+	{
+		this->EmitEvent(Events::Dialogue::NULL_SEQUENCE);
 	}
 }
 

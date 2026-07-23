@@ -146,11 +146,11 @@ private:
 	UFUNCTION()
 	TArray<FString> GetInteractionOptions() const;
 
+#endif
 
+	// Simple ufunction to act as an example for the function search method to match to.
 	UFUNCTION()
 	void ExampleInteraction(AActor* Interactor, UObject* Data) {}
-
-#endif
 };
 
 /**

@@ -33,6 +33,19 @@ void URPGOperation::Initialize(URPGComponent* InitComponent)
 	this->Initialize_Inner();
 }
 
+
+
+TArray<FString> URPGResource::GetAttributeOptions() const
+{
+	if (auto Outer = UtilsFunctions::GetOuterAs<URPGComponent>(this))
+	{
+		return Outer->GetRPGPropertyNames(this->GetBoundsType());
+	}
+
+	return {};
+}
+
+#if WITH_EDITOR
 void URPGOperation::SetExternalControl(
 	bool bNewExternalControl,
 	TSoftClassPtr<URPGComponent> Comp,
@@ -46,7 +59,7 @@ TArray<FString> URPGOperation::GetPropertyNames() const
 {
 	TArray<FString> Names;
 
-	
+
 	if (auto Source = this->PropertySource.LoadSynchronous())
 	{
 		auto Type = this->GetPropertySearchType();
@@ -65,19 +78,11 @@ TArray<FString> URPGOperation::GetPropertyNames() const
 					false));
 			}
 		}
-		
+
 	}
 
 	Names.Sort([](const FString& A, const FString& B) { return A < B; });
 	return Names;
 }
 
-TArray<FString> URPGResource::GetAttributeOptions() const
-{
-	if (auto Outer = UtilsFunctions::GetOuterAs<URPGComponent>(this))
-	{
-		return Outer->GetRPGPropertyNames(this->GetBoundsType());
-	}
-
-	return {};
-}
+#endif

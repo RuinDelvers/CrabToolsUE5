@@ -104,10 +104,8 @@ public:
 	UPROPERTY()
 	TMap<FName, FStateMachineArchetypeData> SubArchetypes;
 
-	#if WITH_EDITORONLY_DATA
-		UPROPERTY()
-		TSet<TObjectPtr<UStateMachineInterface>> Interfaces;
-	#endif //WITH_EDITORONLY_DATA
+	UPROPERTY()
+	TSet<TObjectPtr<UStateMachineInterface>> Interfaces;
 
 public:
 

@@ -256,8 +256,6 @@ private:
 				return Output;
 			}
 		}
-
-		return Helpers::DefaultValue<Return>;
 	}
 
 	template <class Type> void GenericLocalPropSet(

@@ -47,9 +47,14 @@ void URPGComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorCo
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 		
-	for (auto& Status : this->TickedStatuses) {
-		if (IsValid(Status)) {
-			Status->Tick(DeltaTime);
+	if (this->bTickStatus)
+	{
+		for (auto& Status : this->TickedStatuses)
+		{
+			if (IsValid(Status))
+			{
+				Status->Tick(DeltaTime);
+			}
 		}
 	}
 }
@@ -58,7 +63,8 @@ void URPGComponent::TurnStart()
 {
 	for (auto& StatusData : this->Statuses)
 	{
-		for (auto& Status : StatusData.Value.Instances)
+		TArray<TObjectPtr<UStatus>> Inst = StatusData.Value.Instances;
+		for (auto& Status : Inst)
 		{
 			Status->TurnStart();
 			Status->AddTurns(-1);
@@ -73,7 +79,8 @@ void URPGComponent::TurnEnd()
 {
 	for (auto& StatusData : this->Statuses)
 	{
-		for (auto& Status : StatusData.Value.Instances)
+		TArray<TObjectPtr<UStatus>> Inst = StatusData.Value.Instances;
+		for (auto& Status : Inst)
 		{
 			Status->TurnEnd();
 			Status->AddTurns(-1);
@@ -356,6 +363,7 @@ URPGProperty* URPGComponent::FindDefaultRPGPropertyByName(FName Ref) const
 
 void URPGComponent::PauseStatus()
 {
+	this->bTickStatus = false;
 	for (const auto& Data : this->Statuses)
 	{
 		for (const auto& Status : Data.Value.Instances)
@@ -363,11 +371,11 @@ void URPGComponent::PauseStatus()
 			Status->PauseTimer();
 		}		
 	}
-	this->SetComponentTickEnabled(false);
 }
 
 void URPGComponent::UnpauseStatus()
 {
+	this->bTickStatus = true;
 	for (const auto& Data : this->Statuses)
 	{
 		for (const auto& Status : Data.Value.Instances)
@@ -375,7 +383,6 @@ void URPGComponent::UnpauseStatus()
 			Status->UnpauseTimer();
 		}
 	}
-	this->SetComponentTickEnabled(true);
 }
 
 #pragma region Statuses

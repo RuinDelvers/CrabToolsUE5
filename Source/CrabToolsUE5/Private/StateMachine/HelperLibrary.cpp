@@ -11,7 +11,7 @@
 void UStateMachineHelperLibrary::EmitEvent(UObject* Obj, FName InEvent, UObject* Source)
 {
 	#if UE_BUILD_SHIPPING
-		IEventListenerInterface::Execute_Event(Obj, InEvent);
+		IEventListenerInterface::Execute_Event(Obj, InEvent, Source);
 	#else
 		if (IsValid(Obj))
 		{
@@ -33,7 +33,7 @@ void UStateMachineHelperLibrary::EmitEventSlot(UObject* Obj, FEventSlot InEvent,
 void UStateMachineHelperLibrary::EmitEventWithData(UObject* Obj, FName InEvent, UObject* Data, UObject* Source)
 {
 	#if UE_BUILD_SHIPPING
-		IEventListenerInterface::Execute_EventWithData(Obj, InEvent, Data);
+		IEventListenerInterface::Execute_EventWithData(Obj, InEvent, Data, Source);
 	#else
 		if (IsValid(Obj))
 		{

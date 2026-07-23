@@ -7,6 +7,7 @@ UStateMachineInterface::UStateMachineInterface()
 
 }
 
+#if WITH_EDITOR
 bool UStateMachineInterface::VerifyNoCycles() const
 {
 	this->Parent.LoadSynchronous();
@@ -185,7 +186,6 @@ void UStateMachineInterface::GetAssetRegistryTags(FAssetRegistryTagsContext Cont
 			FAssetRegistryTag::TT_Hidden));
 }
 
-#if WITH_EDITOR
 void UStateMachineInterface::PreEditChange(FProperty* Property)
 {
 	Super::PreEditChange(Property);

@@ -146,15 +146,13 @@ class CRABTOOLSUE5_API UState : public UObject, public IStateLike
 
 public:
 
-	#if WITH_EDITORONLY_DATA
-		DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FEventCallback, FName, EventName);
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FEventCallback, FName, EventName);
 
-		FEventCallback OnEventReceived;
+	FEventCallback OnEventReceived;
 
-		DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FEventWithDataCallback, FName, EventName, UObject*, Data);
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FEventWithDataCallback, FName, EventName, UObject*, Data);
 
-		FEventWithDataCallback OnEventWithDataReceived;
-	#endif
+	FEventWithDataCallback OnEventWithDataReceived;
 
 public:
 
@@ -299,7 +297,7 @@ public:
 	void SetOwner(UStateMachine* Parent);
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category="StateMachine")
-	FORCEINLINE bool Active() const;
+	bool Active() const;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "StateMachine")
 	UObject* GetOwner() const;
@@ -351,9 +349,11 @@ public:
 		UFUNCTION(BlueprintNativeEvent, Category = "StateMachine")
 		bool UsesEnteringEvents() const;
 		virtual bool UsesEnteringEvents_Implementation() const { return false; }
-	#endif
 
 		virtual bool Modify(bool bShouldAlwaysMarkDirty = true) override;
+	#endif
+
+	
 
 	/* Only call from an SM or a managing Node. */
 	void Event(FName InEvent, UObject* Source);
@@ -399,6 +399,9 @@ public:
 	UFUNCTION(BlueprintNativeEvent, Category = "StateMachine")
 	void PostTransition();
 	virtual void PostTransition_Implementation() {}
+
+	/* converts the event to be namespaced from this node. */
+	FName NamespaceEvent(FName InEvent) const;
 
 protected:
 
@@ -446,6 +449,12 @@ protected:
 	bool DoesReferenceMachine_Inner(FName MachineName) const;
 	virtual bool DoesReferenceMachine_Inner_Implementation(FName MachineName) const { return false; }
 
+	/*
+	 * This is to be called in constructors to add an event to the emittable events. This is an editor only
+	 * function, but is left in for more readable code. Its functionality only happens in the editor.
+	 */
+	void AddEmittedEvent(FName Event);
+
 	#if WITH_EDITOR
 		UFUNCTION()
 		TArray<FString> GetEventOptions() const;
@@ -461,14 +470,7 @@ protected:
 
 		UFUNCTION()
 		TArray<FString> GetOutgoingStateOptions() const;
-	#endif
-
-	void AddEmittedEvent(FName Event)
-	{
-		#if WITH_EDITORONLY_DATA
-			this->EmittedEvents.Add(Event);
-		#endif
-	}
+	#endif	
 
 private:
 
@@ -661,16 +663,6 @@ private:
 	UPROPERTY(DuplicateTransient, meta=(IgnorePropertySearch))
 	TMap<FName, TObjectPtr<UState>> Graph;
 
-	/* Nodes to be substituted into the graph later. */
-	UPROPERTY(EditAnywhere, Instanced, Category = "StateMachine",
-		meta = (AllowPrivateAccess, IgnorePropertySearch))
-	TMap<FName, TObjectPtr<UStateNode>> SharedNodes;
-
-	/* State Machines to be substituted into the graph later. */
-	UPROPERTY(EditAnywhere, Instanced, Category = "StateMachine",
-		meta = (AllowPrivateAccess, IgnorePropertySearch))
-	TMap<FName, TObjectPtr<UStateNode>> SharedMachines;
-
 	UPROPERTY(Transient, VisibleAnywhere, BlueprintReadOnly, Category = "StateMachine",
 		meta = (AllowPrivateAccess, IgnorePropertySearch))
 	FName CurrentStateName;
@@ -834,7 +826,6 @@ public:
 	bool ValidDataCondition(UObject* Data);
 
 	TSet<FName> GetEvents() const;
-	TMap<FName, TObjectPtr<UStateNode>> GetSharedNodes() { return this->SharedNodes; }
 
 	void SetParentData(UStateMachine* Parent, FName NewParentKey);
 	UStateMachineBlueprintGeneratedClass* GetGeneratedClass() const;

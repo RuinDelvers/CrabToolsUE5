@@ -333,8 +333,6 @@ void* UGenericPropertyBinding::GetContainer_Local(void* SourceObject, bool bRecu
 			return Output;
 		}
 	}
-
-	return nullptr;
 }
 
 void UGenericPropertyBinding::SetObject_Local(void* SourceObject, UObject* Value)

@@ -84,11 +84,11 @@ public:
 	virtual void Enter_Inner_Implementation() override;
 	virtual void Exit_Inner_Implementation() override;
 	virtual void SetActive_Inner_Implementation(bool bNewActive) override;
-	virtual bool UsesEnteringEvents_Implementation() const override { return this->bPropagateEnterEvent; }
 
 	virtual bool DoesReferenceMachine_Inner_Implementation(FName MachineName) const override;
 
 	#if WITH_EDITOR
+		virtual bool UsesEnteringEvents_Implementation() const override { return this->bPropagateEnterEvent; }
 		virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 		virtual void GetEmittedEvents(TSet<FName>& Events) const;
 	#endif

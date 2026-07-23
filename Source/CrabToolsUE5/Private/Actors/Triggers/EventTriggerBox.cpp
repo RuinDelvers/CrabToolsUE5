@@ -51,26 +51,6 @@ void AEventTriggerBox::OnEndOverlap(
 }
 
 #if WITH_EDITOR
-TArray<FString> AEventTriggerBox::GetEventOptions() const
-{
-	TArray<FString> Names;
-
-	for (auto& Object : this->Interfaces)
-	{
-		if (auto Interface = Object.LoadSynchronous())
-		{
-			for (auto& EventName : Interface->GetEvents())
-			{
-				Names.Add(EventName.ToString());
-			}
-		}
-	}
-
-	Names.Sort([&](const FString& A, const FString& B) { return A < B; });
-
-	return Names;
-}
-
 void AEventTriggerBox::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
 	if (PropertyChangedEvent.GetPropertyName() == GET_MEMBER_NAME_CHECKED(AEventTriggerBox, bUseData))

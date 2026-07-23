@@ -213,9 +213,6 @@ public:
 	bool HandShake(UDialogueStateComponent* Conversee);
 
 	UFUNCTION(BlueprintCallable, Category = "Dialogue")
-	void AttemptDialogueWithActor(AActor* Actor);
-
-	UFUNCTION(BlueprintCallable, Category = "Dialogue")
 	void FinishDialogue();
 
 	UFUNCTION(BlueprintCallable, Category = "Dialogue")

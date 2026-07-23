@@ -16,4 +16,8 @@ void USequenceNullProgressNode::Enter_Inner_Implementation()
 			this->EmitEvent(Events::Dialogue::NULL_SEQUENCE_PROGRESS);
 		}
 	}
+	else
+	{
+		this->EmitEvent(Events::Dialogue::NULL_SEQUENCE_PROGRESS);
+	}
 }

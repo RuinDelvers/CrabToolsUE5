@@ -21,14 +21,14 @@ private:
 	bool bBroadcaster = false;
 
 
+public:
+
+	UFinishDialogueNode();
+
 protected:
 
 	virtual void Initialize_Inner_Implementation() override;
 	virtual void Enter_Inner_Implementation() override;
-
-	#if WITH_EDITOR
-		virtual void GetEmittedEvents(TSet<FName>& Events) const override;
-	#endif
 
 private:
 
@@ -41,13 +41,14 @@ class CRABTOOLSUE5_API UConfirmDialogueNode : public UStateNode
 {
 	GENERATED_BODY()
 
+
+public:
+
+	UConfirmDialogueNode();
+
 protected:
 
 	virtual void Initialize_Inner_Implementation() override;
-
-	#if WITH_EDITOR
-		virtual void GetEmittedEvents(TSet<FName>& Events) const override;
-	#endif
 
 private:
 
@@ -66,15 +67,13 @@ class CRABTOOLSUE5_API UAttemptDialogueNode : public UAbstractDialogueNode
 {
 	GENERATED_BODY()
 
-private:
+public:
+
+	UAttemptDialogueNode();
 
 protected:
 
 	virtual void EventWithData_Inner_Implementation(FName InEvent, UObject* Data, UObject* Source) override;
-
-	#if WITH_EDITOR
-		virtual void GetEmittedEvents(TSet<FName>& Events) const override;
-	#endif
 
 	UFUNCTION()
 	void EventNotify_AttemptDialogue(FName InEvent, UObject* Data, UObject* EventSource);

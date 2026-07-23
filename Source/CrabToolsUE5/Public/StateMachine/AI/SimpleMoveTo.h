@@ -31,7 +31,6 @@ public:
 
 	virtual void EventWithData_Inner_Implementation(FName InEvent, UObject* Data, UObject* Source) override;
 	virtual void EnterWithData_Inner_Implementation(UObject* Data) override;
-	virtual void Exit_Inner_Implementation() override;
 	virtual void Initialize_Inner_Implementation() override;
 	virtual void Enter_Inner_Implementation() override;
 	virtual void SetActive_Inner_Implementation(bool bNewActive) override;

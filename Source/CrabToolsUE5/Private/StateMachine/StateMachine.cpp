@@ -59,16 +59,9 @@ void UStateMachine::Initialize(UObject* POwner)
 
 		this->InitSubMachines();
 	
-		// Shared nodes always exist, and should be initializ e from the beginning.
-		for (auto& Node : this->SharedNodes)
-		{
-			Node.Value->Initialize(this);
-		}		
-
 		#if STATEMACHINE_DEBUG_DATA
 			this->bWasInitialized = true;
 		#endif
-
 
 		this->Reset();
 
@@ -1399,7 +1392,7 @@ void UStateNode::EmitEvent(FName InEvent)
 {
 	if (this->Active())
 	{
-		this->GetMachine()->SendEvent(InEvent, this);
+		this->GetMachine()->SendEvent(NamespaceEvent(InEvent), this);
 	}
 }
 
@@ -1407,9 +1400,12 @@ void UStateNode::EmitEventWithData(FName InEvent, UObject* Data)
 {
 	if (this->Active())
 	{
-		this->GetMachine()->SendEventWithData(InEvent, Data, this);
+		this->GetMachine()->SendEventWithData(NamespaceEvent(InEvent), Data, this);
 	}
 }
+
+
+#if WITH_EDITOR
 
 bool UStateNode::Modify(bool bShouldAlwaysMarkDirty)
 {
@@ -1420,8 +1416,6 @@ bool UStateNode::Modify(bool bShouldAlwaysMarkDirty)
 
 	return Super::Modify(bShouldAlwaysMarkDirty);
 }
-
-#if WITH_EDITOR
 
 void UStateNode::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
@@ -1520,6 +1514,13 @@ TArray<FString> UStateNode::GetOutgoingStateOptions() const
 }
 
 #endif // WITH_EDITOR
+
+void UStateNode::AddEmittedEvent(FName Event)
+{
+	#if WITH_EDITORONLY_DATA
+		this->EmittedEvents.Add(this->NamespaceEvent(Event));
+	#endif
+}
 
 #if WITH_EDITORONLY_DATA
 
@@ -1698,6 +1699,15 @@ void UState::PostTransition()
 		this->Node->PostTransition();
 	}
 }
+
+FName UStateNode::NamespaceEvent(FName InEvent) const
+{
+	FString Namespace = this->GetClass()->GetName();
+	Namespace += "::";
+	return FName(Namespace + InEvent.ToString());
+}
+
+
 
 bool UState::RequiresTick() const
 {

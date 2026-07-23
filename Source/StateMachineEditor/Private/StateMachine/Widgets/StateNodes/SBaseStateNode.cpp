@@ -112,11 +112,17 @@ FReply SBaseStateNodeDetails::OnMoveDownClicked()
 	return FReply::Handled();
 }
 
+FText SBaseStateNodeDetails::TooltipText() const
+{
+	return FText::FromString(this->StateNode->GetClass()->GetMetaData("Tooltip"));
+}
+
 TSharedPtr<SWidget> SBaseStateNodeDetails::ConstructHeader()
 {
 	return SNew(SBorder)
 		.BorderImage(FAppStyle::Get().GetBrush("DetailsView.CategoryTop"))
 		.OnMouseButtonUp(this, &SBaseStateNodeDetails::OnHeaderClicked)
+		.ToolTipText(this, &SBaseStateNodeDetails::TooltipText)
 		[
 			SNew(SHorizontalBox)
 				+ SHorizontalBox::Slot()
@@ -187,6 +193,7 @@ TSharedPtr<SWidget> SBaseStateNodeDetails::ConstructHeader()
 								.ButtonStyle(FAppStyle::Get(), "SimpleButton")
 								.Text(FText::FromString("Open Class Blueprint"))
 								.ContentPadding(FMargin(1, 0))
+								.Visibility(this->IsBlueprintClass() ? EVisibility::Visible : EVisibility::Collapsed)
 								.ToolTipText(LOCTEXT("OpenAssetButton", "Open Node Asset"))
 								[
 									SNew(SImage)
@@ -248,5 +255,11 @@ FReply SBaseStateNodeDetails::OnOpenAssetClicked()
 
 		Module.Get().SyncBrowserToAssets(Assets);
 	}
+
 	return FReply::Handled();
+}
+
+bool SBaseStateNodeDetails::IsBlueprintClass() const
+{
+	return Cast<UBlueprintGeneratedClass>(this->StateNode->GetClass()) != nullptr;
 }

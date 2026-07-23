@@ -25,6 +25,8 @@ public:
 
 	TSharedPtr<IDetailsView> GetInspector();
 
+	bool IsBlueprintClass() const;
+
 private:
 
 	FReply OnOpenAssetClicked();
@@ -32,6 +34,8 @@ private:
 	FReply OnExpandClicked();
 	FReply OnMoveUpClicked();
 	FReply OnMoveDownClicked();
+
+	FText TooltipText() const;
 
 	TSharedPtr<SWidget> ConstructHeader();
 

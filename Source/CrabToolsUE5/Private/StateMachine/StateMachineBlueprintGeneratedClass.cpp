@@ -153,7 +153,9 @@ void UStateMachineBlueprintGeneratedClass::AppendPublicStateNames(TSet<FName>& N
 
 void UStateMachineBlueprintGeneratedClass::CleanAndSanitize()
 {
+#if WITH_EDITORONLY_DATA
 	this->Interfaces.Empty();
+#endif
 	this->SubArchetypes.Empty();
 	this->Archetype.CleanAndSanitize();
 
@@ -225,17 +227,18 @@ FName UStateMachineBlueprintGeneratedClass::GetStartState_Inner(FName MachineNam
 
 void UStateMachineBlueprintGeneratedClass::AppendInterfaceEvents(TArray<FString>& Names) const
 {
-	for (const auto& IFace : this->Interfaces)
-	{
-		if (IFace)
+	#if WITH_EDITORONLY_DATA
+		for (const auto& IFace : this->Interfaces)
 		{
-			for (const auto& Event : IFace->GetEvents())
+			if (IFace.Get())
 			{
-				Names.AddUnique(Event.ToString());
+				for (const auto& Event : IFace->GetEvents())
+				{
+					Names.AddUnique(Event.ToString());
+				}
 			}
 		}
-	}
-
+	#endif
 	if (auto Parent = this->GetParent())
 	{
 		Parent->AppendInterfaceEvents(Names);
@@ -532,6 +535,7 @@ TSet<FName> UStateMachineBlueprintGeneratedClass::GetEventSet(FName MachineName)
 {
 	TSet<FName> EventNames;
 
+#if WITH_EDITORONLY_DATA
 	if (MachineName.IsNone())
 	{
 		EventNames.Append(this->Archetype.EventSet);
@@ -548,6 +552,7 @@ TSet<FName> UStateMachineBlueprintGeneratedClass::GetEventSet(FName MachineName)
 	{
 		EventNames.Append(Parent->GetEventSet(MachineName));
 	}
+#endif
 
 	return EventNames;
 }
@@ -568,6 +573,7 @@ bool UStateMachineBlueprintGeneratedClass::HasEvent(FName InEvent, FName Machine
 {
 	auto Parent = this->GetParent();
 
+#if WITH_EDITORONLY_DATA
 	if (MachineName.IsNone())
 	{
 		return this->Archetype.EventSet.Contains(InEvent) || (Parent ? Parent->HasEvent(InEvent, MachineName) : false);
@@ -579,12 +585,14 @@ bool UStateMachineBlueprintGeneratedClass::HasEvent(FName InEvent, FName Machine
 			return SubArch->EventSet.Contains(InEvent) || (Parent ? Parent->HasEvent(InEvent, MachineName) : false);
 		}
 	}
+#endif 
 
 	return false;
 }
 
 bool UStateMachineBlueprintGeneratedClass::HasInterfaceEvent(FName InEvent) const
 {
+#if WITH_EDITORONLY_DATA
 	for (const auto& IFace : this->Interfaces)
 	{
 		if (IFace && IFace->HasEvent(InEvent))
@@ -592,6 +600,7 @@ bool UStateMachineBlueprintGeneratedClass::HasInterfaceEvent(FName InEvent) cons
 			return true;
 		}
 	}
+#endif
 
 	if (auto Parent = this->GetParent())
 	{
@@ -606,6 +615,7 @@ bool UStateMachineBlueprintGeneratedClass::HasInterfaceEvent(FName InEvent) cons
 
 void UStateMachineBlueprintGeneratedClass::GetStateEmittedEvents(FName Machine, FName State, TSet<FName>& OutNames) const
 {
+#if WITH_EDITORONLY_DATA
 	if (auto FoundMachine = Machine.IsNone() ? &this->Archetype : this->SubArchetypes.Find(Machine))
 	{
 		if (auto FoundState = FoundMachine->StateData.Find(State))
@@ -613,6 +623,7 @@ void UStateMachineBlueprintGeneratedClass::GetStateEmittedEvents(FName Machine, 
 			FoundState->Archetype->GetNode()->GetEmittedEvents(OutNames);
 		}
 	}
+#endif
 
 	if (auto Parent = this->GetParent())
 	{

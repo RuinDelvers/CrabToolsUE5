@@ -1,8 +1,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "StateMachine/StateMachineInterface.h"
 #include "Engine/TriggerBox.h"
+#include "StateMachine/DataStructures.h"
 #include "EventTriggerBox.generated.h"
 
 UCLASS(Blueprintable, Category = "StateMachine")
@@ -10,24 +10,17 @@ class CRABTOOLSUE5_API AEventTriggerBox : public ATriggerBox
 {
 	GENERATED_BODY()
 
-	/* The interfaces to pull possible events from. */
-	UPROPERTY(EditAnywhere, Category = "StateMachine|Events",
-		meta = (AllowPrivateAccess))
-	TArray<TSoftObjectPtr<UStateMachineInterface>> Interfaces;
-
 	/* The event emitted to an overlapped actor. */
 	UPROPERTY(EditAnywhere, Category = "StateMachine|Events",
 		meta = (AllowPrivateAccess, GetOptions = "GetEventOptions"))
-	FName BeginEvent;
+	FEventSlot BeginEvent;
 
 	/* The event emitted to an overlapped actor that no longer is overlapping. */
-	UPROPERTY(EditAnywhere, Category = "StateMachine|Events",
-		meta = (AllowPrivateAccess, GetOptions = "GetEventOptions"))
-	FName EndEvent;
+	UPROPERTY(EditAnywhere, Category = "StateMachine|Events")
+	FEventSlot EndEvent;
 
 	/* Whether or not to use data events vs basic events. */
-	UPROPERTY(EditAnywhere, Category = "StateMachine|Events",
-		meta = (AllowPrivateAccess))
+	UPROPERTY(EditAnywhere, Category = "StateMachine|Events")
 	bool bUseData = false;
 
 	UPROPERTY(EditAnywhere, Category = "StateMachine|Events",
@@ -44,8 +37,6 @@ protected:
 
 	#if WITH_EDITOR
 		virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
-		UFUNCTION()
-		TArray<FString> GetEventOptions() const;
 	#endif // WITH_EDITOR
 
 protected:

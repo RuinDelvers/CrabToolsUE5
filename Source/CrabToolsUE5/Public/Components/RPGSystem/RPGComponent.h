@@ -215,8 +215,11 @@ class CRABTOOLSUE5_API URPGComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
-	UPROPERTY(VisibleAnywhere, Category="RPG|Status")
+	UPROPERTY(VisibleAnywhere, Category="Status")
 	TMap<FGameplayTag, FStatusData> Statuses;
+
+	UPROPERTY(EditAnywhere, Category="Status")
+	bool bTickStatus = true;
 
 private:
 
@@ -313,21 +316,21 @@ protected:
 		return Prop;
 	}
 
-	UFUNCTION(BlueprintNativeEvent, Category = "RPG|Turns", meta = (DisplayName = "TurnEnd"))
+	UFUNCTION(BlueprintNativeEvent, Category = "Turns", meta = (DisplayName = "TurnEnd"))
 	void TurnEnd_Inner();
 	virtual void TurnEnd_Inner_Implementation() {}
 
-	UFUNCTION(BlueprintNativeEvent, Category = "RPG|Turns", meta = (DisplayName = "TurnStart"))
+	UFUNCTION(BlueprintNativeEvent, Category = "Turns", meta = (DisplayName = "TurnStart"))
 	void TurnStart_Inner();
 	virtual void TurnStart_Inner_Implementation() {}
 
-	UFUNCTION(BlueprintCallable, Category = "RPG|Status")
+	UFUNCTION(BlueprintCallable, Category = "Status")
 	void ApplyStatus(UStatus* Status);
 
-	UFUNCTION(BlueprintCallable, Category = "RPG|Status")
+	UFUNCTION(BlueprintCallable, Category = "Status")
 	void RemoveStatus(FGameplayTag StatusID, bool bAllInstances = true);
 
-	UFUNCTION(BlueprintCallable, Category = "RPG|Status")
+	UFUNCTION(BlueprintCallable, Category = "Status")
 	void RemoveStatusInstance(UStatus* Status);
 
 	virtual void BeginPlay() override;

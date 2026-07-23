@@ -5,7 +5,6 @@
 #include "Components/Interaction/InteractableComponent.h"
 #include "Components/Interaction/InteractionSystem.h"
 
-
 UAIMoveToInteractNode::UAIMoveToInteractNode()
 {
 	this->AddEmittedEvent(Events::AI::CANNOT_INTERACT);
