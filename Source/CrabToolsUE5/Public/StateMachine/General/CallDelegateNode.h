@@ -16,10 +16,10 @@ class CRABTOOLSUE5_API UCallDelegateNode : public UStateNode
 private:
 
 	UPROPERTY(VisibleAnywhere, Category = "AI", meta = (ShowInnerProperties))
-	TObjectPtr<UGenericPropertyBinding> EnterProperty;
+	FGenericFunctionPropertyBinding EnterProperty;
 
 	UPROPERTY(VisibleAnywhere, Category = "AI", meta = (ShowInnerProperties))
-	TObjectPtr<UGenericPropertyBinding> ExitProperty;
+	FGenericFunctionPropertyBinding ExitProperty;
 
 public:
 

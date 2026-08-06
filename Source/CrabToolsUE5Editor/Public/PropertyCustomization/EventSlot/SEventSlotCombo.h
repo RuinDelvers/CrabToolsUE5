@@ -14,7 +14,7 @@ class SComboButton;
 class SEventSlotPicker;
 
 /**
- * Widget for editing a Gameplay Tag.
+ * 
  */
 class CRABTOOLSUE5EDITOR_API SEventSlotCombo : public SCompoundWidget
 {
@@ -31,7 +31,6 @@ private:
 	FString SettingsName;
 	FOnSlotChanged OnSlotChanged;
 	TSharedPtr<SComboButton> ComboButton;
-	TSharedPtr<SMenuAnchor> MenuAnchor;
 	TSharedPtr<SEventSlotPicker> SlotPicker;
 	TSharedPtr<IPropertyHandle> PropertyHandle;
 	FEventSlot InlineSlot;

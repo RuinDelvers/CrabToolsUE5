@@ -13,7 +13,7 @@ class CRABTOOLSUE5_API UBooleanTransitionCondition : public UTransitionCondition
 	GENERATED_BODY()
 
 	UPROPERTY(VisibleAnywhere, Category = "Properties", meta = (ShowInnerProperties))
-	TObjectPtr<UGenericPropertyBinding> Property;
+	FGenericBoolPropertyBinding Property;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Properties", meta = (AllowPrivateAccess))
 	bool bRequiredValue = true;
@@ -23,7 +23,6 @@ public:
 	UBooleanTransitionCondition();
 
 	virtual bool Check() const override;
-	virtual void Initialize_Inner_Implementation() override;
 };
 
 /**
@@ -35,7 +34,7 @@ class CRABTOOLSUE5_API UBooleanTransitionDataCondition : public UTransitionDataC
 	GENERATED_BODY()
 
 	UPROPERTY(VisibleAnywhere, Category = "Properties", meta = (ShowInnerProperties))
-	TObjectPtr<UGenericPropertyBinding> Property;
+	FGenericBoolPropertyBinding Property;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Properties", meta = (AllowPrivateAccess))
 	bool bRequiredValue = true;
@@ -44,5 +43,4 @@ public:
 
 	UBooleanTransitionDataCondition();
 	virtual bool Check(UObject* Data) const override;
-	virtual void Initialize_Inner_Implementation() override;
 };

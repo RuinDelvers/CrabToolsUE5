@@ -2,24 +2,20 @@
 
 USetBooleanNode::USetBooleanNode()
 {
-	this->Property = CreateDefaultSubobject<UGenericPropertyBinding>(TEXT("FlagVariable"));
+	this->Property.Properties.bCanWrite = true;
 }
 
-void USetBooleanNode::Initialize_Inner_Implementation()
-{
-	this->Property->Initialize();
-}
 
 void USetBooleanNode::Exit_Inner_Implementation()
 {
 	if (this->bOnExit != this->bOnEnter)
 	{
-		this->Property->SetBool(this->bOnExit);
+		this->Property.Set(this, this->bOnExit);
 	}
 }
 
 
 void USetBooleanNode::Enter_Inner_Implementation()
 {
-	this->Property->SetBool(this->bOnEnter);
+	this->Property.Set(this, this->bOnEnter);
 }

@@ -262,7 +262,7 @@ class CRABTOOLSUE5_API UStateNode : public UObject, public IStateNodeLike
 
 	//friend class UStateMachine;
 
-	UPROPERTY(Transient, DuplicateTransient)
+	UPROPERTY(BlueprintReadOnly, Transient, DuplicateTransient, meta=(AllowPrivateAccess))
 	TObjectPtr<UStateMachine> Owner;
 
 	EStateNodeState CurrentState = EStateNodeState::INACTIVE;
@@ -399,9 +399,6 @@ public:
 	UFUNCTION(BlueprintNativeEvent, Category = "StateMachine")
 	void PostTransition();
 	virtual void PostTransition_Implementation() {}
-
-	/* converts the event to be namespaced from this node. */
-	FName NamespaceEvent(FName InEvent) const;
 
 protected:
 
@@ -692,6 +689,7 @@ private:
 	float ActiveTime = 0.0f;
 
 	/* Reference to a parent which uses this state machine as a sub machine. */
+	UPROPERTY(BlueprintReadOnly, Category="StateMachine", meta=(AllowPrivateAccess))
 	TObjectPtr<UStateMachine> ParentMachine;
 	/* The key/name of this submachine in the parent. */
 	FName ParentKey;

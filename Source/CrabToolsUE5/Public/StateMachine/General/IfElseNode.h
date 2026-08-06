@@ -1,9 +1,10 @@
 #pragma once
 
+#include "Properties/GenericPropertyBinding.h"
 #include "StateMachine/StateMachine.h"
 #include "IfElseNode.generated.h"
 
-class UGenericPropertyBinding;
+struct FGenericBoolPropertyBinding;
 
 UENUM()
 enum class EIfElseNodeFlagType
@@ -35,9 +36,8 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = "Condition",
 		meta = (AllowPrivateAccess,
 			EditCondition = "ConditionType==EIfElseNodeFlagType::PROPERTY",
-			EditConditionHides,
-			ShowInnerProperties))
-	TObjectPtr<UGenericPropertyBinding> Property;
+			EditConditionHides))
+	FGenericBoolPropertyBinding Property;
 
 	UPROPERTY(EditAnywhere, Instanced, Category="Nodes",
 		meta=(AllowPrivateAccess))

@@ -14,6 +14,10 @@ class ASMLevelSequenceActor : public ALevelSequenceActor, public IEventListenerI
 		meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UStateMachineComponent> StateMachineComponent;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "StateMachine",
+		meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UDialogueStateComponent> DialogueComponent;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="StateMachine",
 		meta=(ExposeOnSpawn=true, AllowPrivateAccess))
 	TSubclassOf<UStateMachine> CutsceneClass;

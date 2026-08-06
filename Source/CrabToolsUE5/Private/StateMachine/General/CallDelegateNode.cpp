@@ -3,8 +3,7 @@
 
 UCallDelegateNode::UCallDelegateNode()
 {
-	this->EnterProperty = CreateDefaultSubobject<UGenericPropertyBinding>(TEXT("OnEnterCallback"));
-	this->ExitProperty = CreateDefaultSubobject<UGenericPropertyBinding>(TEXT("OnExitCallback"));
+
 }
 
 void UCallDelegateNode::Initialize_Inner_Implementation()
@@ -14,11 +13,11 @@ void UCallDelegateNode::Initialize_Inner_Implementation()
 
 void UCallDelegateNode::Exit_Inner_Implementation()
 {
-	this->ExitProperty->CallFunction();
+	this->ExitProperty.Execute(this);
 }
 
 
 void UCallDelegateNode::Enter_Inner_Implementation()
 {
-	this->ExitProperty->CallFunction();
+	this->EnterProperty.Execute(this);
 }

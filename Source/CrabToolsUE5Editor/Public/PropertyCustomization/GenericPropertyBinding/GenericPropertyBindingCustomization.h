@@ -1,22 +1,21 @@
 #pragma once
 
-#include "IDetailCustomization.h"
+#include "IPropertyTypeCustomization.h"
 
-class FGenericPropertyBindingCustomization : public IDetailCustomization
+class FGenericPropertyBindingCustomization : public IPropertyTypeCustomization
 {
 
 private:
 
-	//TSharedPtr<IPropertyHandle> CachedPropertyHandle;
+	TSharedPtr<IPropertyHandle> CachedPropertyHandle;
 	//TSharedPtr<SGenericPropertyBindingPicker> SlotWidget;
 
 public:
 
-	static TSharedRef<IDetailCustomization> MakeInstance();
+	static TSharedRef<IPropertyTypeCustomization> MakeInstance();
 
 public:
 
-	virtual void PendingDelete() override;
-	virtual void CustomizeDetails(IDetailLayoutBuilder& DetailBuilder) override;
-	virtual void CustomizeDetails(const TSharedPtr<IDetailLayoutBuilder>& DetailBuilder) override;
+	virtual void CustomizeHeader(TSharedRef<IPropertyHandle> StructPropertyHandle, FDetailWidgetRow& HeaderRow, IPropertyTypeCustomizationUtils& StructCustomizationUtils) override;
+	virtual void CustomizeChildren(TSharedRef<IPropertyHandle> InStructPropertyHandle, IDetailChildrenBuilder& ChildBuilder, IPropertyTypeCustomizationUtils& StructCustomizationUtils) override;
 };

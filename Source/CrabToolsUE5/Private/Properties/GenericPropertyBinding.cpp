@@ -2,650 +2,268 @@
 
 #define LOCTEXT_NAMESPACE "GenericPropertyBinding"
 
-void UGenericPropertyBinding::Initialize()
+const FGenericObjectPropertyBindingProperties FGenericObjectPropertyBindingProperties::Default = FGenericObjectPropertyBindingProperties();
+
+
+void* FGenericObjectPropertyPath::Get(void* Source) const
 {
-	#if WITH_EDITOR
-		this->bWasInitialized = true;
-	#endif
-
-	if (this->PropertyName.IsNone())
+	check(Source);
+	FProperty* Prop = SearchType->FindPropertyByName(this->PropertyName);
+	void* ReturnObject = nullptr;
+	
+	if (auto ObjProp = CastField<FObjectProperty>(Prop))
 	{
-		return;
+		ReturnObject = *ObjProp->ContainerPtrToValuePtr<UObject*>(Source);
 	}
-	else
+	else if (auto StructProp = CastField<FStructProperty>(Prop))
 	{
-		this->SetCachedProperty();
-
-		if (this->Child)
-		{
-			this->Child->Initialize();
-		}
-
-		if (auto Parent = Cast<UGenericPropertyBinding>(this->GetOuter()))
-		{
-			this->bParentCachesValue = Parent->bCacheData;
-		}
-		else
-		{
-			this->bParentCachesValue = true;
-		}
+		ReturnObject = StructProp->ContainerPtrToValuePtr<void>(Source);
 	}
-}
-
-bool UGenericPropertyBinding::IsContainerType() const
-{
-	switch (this->PropertyType)
+	else if (auto Function = SearchType->FindFunction(this->PropertyName))
 	{
-		case EGenericPropertyType::OBJECT_TYPE: return true;
-		case EGenericPropertyType::STRUCT_TYPE: return true;
-		default: return false;
-	}
-}
-
-UClass* UGenericPropertyBinding::GetResultClass() const
-{
-	UClass* BaseClass = nullptr;
-
-	if (this->CastAs)
-	{
-		return this->CastAs;
-	}
-	else if (auto Parent = Cast<UGenericPropertyBinding>(this->GetOuter()))
-	{
-		BaseClass = Parent->GetResultClass();
-	}
-	else if (this->RootObjectType)
-	{
-		BaseClass = this->RootObjectType;
-	}
-	else
-	{
-		BaseClass = this->GetOuter()->GetClass();
-	}
-
-	if (this->IsFunctionReturnObjectProperty())
-	{
-		auto Func = BaseClass->FindFunctionByName(this->PropertyName);
-
-		if (auto RetVal = CastField<FObjectProperty>(Func->GetReturnProperty()))
-		{
-			return RetVal->PropertyClass;
-		}
-		else
-		{
-			return nullptr;
-		}
-	}
-	else
-	{
-		if (auto Prop = CastField<FObjectProperty>(BaseClass->FindPropertyByName(this->PropertyName)))
-		{
-			return Prop->PropertyClass;
-		}
-		else
-		{
-			return nullptr;
-		}
-	}
-}
-
-UClass* UGenericPropertyBinding::GetSearchClass() const
-{
-	if (auto Parent = Cast<UGenericPropertyBinding>(this->GetOuter()))
-	{
-		return Parent->GetResultClass();
-	}
-	else if (this->RootObjectType)
-	{
-		return this->RootObjectType;
-	}
-	else
-	{
-		return this->GetOuter()->GetClass();
-	}
-}
-
-bool UGenericPropertyBinding::IsObjectProperty() const
-{
-	if (auto Prop = this->GetSearchClass()->FindPropertyByName(this->PropertyName))
-	{
-		return Prop->IsA<FObjectProperty>();
-	}
-
-	return false;
-}
-
-bool UGenericPropertyBinding::IsStructProperty() const
-{
-	if (auto Prop = this->GetSearchClass()->FindPropertyByName(this->PropertyName))
-	{
-		return Prop->IsA<FStructProperty>();
-	}
-
-	return false;
-}
-
-bool UGenericPropertyBinding::IsFunctionProperty() const
-{
-	if (auto Func = this->GetSearchClass()->FindFunctionByName(this->PropertyName))
-	{
-		return true;
-	}
-
-	return false;
-}
-
-bool UGenericPropertyBinding::IsFunctionReturnObjectProperty() const
-{
-	if (auto Func = this->GetSearchClass()->FindFunctionByName(this->PropertyName))
-	{
-		if (auto ReturnValue = Func->GetReturnProperty())
+		if (auto ReturnValue = Function->GetReturnProperty())
 		{
 			if (ReturnValue->IsA<FObjectProperty>())
 			{
-				return true;
+				FObjectReturnValue Callback;
+				Callback.BindUFunction(reinterpret_cast<UObject*>(Source), this->PropertyName);
+
+				ReturnObject = Callback.Execute();
 			}
 		}
 	}
 
-	return false;
+	return ReturnObject;
 }
 
-bool UGenericPropertyBinding::IsDelegateProperty() const
+void FGenericObjectPropertyBinding::PushProperty(FProperty* Prop, UClass* CastClass)
 {
-	if (auto Prop = this->GetSearchClass()->FindPropertyByName(this->PropertyName))
+	auto SearchType = CastClass == nullptr ? Prop->GetOwnerStruct() : CastClass;
+
+	if (auto ObjProp = CastField<FObjectProperty>(Prop))
 	{
-		return Prop->IsA<FMulticastDelegateProperty>();
+		FGenericObjectPropertyPath NewPath;
+
+		NewPath.PropertyName = Prop->GetFName();
+		NewPath.SearchType = SearchType;
+
+		this->Path.Add(NewPath);
 	}
-
-	return false;
-}
-
-void UGenericPropertyBinding::ClearCache()
-{
-	this->bCachedValues = false;
-
-	if (this->Child)
+	else if (auto StructProp = CastField<FStructProperty>(Prop))
 	{
-		this->Child->ClearCache();
+		FGenericObjectPropertyPath NewPath;
+
+		NewPath.PropertyName = Prop->GetFName();
+		NewPath.SearchType = SearchType;
+
+		this->Path.Add(NewPath);
+	}
+	else if (auto FunctProp = CastField<FDelegateProperty>(Prop))
+	{
+		FGenericObjectPropertyPath NewPath;
+
+		NewPath.PropertyName = Prop->GetFName();
+		NewPath.SearchType = SearchType;
+
+		this->Path.Add(NewPath);
 	}
 }
 
-UObject* UGenericPropertyBinding::GetRootObject() const
+void FGenericObjectPropertyBinding::WriteToProperty(TSharedPtr<IPropertyHandle> Property) const
 {
-	if (auto Parent = Cast<UGenericPropertyBinding>(this->GetOuter()))
+	if (auto StructProp = CastFieldChecked<FStructProperty>(Property->GetProperty()))
 	{
-		return Parent->GetRootObject();
+		if (StructProp->Struct == FGenericObjectPropertyBinding::StaticStruct())
+		{
+			FString FormattedString;
+			StructProp->Struct->ExportText(FormattedString, this, nullptr, nullptr, PPF_Copy, nullptr);
+			Property->SetValueFromFormattedString(FormattedString);
+		}
 	}
 	else
 	{
-		return this->GetOuter();
+		UE_LOG(LogTemp, Error, TEXT("Attempted to write generic property data to invalid property: %s"), *Property->GetProperty()->GetName());
 	}
 }
 
-UObject* UGenericPropertyBinding::GetSourceObject() const
+UStruct* FGenericObjectPropertyBinding::ResultType() const
 {
-	if (this->RootObjectType)
+	if (Path.Num() == 0)
 	{
-		if (this->RootObject && this->RootObject->IsA(this->RootObjectType))
-		{
-			return this->RootObject;
-		}
-		else
-		{
-			return this->GetOuter();
-		}		
-	}
-	else
-	{
-		return this->GetOuter();
-	}
-}
-
-void UGenericPropertyBinding::SetSource(UObject* NewSource)
-{
-	if (this->RootObjectType && NewSource && NewSource->IsA(this->RootObjectType))
-	{
-		this->RootObject = NewSource;
-	}
-}
-
-void UGenericPropertyBinding::SetCachedProperty()
-{
-	if (!this->bIsFunctionType)
-	{
-		auto Prop = this->GetSearchClass()->FindPropertyByName(this->PropertyName);
-
-		if (Prop->IsA<FObjectProperty>())
-		{
-			this->CachedProperty = CastFieldChecked<FObjectProperty>(Prop);
-		}
-		else if (Prop->IsA<FBoolProperty>())
-		{
-			this->CachedProperty = CastFieldChecked<FBoolProperty>(Prop);
-		}
-		else if (Prop->IsA<FMulticastInlineDelegateProperty>())
-		{
-			this->CachedProperty = CastFieldChecked<FMulticastInlineDelegateProperty>(Prop);
-		}
-	}
-}
-
-UObject* UGenericPropertyBinding::GetObject() const
-{
-	#if WITH_EDITOR
-		if (!this->bWasInitialized)
-		{
-			this->NotInitializedError();
-			return nullptr;
-		}
-	#endif
-	return (UObject*) this->GetContainer_Local(this->GetSourceObject(), true);
-}
-
-void UGenericPropertyBinding::SetObject(UObject* Value)
-{
-	#if WITH_EDITOR
-		if (!this->bWasInitialized)
-		{
-			this->NotInitializedError();
-			return;
-		}
-	#endif
-	this->SetObject_Local(this->GetSourceObject(), Value);
-}
-
-void* UGenericPropertyBinding::GetContainer_Local(void* SourceObject, bool bRecurse) const
-{
-	if (!SourceObject)
-	{
-		this->NullSourceError();
 		return nullptr;
 	}
-
-	if (this->bCachedValues)
+	else
 	{
-		void* CachedValue = nullptr;
-
-		switch (this->PropertyType)
-		{
-			case EGenericPropertyType::STRUCT_TYPE:
-				CachedValue = this->GetCachedValue<void*>();
-				break;
-			case EGenericPropertyType::OBJECT_TYPE:
-				CachedValue = this->GetCachedValue<UObject*>();
-				break;
-			default: break;
-		}
-
-		if (this->Child && bRecurse)
-		{
-			if (this->CachedValues.Object.IsValid())
-			{
-				return this->Child->GetContainer_Local(CachedValue, true);
-			}
-		}
-		else
-		{
-			if (CachedValue)
-			{
-				return CachedValue;
-			}
-		}
+		return Path.Last().SearchType;
 	}
+}
 
-	void* Container = nullptr;
+bool FGenericObjectPropertyBinding::ValidProperty(FProperty* CheckProp) const
+{
+	return CheckProp->GetClass() == FObjectProperty::StaticClass()
+		|| CheckProp->GetClass() == FStructProperty::StaticClass();
+}
 
-	if (this->bIsFunctionType && this->PropertyType == EGenericPropertyType::OBJECT_TYPE)
+FString FGenericObjectPropertyBinding::GetPathString() const
+{
+	if (this->Path.Num() == 0)
 	{
-		Container = this->BindAndCall<UObject*>(SourceObject);
-
-		UObject* Casted = reinterpret_cast<UObject*>(Container);		
-		this->SetCachedValue<UObject*>(Casted);
-		return Casted;
-	}
-	else if (this->PropertyType == EGenericPropertyType::STRUCT_TYPE)
-	{
-		Container = this->GetProperty<FStructProperty>()->ContainerPtrToValuePtr<void>(SourceObject);
-		this->SetCachedValue<void*>(Container);
-
-		if (this->Child && bRecurse)
-		{
-			return this->Child->GetContainer_Local(Container, true);
-		}
-		else
-		{
-			return Container;
-		}
+		return "None";
 	}
 	else
 	{
-		TObjectPtr<UObject> Output = *this->GetProperty<FObjectProperty>()->ContainerPtrToValuePtr<UObject*>(SourceObject);
+		FString PathString = this->Path[0].SearchType->GetName();
 
-		this->SetCachedValue<UObject*>(Output);
-
-		if (this->Child && bRecurse)
+		for (auto& PathFragment : this->Path)
 		{
-			return this->Child->GetContainer_Local(Output, true);
+			PathString.Append(".");
+			//PathString.Append(PathFragment.SearchType->GetName() + "::" + PathFragment.PropertyName.ToString());
+			PathString.Append(PathFragment.PropertyName.ToString());
 		}
-		else
-		{
-			return Output;
-		}
+
+		return PathString;
 	}
 }
 
-void UGenericPropertyBinding::SetObject_Local(void* SourceObject, UObject* Value)
+FString FGenericObjectPropertyBinding::GetDisplayString() const
 {
-	if (this->Child)
+	if (this->Path.Num() == 0)
 	{
-		return this->Child->SetObject_Local(this->GetContainer_Local(SourceObject), Value);
+		return "None";
 	}
 	else
 	{
-		this->GetProperty<FObjectProperty>()->SetPropertyValue_InContainer(SourceObject, Value);
+		return this->Path.Last().PropertyName.ToString();
 	}
 }
 
-bool UGenericPropertyBinding::GetBool() const
+bool FGenericObjectPropertyBinding::CanFinalize() const
 {
-	return this->GenericLocalPropGet<bool>(this->GetSourceObject());
+	return !this->Path.IsEmpty();
 }
 
-void UGenericPropertyBinding::SetBool(bool Value)
+void FGenericObjectPropertyBinding::Pop()
 {
-	this->GenericLocalPropSet<bool>(this->GetSourceObject(), Value);
-}
-
-int UGenericPropertyBinding::GetInt() const
-{
-	return this->GenericLocalPropGet<int>(this->GetSourceObject());
-}
-
-void UGenericPropertyBinding::SetInt(int Value)
-{
-	this->GenericLocalPropSet<int>(this->GetSourceObject(), Value);
-}
-
-float UGenericPropertyBinding::GetFloat() const
-{
-	return this->GenericLocalPropGet<float>(this->GetSourceObject());
-}
-
-void UGenericPropertyBinding::SetFloat(float Value)
-{
-	this->GenericLocalPropSet<float>(this->GetSourceObject(), Value);
-}
-
-double UGenericPropertyBinding::GetDouble() const
-{
-	return this->GenericLocalPropGet<double>(this->GetSourceObject());
-}
-
-void UGenericPropertyBinding::SetDouble(double Value)
-{
-	this->GenericLocalPropSet<double>(this->GetSourceObject(), Value);
-}
-
-void* UGenericPropertyBinding::GetStruct(bool& bFound) const
-{
-	void* Container = this->GetContainer_Local(this->GetSourceObject());
-	
-	bFound = Container != nullptr;
-	return Container;
-}
-
-void UGenericPropertyBinding::CallFunction()
-{
-	this->CallFunction_Local(this->GetSourceObject());
-}
-
-void UGenericPropertyBinding::CallFunction_Local(void* SourceObject)
-{
-	if (this->PropertyType == EGenericPropertyType::DELEGATE_TYPE)
+	if (!this->Path.IsEmpty())
 	{
-		auto& Delegate = CastFieldChecked<FMulticastInlineDelegateProperty>(this->CachedProperty)
-			->GetPropertyValue(SourceObject);
-		Delegate.ProcessMulticastDelegate<UObject>(nullptr);
-	}
-	else
-	{
-		this->CallFunction_Local(this->GetContainer_Local(SourceObject));
+		this->Path.Pop();
 	}
 }
 
-bool UGenericPropertyBinding::IsBound() const
+bool FGenericObjectPropertyBinding::IsEmpty() const
 {
-	return !this->PropertyName.IsNone();
+	return this->Path.IsEmpty();
 }
 
-FString UGenericPropertyBinding::GetPropertyPath() const
+bool FGenericBoolPropertyBinding::Get(const void* Source) const
 {
-	FString Base;
+	return this->Get(const_cast<void*>(Source));
+}
 
-	if (auto Parent = Cast<UGenericPropertyBinding>(this->GetOuter()))
-	{
-		Base = Parent->GetPropertyPath();
-	}
-	else
-	{
-		Base = this->GetOuter()->GetName();
-	}
+bool FGenericBoolPropertyBinding::Get(void* Source) const
+{
+	check(!this->PropertyName.IsNone());
 
-	Base.Append("/");
+	void* Container = FGenericObjectPropertyBinding::Get<void>(Source);
+	FBoolProperty* Prop = CastFieldChecked<FBoolProperty>(this->RequiredType->FindPropertyByName(PropertyName));
+
+	return *Prop->ContainerPtrToValuePtr<bool>(Source);
+}
+
+void FGenericBoolPropertyBinding::Set(void* Source, bool Value)
+{
+	check(!this->PropertyName.IsNone());
+	check(this->Properties.bCanWrite);
+
+	void* Container = FGenericObjectPropertyBinding::Get<void>(Source);
+	FBoolProperty* Prop = CastFieldChecked<FBoolProperty>(this->RequiredType->FindPropertyByName(PropertyName));
+
+	Prop->SetPropertyValue_InContainer(Container, Value);
+}
+
+bool FGenericBoolPropertyBinding::ValidProperty(FProperty* CheckProp) const
+{
+	return CheckProp->GetClass() == FBoolProperty::StaticClass();
+}
+
+FString FGenericBoolPropertyBinding::GetPathString() const
+{
+	FString Base = FGenericObjectPropertyBinding::GetPathString();
+
+	Base.Append(".");
 	Base.Append(this->PropertyName.ToString());
 
 	return Base;
 }
 
-#if WITH_EDITOR
-void UGenericPropertyBinding::PostEditChangeProperty(FPropertyChangedEvent& Event)
+FString FGenericBoolPropertyBinding::GetDisplayString() const
 {
-	Super::PostEditChangeProperty(Event);
-
-	this->ValidateData();
+	return this->PropertyName.ToString();
 }
 
-void UGenericPropertyBinding::PostLoad()
+void FGenericBoolPropertyBinding::PushProperty(FProperty* Prop, UClass* CastClass)
 {
-	Super::PostLoad();
-}
-
-void UGenericPropertyBinding::ValidateData()
-{
-	auto Parent = Cast<UGenericPropertyBinding>(this->GetOuter());
-	this->bIsFunctionType = this->IsFunctionProperty();
-
-	if (this->IsObjectProperty() || this->IsFunctionReturnObjectProperty())
+	if (auto BoolProp = CastField<FBoolProperty>(Prop))
 	{
-		this->PropertyType = EGenericPropertyType::OBJECT_TYPE;
-	}
-	else if (this->IsStructProperty())
-	{
-		this->PropertyType = EGenericPropertyType::STRUCT_TYPE;
-	}
-	else if (this->IsDelegateProperty())
-	{
-		this->PropertyType = EGenericPropertyType::DELEGATE_TYPE;
+		this->RequiredType = Prop->GetOwnerStruct();
+		this->PropertyName = Prop->GetFName();
 	}
 	else
 	{
-		this->PropertyType = EGenericPropertyType::UNKNOWN;
+		FGenericObjectPropertyBinding::PushProperty(Prop);
 	}
+}
 
-	this->bIsRoot = !Parent;
-	this->bCanCacheData = !Parent || Parent->bCacheData;
+bool FGenericBoolPropertyBinding::CanFinalize() const
+{
+	return !this->PropertyName.IsNone();
+}
 
-	switch (this->PropertyType)
+bool FGenericBoolPropertyBinding::IsEmpty() const
+{
+	return this->PropertyName.IsNone() && FGenericObjectPropertyBinding::IsEmpty();
+}
+
+void FGenericBoolPropertyBinding::Pop()
+{
+	if (this->PropertyName.IsNone())
 	{
-		case EGenericPropertyType::OBJECT_TYPE:
-			this->bCanHaveChild = true;
-			break;
-		case EGenericPropertyType::STRUCT_TYPE:
-			this->bCanHaveChild = true;
-			this->bCacheData = this->bCanCacheData;
-			break;
-		default:
-			this->bCanHaveChild = false;
-			break;
-	}	
-
-	if (!this->bCanCacheData)
-	{
-		this->bCacheData = false;
+		FGenericObjectPropertyBinding::Pop();
 	}
-
-	if (!this->bCanHaveChild)
+	else
 	{
-		this->Child = nullptr;
+		this->PropertyName = FName();
 	}
+}
 
-	if (!this->bIsRoot)
+void FGenericBoolPropertyBinding::WriteToProperty(TSharedPtr<IPropertyHandle> Property) const
+{
+	if (auto StructProp = CastFieldChecked<FStructProperty>(Property->GetProperty()))
 	{
-		this->RootObjectType = nullptr;
-	}
-
-	if (this->CastAs)
-	{
-		if (auto Result = this->GetResultClass())
+		if (StructProp->Struct == FGenericBoolPropertyBinding::StaticStruct())
 		{
-			if (!this->CastAs->IsChildOf(this->GetResultClass()))
-			{
-				this->CastAs = TSubclassOf<UObject>(this->GetResultClass());
-			}
+			FString FormattedString;
+			StructProp->Struct->ExportText(FormattedString, this, nullptr, nullptr, PPF_Copy, nullptr);
+			Property->SetValueFromFormattedString(FormattedString);
 		}
 	}
 	else
 	{
-		this->CastAs = TSubclassOf<UObject>(this->GetResultClass());
-	}
-
-	if (this->Child)
-	{
-		this->Child->ValidateData();
+		UE_LOG(LogTemp, Error, TEXT("Attempted to write generic property data to invalid property: %s"), *Property->GetProperty()->GetName());
 	}
 }
 
-
-TArray<FString> UGenericPropertyBinding::GetPropertyOptions() const
+void FGenericFunctionPropertyBinding::Execute(void* Source)
 {
-	TArray<FString> Names;
+	check(!this->PropertyName.IsNone());
 
-	if (auto Parent = Cast<UGenericPropertyBinding>(this->GetOuter()))
+	UObject* Obj = this->Get<UObject>(Source);
+
+	if (Obj)
 	{
-		this->IterateFields(Parent->GetResultClass(), Names);
+		FObjectFunctionCall Callback;
+		Callback.BindUFunction(Obj, this->PropertyName);
 	}
-	else if (this->RootObjectType)
-	{
-		this->IterateFields(this->RootObjectType, Names);
-	}
-	else
-	{
-		this->IterateFields(this->GetOuter()->GetClass(), Names);
-	}
-
-	Names.Sort([&](const FString& A, const FString& B) { return A < B; });
-
-	return Names;
-}
-
-void UGenericPropertyBinding::IterateFields(UClass* Class, TArray<FString>& Names) const
-{
-	for (TFieldIterator<FProperty> Prop(Class, EFieldIteratorFlags::IncludeSuper); Prop; ++Prop)
-	{
-		FProperty& P = **Prop;
-
-		if (!P.GetBoolMetaData("BlueprintPrivate") && P.HasAnyPropertyFlags(EPropertyFlags::CPF_BlueprintVisible))
-		{
-			Names.Add(P.GetName());
-		}
-	}
-
-	this->IterateFunctions(Class, Names);
-}
-
-void UGenericPropertyBinding::IterateFunctions(UClass* Class, TArray<FString>& Names) const
-{
-	auto ValidAccessFlag = this->GetOuter()->GetClass()->IsChildOf(Class) ?
-		EFunctionFlags::FUNC_Protected | EFunctionFlags::FUNC_Public : EFunctionFlags::FUNC_Public;
-
-	for (TFieldIterator<UFunction> Prop(Class, EFieldIteratorFlags::IncludeSuper); Prop; ++Prop)
-	{
-		UFunction& P = **Prop;
-
-		if (P.GetName() == "ExecuteUbergraph")
-		{
-			continue;
-		}
-
-		bool bHasReturnField = false;
-		bool bHasNoParams = true;
-
-		for (TFieldIterator<FProperty> It(&P); It; ++It)
-		{
-			FProperty* FProp = *It;
-
-			if (FProp->HasAnyPropertyFlags(EPropertyFlags::CPF_ReturnParm))
-			{
-				bHasReturnField = true;
-			}
-			else
-			{
-				bHasNoParams = false;
-			}
-		}
-
-		if (!(bHasReturnField && bHasNoParams) || P.GetReturnProperty()->IsA<FStructProperty>())
-		{
-			continue;
-		}
-
-		if (!P.HasAnyFunctionFlags(EFunctionFlags::FUNC_UbergraphFunction))
-		{
-			if (!P.HasAnyFunctionFlags(EFunctionFlags::FUNC_Public | EFunctionFlags::FUNC_Protected | EFunctionFlags::FUNC_Private))
-			{
-				Names.Add(P.GetName());
-			}
-			else
-			{
-				if (P.HasAnyFunctionFlags(ValidAccessFlag))
-				{
-					Names.Add(P.GetName());
-				}
-			}
-		}
-	}
-}
-
-void UGenericPropertyBinding::PostDuplicate(bool DuplicateForPIE)
-{
-	Super::PostDuplicate(DuplicateForPIE);
-
-	this->bIsRoot = this->GetOuter()->IsA<UGenericPropertyBinding>();
-}
-
-#endif
-
-void UGenericPropertyBinding::NotInitializedError() const
-{
-	#if WITH_EDITOR
-		FMessageLog Log("PIE");
-		auto Message = FText::FormatNamed(
-			LOCTEXT("NotInitializedFormatter", "Failed to initialize property binding: {Path}"),
-			TEXT("Path"), FText::FromString(this->GetPropertyPath()));
-		Log.Error(Message);
-	#endif
-}
-
-void UGenericPropertyBinding::NullSourceError() const
-{
-	#if WITH_EDITOR
-		FMessageLog Log("PIE");
-		auto Message = FText::FormatNamed(
-			LOCTEXT("NullSourceError", "Null source object attempted: {Path}"),
-			TEXT("Path"), FText::FromString(this->GetPropertyPath()));
-		Log.Error(Message);
-	#endif
 }
 
 #undef LOCTEXT_NAMESPACE

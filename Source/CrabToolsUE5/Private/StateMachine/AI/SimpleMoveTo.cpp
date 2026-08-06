@@ -9,19 +9,17 @@
 
 
 UAISimpleMoveToNode::UAISimpleMoveToNode()
+: Property(FMoveToData::StaticStruct())
 {
 	this->AddEmittedEvent(Events::AI::ARRIVE);
 	this->AddEmittedEvent(Events::AI::ABORT);
 	this->AddEmittedEvent(Events::AI::LOST);
 
-	this->Property = CreateDefaultSubobject<UGenericPropertyBinding>(TEXT("MoveToTarget"));
 }
 
 void UAISimpleMoveToNode::Initialize_Inner_Implementation()
 {
 	Super::Initialize_Inner_Implementation();
-
-	this->Property->Initialize();
 
 	check(this->GetAIController());
 }
@@ -126,16 +124,15 @@ void UAISimpleMoveToNode::MoveToPreset()
 {
 	bool bRequestSuccessful = false;
 
-	if (this->Property->IsBound())
+	if (this->Property.IsBound())
 	{
-		bool bFoundData = false;
-		auto& Value = this->Property->GetStruct<FMoveToData>(bFoundData);
+		FMoveToData* Value = this->Property.Get<FMoveToData>(this);
 
-		if (bFoundData)
+		if (Value)
 		{
 			this->BindCallback();
 			this->OnRequestStarted();
-			bRequestSuccessful = Value.MakeRequest(this->GetAIController());
+			bRequestSuccessful = Value->MakeRequest(this->GetAIController());
 		}
 	}
 	else

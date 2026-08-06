@@ -7,10 +7,10 @@
 #include "Properties/GenericPropertyBinding.h"
 
 USequenceSetNode::USequenceSetNode()
+: SeqBinding(ULevelSequence::StaticClass())
 {
 	this->AddEmittedEvent(Events::Dialogue::SEQUENCE_LOADED);
 	this->AddEmittedEvent(Events::Dialogue::NULL_SEQUENCE);
-	this->SeqBinding = CreateDefaultSubobject<UGenericPropertyBinding>(TEXT("SeqBinding"));
 }
 
 void USequenceSetNode::Initialize_Inner_Implementation()

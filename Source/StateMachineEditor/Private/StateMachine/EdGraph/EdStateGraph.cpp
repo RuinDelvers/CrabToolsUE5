@@ -29,7 +29,10 @@ UEdStateGraph::UEdStateGraph()
 
 void UEdStateGraph::Initialize(UStateMachineBlueprint* BP)
 {
-	
+	if (auto BPGC = BP->GetStateMachineGeneratedClass())
+	{
+		bWasExtended = BPGC->GetParent() != nullptr;
+	}
 }
 
 void UEdStateGraph::SetDebugMachine(UStateMachine* Machine)
@@ -1210,24 +1213,27 @@ void UEdStateGraph::VerifyMachineArchetypes(FNodeVerificationContext& Context) c
 	{
 		if (this->GraphType == EStateMachineGraphType::EXTENDED_GRAPH)
 		{
-			if (auto Overriden = this->GetBlueprintOwner()->GetStateMachineGeneratedClass()->GetParent()->GetMostRecentParentArchetype(this->GetFName()))
+			if (auto Parent = this->GetBlueprintOwner()->GetStateMachineGeneratedClass()->GetParent())
 			{
-				auto SourceMachine = this->GetSourceMachine();
-				if (!SourceMachine->IsA(Overriden->GetClass()))
+				if (auto Overriden = Parent->GetMostRecentParentArchetype(this->GetFName()))
+				{
+					auto SourceMachine = this->GetSourceMachine();
+					if (!SourceMachine->IsA(Overriden->GetClass()))
+					{
+						FString ErrorMessage = FString::Printf(
+							TEXT("Overriding Archetype is not a subclass of the parent graph's archetype. Parent Class: %s, Overriding Type: %s"),
+							*Overriden->GetClass()->GetName(),
+							*SourceMachine->GetClass()->GetName());
+						Context.Error(ErrorMessage, this);
+					}
+				}
+				else
 				{
 					FString ErrorMessage = FString::Printf(
-						TEXT("Overriding Archetype is not a subclass of the parent graph's archetype. Parent Class: %s, Overriding Type: %s"),
-						*Overriden->GetClass()->GetName(),
-						*SourceMachine->GetClass()->GetName());
+						TEXT("Overriding null parent machine archetype in SubGraph %s (Internal Error to be reported)."),
+						*this->GetName());
 					Context.Error(ErrorMessage, this);
 				}
-			}
-			else
-			{
-				FString ErrorMessage = FString::Printf(
-					TEXT("Overriding null parent machine archetype in SubGraph %s (Internal Error to be reported)."), 
-					*this->GetName());
-				Context.Error(ErrorMessage, this);
 			}
 		}
 	}
@@ -1391,7 +1397,13 @@ TArray<FString> UEdStateGraph::GetOverrideableMachines() const
 
 void UEdStateGraph::PostLinkerChange()
 {
-	
+	if (auto Owner = this->GetBlueprintOwner())
+	{
+		if (auto BPGC = Owner->GetStateMachineGeneratedClass())
+		{
+			bWasExtended = BPGC->GetParent() != nullptr;
+		}
+	}
 }
 
 #endif // WITH_EDITOR

@@ -46,12 +46,22 @@ void FCrabToolsUE5EditorModule::InitializeCustomization()
 		"EventSlot",
 		FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FEventSlotCustomization::MakeInstance));
 
-	PropertyModule.RegisterCustomClassLayout(
-		"GenericPropertyBinding",
-		FOnGetDetailCustomizationInstance::CreateStatic(&FGenericPropertyBindingCustomization::MakeInstance));
+	PropertyModule.RegisterCustomPropertyTypeLayout(
+		"GenericObjectPropertyBinding",
+		FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FGenericPropertyBindingCustomization::MakeInstance));
+
+	PropertyModule.RegisterCustomPropertyTypeLayout(
+		"GenericBoolPropertyBinding",
+		FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FGenericPropertyBindingCustomization::MakeInstance));
+
+	PropertyModule.RegisterCustomPropertyTypeLayout(
+		"GenericFunctionPropertyBinding",
+		FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FGenericPropertyBindingCustomization::MakeInstance));
 
 	PropertyModule.NotifyCustomizationModuleChanged();
 }
+
+
 
 void FCrabToolsUE5EditorModule::OnSelectionChanged(UObject* Obj)
 {

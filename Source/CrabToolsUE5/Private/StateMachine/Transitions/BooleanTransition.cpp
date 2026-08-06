@@ -2,32 +2,23 @@
 
 UBooleanTransitionCondition::UBooleanTransitionCondition()
 {
-	this->Property = CreateDefaultSubobject<UGenericPropertyBinding>(TEXT("Property"));
+	
 }
 
 bool UBooleanTransitionCondition::Check() const
 {
-	bool bReadValue = this->Property->GetBool();
+	bool bReadValue = this->Property.Get(this);
 
 	return bReadValue == this->bRequiredValue;
 }
 
-void UBooleanTransitionCondition::Initialize_Inner_Implementation()
-{
-	this->Property->Initialize();
-}
 
 UBooleanTransitionDataCondition::UBooleanTransitionDataCondition()
 {
-	this->Property = CreateDefaultSubobject<UGenericPropertyBinding>(TEXT("Property"));
+	
 }
 
 bool UBooleanTransitionDataCondition::Check(UObject* Data) const
 {
-	return this->Property->GetBool() == this->bRequiredValue;
-}
-
-void UBooleanTransitionDataCondition::Initialize_Inner_Implementation()
-{
-	this->Property->Initialize();
+	return this->Property.Get(this) == this->bRequiredValue;
 }

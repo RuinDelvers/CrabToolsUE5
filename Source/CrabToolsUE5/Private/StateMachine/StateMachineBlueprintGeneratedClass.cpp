@@ -509,7 +509,11 @@ bool UStateMachineBlueprintGeneratedClass::IsSubMachineNameInUse(FString& Name) 
 
 UStateMachine* UStateMachineBlueprintGeneratedClass::GetMostRecentParentArchetype(FName SubMachineKey) const
 {
-	if (this->SubArchetypes.Contains(SubMachineKey))
+	if (SubMachineKey.IsNone())
+	{
+		return nullptr;
+	}
+	else if (this->SubArchetypes.Contains(SubMachineKey))
 	{
 		return this->SubArchetypes[SubMachineKey].Archetype;
 	}

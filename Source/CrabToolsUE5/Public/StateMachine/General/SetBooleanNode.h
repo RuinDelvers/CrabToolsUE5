@@ -16,7 +16,7 @@ class CRABTOOLSUE5_API USetBooleanNode : public UStateNode
 private:
 
 	UPROPERTY(VisibleAnywhere, Category = "Properties", meta = (ShowInnerProperties))
-	TObjectPtr<UGenericPropertyBinding> Property;
+	FGenericBoolPropertyBinding Property;
 
 	UPROPERTY(EditAnywhere, Category = "Properties", meta = (AllowPrivateAccess))
 	bool bOnEnter = true;
@@ -28,7 +28,6 @@ public:
 
 	USetBooleanNode();
 
-	virtual void Initialize_Inner_Implementation() override;
 	virtual void Enter_Inner_Implementation() override;
 	virtual void Exit_Inner_Implementation() override;
 };

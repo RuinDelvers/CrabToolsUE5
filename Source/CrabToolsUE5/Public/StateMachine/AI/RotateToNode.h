@@ -16,7 +16,7 @@ class CRABTOOLSUE5_API UAIRotateToNode : public UAIBaseNode
 private:
 
 	UPROPERTY(VisibleAnywhere, Category = "AI", meta = (ShowInnerProperties))
-	TObjectPtr<UGenericPropertyBinding> Property;
+	FGenericObjectPropertyBinding Property;
 	TWeakObjectPtr<AActor> TargetActor;
 
 

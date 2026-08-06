@@ -6,11 +6,10 @@
 #include "StateMachine/Events.h"
 
 UAIRotateToNode::UAIRotateToNode()
+: Property(AActor::StaticClass())
 {
 	this->AddEmittedEvent(Events::AI::ARRIVE);
 	this->AddEmittedEvent(Events::AI::LOST);
-
-	this->Property = CreateDefaultSubobject<UGenericPropertyBinding>(TEXT("RotationTarget"));
 }
 
 void UAIRotateToNode::Tick_Inner_Implementation(float DeltaTime)
@@ -65,7 +64,7 @@ void UAIRotateToNode::EnterWithData_Inner_Implementation(UObject* Data)
 
 void UAIRotateToNode::Enter_Inner_Implementation()
 {
-	if (auto Value = this->Property->GetObject<AActor>())
+	if (auto Value = this->Property.Get<AActor>(this))
 	{	
 		this->TargetActor = Value;
 

@@ -1,10 +1,9 @@
 #pragma once
 
+#include "Properties/GenericPropertyBinding.h"
 #include "StateMachine/StateMachine.h"
 #include "StateMachine/Dialogue/ICutsceneStateMachine.h"
 #include "SequenceSetNode.generated.h"
-
-class UGenericPropertyBinding;
 
 UENUM()
 enum class ESequenceSource
@@ -31,7 +30,7 @@ private:
 		meta = (AllowPrivateAccess, ShowInnerProperties,
 			EditCondition="SequenceSource==ESequenceSource::PROPERTY",
 			EditConditionHides))
-	TObjectPtr<UGenericPropertyBinding> SeqBinding;
+	FGenericObjectPropertyBinding SeqBinding;
 
 	UPROPERTY(EditAnywhere, Category = "Sequence",
 		meta = (AllowPrivateAccess, ShowInnerProperties,

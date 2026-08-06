@@ -1,8 +1,9 @@
 #include "StateMachine/General/ActorVisibility.h"
 
 UActorVisibilityNode::UActorVisibilityNode()
+: Property(AActor::StaticClass())
 {
-	this->Property = CreateDefaultSubobject<UGenericPropertyBinding>(TEXT("TargetActor"));
+	
 }
 
 void UActorVisibilityNode::Initialize_Inner_Implementation()
@@ -35,5 +36,5 @@ void UActorVisibilityNode::Exit_Inner_Implementation()
 
 AActor* UActorVisibilityNode::GetActor() const
 {
-	return this->Property->GetObject<AActor>();
+	return this->Property.Get<AActor>(this);
 }

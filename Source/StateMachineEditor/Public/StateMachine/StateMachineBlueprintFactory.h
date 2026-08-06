@@ -17,7 +17,7 @@ private:
 	TEnumAsByte<enum EBlueprintType> BlueprintType;
 
 	// The parent class of the created blueprint
-	UPROPERTY(EditAnywhere, Category="PSMBlueprintFactory", meta=(AllowAbstract = ""))
+	UPROPERTY(EditAnywhere, Category="PSMBlueprintFactory", meta=(AllowAbstract = "")) 
 	TSubclassOf<class UStateMachine> ParentClass;
 
 	UPROPERTY(Transient)

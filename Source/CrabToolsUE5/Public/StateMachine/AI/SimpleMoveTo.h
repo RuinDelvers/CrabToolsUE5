@@ -17,7 +17,7 @@ class CRABTOOLSUE5_API UAISimpleMoveToNode : public UAIBaseNode
 private:
 
 	UPROPERTY(VisibleAnywhere, Category = "Binding", meta = (ShowInnerProperties))
-	TObjectPtr<UGenericPropertyBinding> Property;
+	FGenericObjectPropertyBinding Property;
 
 protected:
 

@@ -145,11 +145,27 @@ void UMonologueData::StepHelper(bool bIncrement)
 
 		auto& Current = this->Current();
 
-		if (Current.bApplySequenceAction && this->Player)
+		bool bFiltered = Current.Filter && !Current.Filter->CheckNative();
+
+		if (bFiltered)
 		{
-			USequencerBlueprintHelpers::ApplyAction(this->Player, Current.Action);
+			if (this->Index == this->MonologueText.Num() - 1)
+			{
+				this->OnMonologueFinished.Broadcast(this);
+			}
+			else
+			{
+				StepHelper(true);
+			}
 		}
-		this->OnMonologueUpdate.Broadcast(this);
+		else
+		{
+			if (Current.bApplySequenceAction && this->Player)
+			{
+				USequencerBlueprintHelpers::ApplyAction(this->Player, Current.Action);
+			}
+			this->OnMonologueUpdate.Broadcast(this);
+		}
 	}
 	else
 	{
@@ -245,6 +261,11 @@ void UMonologueData::GetAllDataByClass(UClass* DataClass, TArray<UObject*>& OutD
 			OutData.Add(Data);
 		}
 	}
+}
+
+bool UMonologueFilter::CheckNative() const
+{
+	return this->Check() == !this->bNegate;
 }
 
 #if WITH_EDITOR

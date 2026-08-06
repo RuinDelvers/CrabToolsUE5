@@ -3,6 +3,7 @@
 ASMLevelSequenceActor::ASMLevelSequenceActor(const FObjectInitializer& ObjectInit): ALevelSequenceActor(ObjectInit)
 {
 	this->StateMachineComponent = CreateDefaultSubobject<UStateMachineComponent>(TEXT("StateMachineComponent"));
+	this->DialogueComponent = CreateDefaultSubobject<UDialogueStateComponent>(TEXT("DialogueComponent"));
 }
 
 void ASMLevelSequenceActor::BeginPlay()

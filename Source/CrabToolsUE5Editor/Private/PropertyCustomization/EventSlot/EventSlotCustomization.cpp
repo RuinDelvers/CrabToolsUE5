@@ -29,20 +29,5 @@ void FEventSlotCustomization::CustomizeHeader(TSharedRef<IPropertyHandle> Struct
 
 void FEventSlotCustomization::CustomizeChildren(TSharedRef<IPropertyHandle> InStructPropertyHandle, IDetailChildrenBuilder& ChildBuilder, IPropertyTypeCustomizationUtils& StructCustomizationUtils)
 {
-	/*
-	//const FString FilterString = UGameplayTagsManager::Get().GetCategoriesMetaFromPropertyHandle(StructPropertyHandle);
-	constexpr float MaxPropertyWidth = 480.0f;
-	constexpr float MaxPropertyHeight = 240.0f;
-
-	ChildBuilder.AddCustomRow(NSLOCTEXT("GameplayTagReferenceHelperDetails", "NewTag", "NewTag"))
-		.ValueContent()
-		.MaxDesiredWidth(MaxPropertyWidth)
-		[
-			SAssignNew(SlotWidget, SEventSlotPicker)
-				//.Filter(FilterString)
-				.MultiSelect(false)
-				//.GameplayTagPickerMode(EGameplayTagPickerMode::ManagementMode)
-				.MaxHeight(MaxPropertyHeight)
-		];
-	*/
+	
 }

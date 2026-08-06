@@ -13,7 +13,7 @@ class CRABTOOLSUE5_API UActorVisibilityNode : public UStateNode
 	GENERATED_BODY()
 
 	UPROPERTY(VisibleAnywhere, Category = "AI", meta = (ShowInnerProperties))
-	TObjectPtr<UGenericPropertyBinding> Property;
+	FGenericObjectPropertyBinding Property;
 
 	/* Whether to show or hide the actor on entering this node. */
 	UPROPERTY(EditAnywhere, Category = "StateMachine", meta = (AllowPrivateAccess))

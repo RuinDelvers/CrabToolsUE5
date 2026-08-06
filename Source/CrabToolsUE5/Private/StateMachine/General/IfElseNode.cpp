@@ -3,7 +3,7 @@
 
 UIfElseNode::UIfElseNode()
 {
-	this->Property = CreateDefaultSubobject<UGenericPropertyBinding>(TEXT("Property"));
+	
 }
 
 UStateNode* UIfElseNode::GetNode() const
@@ -16,7 +16,7 @@ bool UIfElseNode::GetFlag() const
 	switch (this->ConditionType)
 	{
 		case EIfElseNodeFlagType::FLAG: return this->bFlag;
-		case EIfElseNodeFlagType::PROPERTY: return this->Property->GetBool();
+		case EIfElseNodeFlagType::PROPERTY: return this->Property.Get(this);
 		default: return true;
 	}
 }

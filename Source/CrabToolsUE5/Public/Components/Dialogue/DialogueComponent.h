@@ -43,27 +43,58 @@ public:
 };
 
 
+
+
+/*
+ * Structure that handles a sequence of monologue text. This is a tree-like structure that is traversed in
+ * pre-order traversal. i.e. The current node is visited before any of its children. It also allows for the
+ * possibility of filtering a node, so that it is not visited.
+ */
 USTRUCT(BlueprintType)
 struct FMonologueDataStruct
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "DialogueNode")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Monologue")
 	FText Text;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "DialogueNode",
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Monologue",
 		meta=(InlineEditConditionToggle))
 	bool bApplySequenceAction = false;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "DialogueNode",
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Monologue",
 		meta=(EditCondition="bApplySequenceAction"))
 	FSequencerAction Action;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Instanced, Category = "DialogueNode")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Instanced, Category = "Monologue")
 	TArray<TObjectPtr<UObject>> CustomData;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "DialogueNode")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Monologue")
 	bool bUseLock = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Monologue")
+	TObjectPtr<UMonologueFilter> Filter;
+};
+
+UCLASS(Blueprintable, DefaultToInstanced, EditInlineNew)
+class UMonologueFilter : public UObject
+{
+	GENERATED_BODY()
+
+public:
+
+	UPROPERTY(EditAnywhere, Category="Monologue")
+	bool bNegate = false;
+
+public:
+
+	bool CheckNative() const;
+
+protected:
+
+	UFUNCTION(BlueprintNativeEvent, Category="Monologue")
+	bool Check() const;
+	virtual bool Check_Implementation() const { return true; }
 };
 
 UCLASS(Blueprintable, EditInlineNew, Category = "StateMachine|Dialogue")

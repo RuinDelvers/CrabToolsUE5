@@ -56,9 +56,12 @@ private:
 			EditConditionHides))
 	FName Category;
 
+	UPROPERTY()
+	bool bWasExtended = false;
+
 	UPROPERTY(EditAnywhere, Category = "StateMachine",
 		meta=(AllowPrivateAccess,
-			EditCondition="GraphType != EStateMachineGraphType::MAIN_GRAPH",
+			EditCondition="GraphType != EStateMachineGraphType::MAIN_GRAPH && bWasExtended",
 			EditConditionHides))
 	EStateMachineGraphType GraphType = EStateMachineGraphType::MAIN_GRAPH;
 

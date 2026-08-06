@@ -2,6 +2,9 @@
 #include "StateMachine/Dialogue/AbstractDialogueNode.h"
 #include "DialogueNullNode.generated.h"
 
+/*
+ * This node calls NullDialogue on the owner's DialogueComponent. See UDialogueStateComponent::OnDialogueNull.
+ */
 UCLASS(Blueprintable, CollapseCategories, Category = "StateMachine|Dialogue")
 class CRABTOOLSUE5_API UDialogueNullNode : public UAbstractDialogueNode
 {

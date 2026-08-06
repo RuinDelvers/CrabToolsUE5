@@ -1392,7 +1392,7 @@ void UStateNode::EmitEvent(FName InEvent)
 {
 	if (this->Active())
 	{
-		this->GetMachine()->SendEvent(NamespaceEvent(InEvent), this);
+		this->GetMachine()->SendEvent(InEvent, this);
 	}
 }
 
@@ -1400,7 +1400,7 @@ void UStateNode::EmitEventWithData(FName InEvent, UObject* Data)
 {
 	if (this->Active())
 	{
-		this->GetMachine()->SendEventWithData(NamespaceEvent(InEvent), Data, this);
+		this->GetMachine()->SendEventWithData(InEvent, Data, this);
 	}
 }
 
@@ -1518,7 +1518,7 @@ TArray<FString> UStateNode::GetOutgoingStateOptions() const
 void UStateNode::AddEmittedEvent(FName Event)
 {
 	#if WITH_EDITORONLY_DATA
-		this->EmittedEvents.Add(this->NamespaceEvent(Event));
+		this->EmittedEvents.Add(Event);
 	#endif
 }
 
@@ -1538,7 +1538,6 @@ void UStateNode::GetEmittedEvents(TSet<FName>& Events) const
 			Events.Add(*Value);
 		}
 	}
-	
 }
 
 #endif // WITH_EDITORONLY_DATA
@@ -1699,15 +1698,6 @@ void UState::PostTransition()
 		this->Node->PostTransition();
 	}
 }
-
-FName UStateNode::NamespaceEvent(FName InEvent) const
-{
-	FString Namespace = this->GetClass()->GetName();
-	Namespace += "::";
-	return FName(Namespace + InEvent.ToString());
-}
-
-
 
 bool UState::RequiresTick() const
 {
