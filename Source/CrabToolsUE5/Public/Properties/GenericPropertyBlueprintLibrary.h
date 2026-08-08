@@ -10,7 +10,19 @@ class UGenericPropertyBlueprintLibrary : public UBlueprintFunctionLibrary
 
 public:
 
-	UFUNCTION(BlueprintCallable, Category="Property",
+	UFUNCTION(BlueprintCallable, Category = "Property", BlueprintPure,
+		meta = (DefaultToSelf = "Source", HidePin = "Source", BlueprintAutocast, CompactNodeTitle = "->"))
+	static int GetInt(const UObject* Source, const FGenericIntPropertyBinding& Binding);
+
+	UFUNCTION(BlueprintCallable, Category = "Property", BlueprintPure,
+		meta = (DefaultToSelf = "Source", HidePin = "Source", BlueprintAutocast, CompactNodeTitle = "->"))
+	static float GetFloat(const UObject* Source, const FGenericFloatPropertyBinding& Binding);
+
+	UFUNCTION(BlueprintCallable, Category = "Property", BlueprintPure,
+		meta = (DefaultToSelf = "Source", HidePin = "Source", BlueprintAutocast, CompactNodeTitle = "->"))
+	static double GetDouble(const UObject* Source, const FGenericDoublePropertyBinding& Binding);
+
+	UFUNCTION(BlueprintCallable, Category="Property", BlueprintPure,
 		meta = (DefaultToSelf = "Source", HidePin = "Source", BlueprintAutocast, CompactNodeTitle = "->"))
 	static bool GetBool(const UObject* Source, const FGenericBoolPropertyBinding& Binding);
 

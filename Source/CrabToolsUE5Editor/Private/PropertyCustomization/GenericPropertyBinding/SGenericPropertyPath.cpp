@@ -10,7 +10,7 @@ void SGenericPropertyPath::Construct(const FArguments& InArgs, TSharedPtr<IPrope
 
 void SGenericPropertyPath::Reconstruct()
 {
-	auto Header = SNew(SGenericPropertyField, PropertyHandle);
+	auto Header = SNew(SGenericPropertyField, PropertyHandle, FPropertyChoice());
 
 	ChildSlot
 	[
@@ -34,11 +34,12 @@ void SGenericPropertyPath::Reconstruct()
 	}
 }
 
-void SGenericPropertyPath::AddProperty(FProperty* NewProp)
+void SGenericPropertyPath::AddProperty(FPropertyChoice Choice)
 {
-	this->Path.Add(NewProp);
+	this->Path.Add(Choice);
 	this->Reconstruct();
 }
+
 
 void SGenericPropertyPath::Pop()
 {

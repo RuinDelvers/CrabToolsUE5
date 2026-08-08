@@ -75,22 +75,6 @@ void SGenericPropertySelector::Construct(const FArguments& InArgs, TSharedPtr<IP
 					.Text(FText::FromString("Cancel"))
 					.OnClicked_Raw(this, &SGenericPropertySelector::OnCancelClicked)
 			]
-			/*
-			// Forward button.
-			+ SHorizontalBox::Slot()
-				.AutoWidth()
-			[
-				SNew(SButton)
-					//.OnClicked(this, &FTabInfo::OnGoBackInHistory)
-					.ButtonStyle(FAppStyle::Get(), "GraphBreadcrumbButton")
-					.IsEnabled(this, &SGenericPropertySelector::CanNavigateForward)
-					//.ToolTipText(NSLOCTEXT("WorkflowNavigationBrowser", "Backward_Tooltip", "Step backward in the tab history. Right click to see full history."))
-					[
-						SNew(SImage)
-							.Image(FAppStyle::GetBrush("GraphBreadcrumb.BrowseForward"))
-					]
-			]
-			*/
 		]
 		+ SVerticalBox::Slot()
 			.AutoHeight()
@@ -99,7 +83,7 @@ void SGenericPropertySelector::Construct(const FArguments& InArgs, TSharedPtr<IP
 			SAssignNew(SelectorPages, SWidgetSwitcher)
 			+SWidgetSwitcher::Slot()
 			[
-				SAssignNew(BasePage, SGenericPropertySelectorPage, PropHandle, nullptr, this->Binding)
+				SAssignNew(BasePage, SGenericPropertySelectorPage, PropHandle, FPropertyChoice(), this->Binding)
 					.PropertyChosen(this, &SGenericPropertySelector::OnPropertyChosen_Inner)
 			]
 		]		
@@ -113,7 +97,7 @@ bool SGenericPropertySelector::CanNavigateBackward() const
 
 void SGenericPropertySelector::OnPropertyChosen_Inner(FPropertyChoice Property)
 {
-	this->Binding->PushProperty(Property.Property);
+	Property.ApplyToBinding(this->Binding);
 	// Create a scope so that the Slot is deconstructed and the widget commited to the tree.
 	{
 		auto NewPage = SNew(SGenericPropertySelectorPage, this->PropertyHandle, Property, Binding)
@@ -124,7 +108,7 @@ void SGenericPropertySelector::OnPropertyChosen_Inner(FPropertyChoice Property)
 	}
 
 	this->SelectorPages->SetActiveWidgetIndex(this->SelectorPages->GetNumWidgets() - 1);
-	this->PathContainer->AddProperty(Property.Property);
+	this->PathContainer->AddProperty(Property);
 }
 
 bool SGenericPropertySelector::IsConfirmable() const
@@ -204,6 +188,21 @@ void SGenericPropertySelectorPage::Construct(
 				}
 			}
 		}
+
+		for (TFieldIterator<UFunction> PropIt(SearchClass); PropIt; ++PropIt)
+		{
+			auto Fn = *PropIt;
+
+			if (this->ValidFieldForFinalType(PropHandle, Fn->GetReturnProperty()))
+			{
+				auto Field = SNew(SGenericPropertyField, PropHandle, FPropertyChoice(nullptr, Fn))
+					.OnSelect(InArgs._PropertyChosen)
+					.Selectable(true);
+				auto Slot = Container->AddSlot();
+				Slot.AutoHeight();
+				Slot.AttachWidget(Field);
+			}
+		}
 	}
 
 	ChildSlot
@@ -214,24 +213,5 @@ void SGenericPropertySelectorPage::Construct(
 
 bool SGenericPropertySelectorPage::ValidFieldForFinalType(TSharedPtr<IPropertyHandle> PropHandle, FProperty* CheckProperty)
 {
-	if (PropHandle->GetProperty() == CheckProperty)
-	{
-		return false;
-	}
-	else if (auto StructProp = CastField<FStructProperty>(CheckProperty))
-	{
-		return true;
-	}
-	else if (auto ObjProp = CastField<FObjectProperty>(CheckProperty))
-	{
-		return true;
-	}
-	else if (auto BoolProp = CastField<FBoolProperty>(CheckProperty))
-	{
-		return CastFieldChecked<FStructProperty>(PropHandle->GetProperty())->Struct == FGenericBoolPropertyBinding::StaticStruct();
-	}
-	else
-	{
-		return false;
-	}
+	return CheckProperty != nullptr &&  CheckProperty != PropHandle->GetProperty() && this->Binding->ValidProperty(CheckProperty);
 }

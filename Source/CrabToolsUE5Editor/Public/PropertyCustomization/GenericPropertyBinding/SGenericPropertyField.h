@@ -9,17 +9,18 @@ class IPropertyHandle;
 class SMenuAnchor;
 class SButton;
 class SComboButton;
+struct FGenericObjectPropertyBinding;
 
 struct FPropertyChoice
 {
 	FProperty* Property = nullptr;
+	TWeakObjectPtr<UFunction> Function;
 	const UClass* CastClass = nullptr;
 
+
 	FPropertyChoice() {}
-	FPropertyChoice(FProperty* InitProperty, const UClass* InitCastClass = nullptr)
-	: Property(InitProperty),
-		CastClass(InitCastClass)
-	{}
+	FPropertyChoice(FProperty* InitProperty, UFunction* InitFunction = nullptr, const UClass* InitCastClass = nullptr)
+		: Property(InitProperty), Function(InitFunction), CastClass(InitCastClass) {}
 
 	/*
 	 * Returns the class to be searched for properties, which includes checking for the forwarded class to be
@@ -27,6 +28,10 @@ struct FPropertyChoice
 	const UStruct* GetSearchStruct(TSharedPtr<IPropertyHandle> Default) const;
 
 	operator bool() const { return Property != nullptr; }
+
+	void ApplyToBinding(TSharedPtr<FGenericObjectPropertyBinding>& Binding) const;
+
+	bool IsCastableValue() const;
 };
 
 /**
@@ -44,7 +49,7 @@ private:
 
 	TSharedPtr<IPropertyHandle> PropertyHandle;
 	TSharedPtr<SBorder> HighlightBorder;
-	FProperty* Property;
+	FPropertyChoice Choice;
 	FSelectedMulti OnSelect;
 	bool bMouseDown = false;
 	TAttribute<bool> bSelectable;
@@ -58,7 +63,7 @@ public:
 		SLATE_ATTRIBUTE(bool, Selectable)
 	SLATE_END_ARGS();
 
-	void Construct(const FArguments& InArgs, TSharedPtr<IPropertyHandle> PropHandle, FProperty* InitProperty = nullptr);
+	void Construct(const FArguments& InArgs, TSharedPtr<IPropertyHandle> PropHandle, FPropertyChoice Inithoice);
 
 	virtual FReply OnMouseButtonDown(const FGeometry& Geometry, const FPointerEvent& MouseEvent) override;
 	virtual FReply OnMouseButtonUp(const FGeometry& Geometry, const FPointerEvent& MouseEvent) override;

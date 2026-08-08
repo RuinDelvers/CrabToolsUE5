@@ -9,6 +9,7 @@ class IPropertyHandle;
 class SMenuAnchor;
 class SButton;
 class SComboButton;
+struct FPropertyChoice;
 
 /**
  * 
@@ -20,7 +21,7 @@ private:
 
 	TSharedPtr<IPropertyHandle> PropertyHandle;
 	TSharedPtr<SVerticalBox> PathContainer;
-	TArray<FProperty*> Path;
+	TArray<FPropertyChoice> Path;
 
 public:
 
@@ -34,7 +35,9 @@ public:
 
 	void Pop();
 	void Reconstruct();
-	void AddProperty(FProperty* NewProp);
+	//void AddProperty(FProperty* NewProp);
+	//void AddProperty(UFunction* NewProp);
+	void AddProperty(FPropertyChoice Choice);
 
 private:
 

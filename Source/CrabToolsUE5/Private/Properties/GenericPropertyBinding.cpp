@@ -11,34 +11,46 @@ void* FGenericObjectPropertyPath::Get(void* Source) const
 	FProperty* Prop = SearchType->FindPropertyByName(this->PropertyName);
 	void* ReturnObject = nullptr;
 	
-	if (auto ObjProp = CastField<FObjectProperty>(Prop))
+	if (this->bIsFunction)
 	{
-		ReturnObject = *ObjProp->ContainerPtrToValuePtr<UObject*>(Source);
-	}
-	else if (auto StructProp = CastField<FStructProperty>(Prop))
-	{
-		ReturnObject = StructProp->ContainerPtrToValuePtr<void>(Source);
-	}
-	else if (auto Function = SearchType->FindFunction(this->PropertyName))
-	{
-		if (auto ReturnValue = Function->GetReturnProperty())
+		if (auto Function = SearchType->FindFunction(this->PropertyName))
 		{
-			if (ReturnValue->IsA<FObjectProperty>())
+			if (auto ReturnValue = Function->GetReturnProperty())
 			{
-				FObjectReturnValue Callback;
-				Callback.BindUFunction(reinterpret_cast<UObject*>(Source), this->PropertyName);
+				if (ReturnValue->IsA<FObjectProperty>())
+				{
+					FObjectReturnValue Callback;
+					Callback.BindUFunction(reinterpret_cast<UObject*>(Source), this->PropertyName);
 
-				ReturnObject = Callback.Execute();
+					ReturnObject = Callback.Execute();
+				}
 			}
 		}
 	}
+	else
+	{
+		if (auto ObjProp = CastField<FObjectProperty>(Prop))
+		{
+			ReturnObject = *ObjProp->ContainerPtrToValuePtr<UObject*>(Source);
+		}
+		else if (auto StructProp = CastField<FStructProperty>(Prop))
+		{
+			ReturnObject = StructProp->ContainerPtrToValuePtr<void>(Source);
+		}
+		else
+		{
+			return nullptr;
+		}
+	}
+	
+	
 
 	return ReturnObject;
 }
 
-void FGenericObjectPropertyBinding::PushProperty(FProperty* Prop, UClass* CastClass)
+void FGenericObjectPropertyBinding::PushProperty(FProperty* Prop)
 {
-	auto SearchType = CastClass == nullptr ? Prop->GetOwnerStruct() : CastClass;
+	auto SearchType = Prop->GetOwnerStruct();
 
 	if (auto ObjProp = CastField<FObjectProperty>(Prop))
 	{
@@ -58,12 +70,17 @@ void FGenericObjectPropertyBinding::PushProperty(FProperty* Prop, UClass* CastCl
 
 		this->Path.Add(NewPath);
 	}
-	else if (auto FunctProp = CastField<FDelegateProperty>(Prop))
+}
+
+void FGenericObjectPropertyBinding::PushProperty(UFunction* Fn)
+{
+	if (auto ObjProp = CastField<FObjectProperty>(Fn->GetReturnProperty()))
 	{
 		FGenericObjectPropertyPath NewPath;
 
-		NewPath.PropertyName = Prop->GetFName();
-		NewPath.SearchType = SearchType;
+		NewPath.PropertyName = Fn->GetFName();
+		NewPath.SearchType = Fn->GetOuterUClass();
+		NewPath.bIsFunction = true;
 
 		this->Path.Add(NewPath);
 	}
@@ -73,12 +90,9 @@ void FGenericObjectPropertyBinding::WriteToProperty(TSharedPtr<IPropertyHandle> 
 {
 	if (auto StructProp = CastFieldChecked<FStructProperty>(Property->GetProperty()))
 	{
-		if (StructProp->Struct == FGenericObjectPropertyBinding::StaticStruct())
-		{
-			FString FormattedString;
-			StructProp->Struct->ExportText(FormattedString, this, nullptr, nullptr, PPF_Copy, nullptr);
-			Property->SetValueFromFormattedString(FormattedString);
-		}
+		FString FormattedString;
+		StructProp->Struct->ExportText(FormattedString, this, nullptr, nullptr, PPF_Copy, nullptr);
+		Property->SetValueFromFormattedString(FormattedString);
 	}
 	else
 	{
@@ -100,8 +114,8 @@ UStruct* FGenericObjectPropertyBinding::ResultType() const
 
 bool FGenericObjectPropertyBinding::ValidProperty(FProperty* CheckProp) const
 {
-	return CheckProp->GetClass() == FObjectProperty::StaticClass()
-		|| CheckProp->GetClass() == FStructProperty::StaticClass();
+	return CheckProp->IsA<FObjectProperty>()
+		|| CheckProp->IsA<FStructProperty>();
 }
 
 FString FGenericObjectPropertyBinding::GetPathString() const
@@ -155,38 +169,7 @@ bool FGenericObjectPropertyBinding::IsEmpty() const
 	return this->Path.IsEmpty();
 }
 
-bool FGenericBoolPropertyBinding::Get(const void* Source) const
-{
-	return this->Get(const_cast<void*>(Source));
-}
-
-bool FGenericBoolPropertyBinding::Get(void* Source) const
-{
-	check(!this->PropertyName.IsNone());
-
-	void* Container = FGenericObjectPropertyBinding::Get<void>(Source);
-	FBoolProperty* Prop = CastFieldChecked<FBoolProperty>(this->RequiredType->FindPropertyByName(PropertyName));
-
-	return *Prop->ContainerPtrToValuePtr<bool>(Source);
-}
-
-void FGenericBoolPropertyBinding::Set(void* Source, bool Value)
-{
-	check(!this->PropertyName.IsNone());
-	check(this->Properties.bCanWrite);
-
-	void* Container = FGenericObjectPropertyBinding::Get<void>(Source);
-	FBoolProperty* Prop = CastFieldChecked<FBoolProperty>(this->RequiredType->FindPropertyByName(PropertyName));
-
-	Prop->SetPropertyValue_InContainer(Container, Value);
-}
-
-bool FGenericBoolPropertyBinding::ValidProperty(FProperty* CheckProp) const
-{
-	return CheckProp->GetClass() == FBoolProperty::StaticClass();
-}
-
-FString FGenericBoolPropertyBinding::GetPathString() const
+FString FGenericValuePropertyBinding::GetPathString() const
 {
 	FString Base = FGenericObjectPropertyBinding::GetPathString();
 
@@ -196,17 +179,18 @@ FString FGenericBoolPropertyBinding::GetPathString() const
 	return Base;
 }
 
-FString FGenericBoolPropertyBinding::GetDisplayString() const
+FString FGenericValuePropertyBinding::GetDisplayString() const
 {
 	return this->PropertyName.ToString();
 }
 
-void FGenericBoolPropertyBinding::PushProperty(FProperty* Prop, UClass* CastClass)
+void FGenericValuePropertyBinding::PushProperty(FProperty* Prop)
 {
-	if (auto BoolProp = CastField<FBoolProperty>(Prop))
+	if (this->ValidProperty(Prop))
 	{
 		this->RequiredType = Prop->GetOwnerStruct();
 		this->PropertyName = Prop->GetFName();
+		this->bIsFunction = false;
 	}
 	else
 	{
@@ -214,17 +198,31 @@ void FGenericBoolPropertyBinding::PushProperty(FProperty* Prop, UClass* CastClas
 	}
 }
 
-bool FGenericBoolPropertyBinding::CanFinalize() const
+void FGenericValuePropertyBinding::PushProperty(UFunction* Fn)
+{
+	if (this->ValidProperty(Fn->GetReturnProperty()))
+	{
+		this->PropertyName = Fn->GetFName();
+		this->RequiredType = Fn->GetOuterUClass();
+		this->bIsFunction = true;
+	}
+	else
+	{
+		FGenericObjectPropertyBinding::PushProperty(Fn);
+	}
+}
+
+bool FGenericValuePropertyBinding::CanFinalize() const
 {
 	return !this->PropertyName.IsNone();
 }
 
-bool FGenericBoolPropertyBinding::IsEmpty() const
+bool FGenericValuePropertyBinding::IsEmpty() const
 {
 	return this->PropertyName.IsNone() && FGenericObjectPropertyBinding::IsEmpty();
 }
 
-void FGenericBoolPropertyBinding::Pop()
+void FGenericValuePropertyBinding::Pop()
 {
 	if (this->PropertyName.IsNone())
 	{
@@ -233,23 +231,6 @@ void FGenericBoolPropertyBinding::Pop()
 	else
 	{
 		this->PropertyName = FName();
-	}
-}
-
-void FGenericBoolPropertyBinding::WriteToProperty(TSharedPtr<IPropertyHandle> Property) const
-{
-	if (auto StructProp = CastFieldChecked<FStructProperty>(Property->GetProperty()))
-	{
-		if (StructProp->Struct == FGenericBoolPropertyBinding::StaticStruct())
-		{
-			FString FormattedString;
-			StructProp->Struct->ExportText(FormattedString, this, nullptr, nullptr, PPF_Copy, nullptr);
-			Property->SetValueFromFormattedString(FormattedString);
-		}
-	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("Attempted to write generic property data to invalid property: %s"), *Property->GetProperty()->GetName());
 	}
 }
 
@@ -266,4 +247,95 @@ void FGenericFunctionPropertyBinding::Execute(void* Source)
 	}
 }
 
+#pragma region Value Types
+
+#pragma region Boolean
+bool FGenericBoolPropertyBinding::Get(const void* Source) const
+{
+	return this->Get(const_cast<void*>(Source));
+}
+
+bool FGenericBoolPropertyBinding::Get(void* Source) const
+{
+	return this->GetHelper<bool>(Source);
+}
+
+void FGenericBoolPropertyBinding::Set(void* Source, bool Value)
+{
+	this->SetHelper<bool>(Source, Value);
+}
+
+bool FGenericBoolPropertyBinding::ValidProperty(FProperty* CheckProp) const
+{
+	return this->ValidPropertyHelper<bool>(CheckProp);
+}
+#pragma endregion
+
+#pragma region Integer
+int FGenericIntPropertyBinding::Get(void* Source) const
+{
+	return this->GetHelper<int>(Source);
+}
+
+int FGenericIntPropertyBinding::Get(const void* Source) const
+{
+	return this->Get(const_cast<void*>(Source));
+}
+
+void FGenericIntPropertyBinding::Set(void* Source, int Value)
+{
+	this->SetHelper<int>(Source, Value);
+}
+
+bool FGenericIntPropertyBinding::ValidProperty(FProperty* CheckProp) const
+{
+	return this->ValidPropertyHelper<int>(CheckProp);
+}
+
+#pragma endregion
+
+#pragma region Float
+float FGenericFloatPropertyBinding::Get(void* Source) const
+{
+	return this->GetHelper<float>(Source);
+}
+
+float FGenericFloatPropertyBinding::Get(const void* Source) const
+{
+	return this->Get(const_cast<void*>(Source));
+}
+
+void FGenericFloatPropertyBinding::Set(void* Source, float Value)
+{
+	this->SetHelper<float>(Source, Value);
+}
+
+bool FGenericFloatPropertyBinding::ValidProperty(FProperty* CheckProp) const
+{
+	return this->ValidPropertyHelper<float>(CheckProp);
+}
+#pragma endregion
+
+#pragma region FDouble
+double FGenericDoublePropertyBinding::Get(void* Source) const
+{
+	return this->GetHelper<double>(Source);
+}
+
+double FGenericDoublePropertyBinding::Get(const void* Source) const
+{
+	return this->Get(const_cast<void*>(Source));
+}
+
+void FGenericDoublePropertyBinding::Set(void* Source, double Value)
+{
+	this->SetHelper<double>(Source, Value);
+}
+
+bool FGenericDoublePropertyBinding::ValidProperty(FProperty* CheckProp) const
+{
+	return this->ValidPropertyHelper<double>(CheckProp);
+}
+#pragma endregion
+#pragma endregion
 #undef LOCTEXT_NAMESPACE

@@ -3,31 +3,47 @@
 #include "Styling/StarshipCoreStyle.h"
 #include "Kismet2/BlueprintEditorUtils.h"
 #include "PropertyCustomizationHelpers.h"
-#include "AssetRegistry/AssetRegistryModule.h"
+#include "Properties/GenericPropertyBinding.h"
 
 #define LOCTEXT_NAMESPACE "SGenericPropertyField"
 
 
 
-void SGenericPropertyField::Construct(const FArguments& InArgs, TSharedPtr<IPropertyHandle> PropHandle, FProperty* InitProperty)
+void SGenericPropertyField::Construct(const FArguments& InArgs, TSharedPtr<IPropertyHandle> PropHandle, FPropertyChoice InitChoice)
 {
-	this->Property = InitProperty;
+	this->Choice = InitChoice;
 	this->PropertyHandle = PropHandle;
 	this->bSelectable = InArgs._Selectable.IsBound() || InArgs._Selectable.IsSet() ? InArgs._Selectable : false;
 	this->OnSelect.Add(InArgs._OnSelect);
 	
 
-	FEdGraphPinType PinType;
+	FLinearColor PinColor = FLinearColor::Black;
+	const FSlateBrush* Icon = nullptr;
 	const UEdGraphSchema_K2* Schema = GetDefault<UEdGraphSchema_K2>();
 
-	if (Property)
+	if (this->Choice.Property)
 	{
-		Schema->ConvertPropertyToPinType(Property, PinType);
-		
+		FEdGraphPinType PinType;
+
+		Schema->ConvertPropertyToPinType(Choice.Property, PinType);
+		PinColor = Schema->GetPinTypeColor(PinType);
+		Icon = FBlueprintEditorUtils::GetIconFromPin(PinType, true);
+	}
+	else if (this->Choice.Function.IsValid())
+	{
+		FEdGraphPinType PinType;
+
+		Schema->ConvertPropertyToPinType(this->Choice.Function->GetReturnProperty(), PinType);
+		PinColor = Schema->GetPinTypeColor(PinType);
+		Icon = FAppStyle::Get().GetBrush("ClassIcon.K2Node_CallFunction");
 	}
 	else
 	{
+		FEdGraphPinType PinType;
+
 		PinType.PinCategory = UEdGraphSchema_K2::PC_Object;
+		PinColor = Schema->GetPinTypeColor(PinType);
+		Icon = FBlueprintEditorUtils::GetIconFromPin(PinType, true);
 	}
 
 	TSharedPtr<SHorizontalBox> Body;
@@ -45,8 +61,8 @@ void SGenericPropertyField::Construct(const FArguments& InArgs, TSharedPtr<IProp
 					.Padding(1.0f, 0.0f)
 				[
 					SNew(SImage)
-						.Image(FBlueprintEditorUtils::GetIconFromPin(PinType, true))
-						.ColorAndOpacity(Schema->GetPinTypeColor(PinType))
+						.Image(Icon)
+						.ColorAndOpacity(PinColor)
 				]
 				+ SHorizontalBox::Slot()
 					.VAlign(VAlign_Center)
@@ -57,7 +73,7 @@ void SGenericPropertyField::Construct(const FArguments& InArgs, TSharedPtr<IProp
 			]
 		];
 
-	if (this->bSelectable.Get() && InitProperty && InitProperty->IsA<FObjectProperty>())
+	if (this->bSelectable.Get() && this->Choice.IsCastableValue())
 	{
 		auto Slot = Body->AddSlot();
 		Slot.AutoWidth();
@@ -81,7 +97,7 @@ FReply SGenericPropertyField::OnMouseButtonUp(const FGeometry& Geometry, const F
 	if (this->bMouseDown)
 	{
 		this->bMouseDown = false;		
-		this->OnSelect.Broadcast(FPropertyChoice(this->Property));
+		this->OnSelect.Broadcast(FPropertyChoice(this->Choice.Property, this->Choice.Function.Get()));
 	}
 
 	return FReply::Handled();
@@ -105,11 +121,11 @@ void SGenericPropertyField::OnMouseLeave(const FPointerEvent& MouseEvent)
 
 UClass* SGenericPropertyField::GetResultClass() const
 {
-	if (auto ObjProp = CastField<FObjectProperty>(this->Property))
+	if (auto ObjProp = CastField<FObjectProperty>(this->Choice.Property))
 	{
 		return ObjProp->PropertyClass;
 	}
-	else if (auto DeleProp = CastField<FDelegateProperty>(this->Property))
+	else if (auto DeleProp = CastField<FDelegateProperty>(this->Choice.Property))
 	{
 		if (auto ReturnProp = CastField<FObjectProperty>(DeleProp->SignatureFunction->GetReturnProperty()))
 		{
@@ -133,10 +149,15 @@ FReply SGenericPropertyField::OnCastClassClicked()
 
 TSharedRef<STextBlock> SGenericPropertyField::GetLabel() const
 {
-	if (Property)
+	if (Choice.Property)
 	{
 		return SNew(STextBlock)
-			.Text(FText::FromName(Property->GetFName()));
+			.Text(FText::FromName(this->Choice.Property->GetFName()));
+	}
+	else if (this->Choice.Function.IsValid())
+	{
+		return SNew(STextBlock)
+			.Text(FText::FromName(this->Choice.Function->GetFName()));
 	}
 	else
 	{
@@ -147,7 +168,7 @@ TSharedRef<STextBlock> SGenericPropertyField::GetLabel() const
 
 void SGenericPropertyField::OnClassChosen(const UClass* Chosen)
 {
-	this->OnSelect.Broadcast(FPropertyChoice(this->Property, Chosen));
+	this->OnSelect.Broadcast(FPropertyChoice(this->Choice.Property, this->Choice.Function.Get(), Chosen));
 }
 
 const UStruct* FPropertyChoice::GetSearchStruct(TSharedPtr<IPropertyHandle> Default) const
@@ -171,9 +192,58 @@ const UStruct* FPropertyChoice::GetSearchStruct(TSharedPtr<IPropertyHandle> Defa
 			return nullptr;
 		}
 	}
+	else if (this->Function.IsValid())
+	{
+		if (auto ObjProp = CastField<FObjectProperty>(this->Function->GetReturnProperty()))
+		{
+			return ObjProp->PropertyClass;
+		}
+		else if (auto StructProp = CastField<FStructProperty>(this->Function->GetReturnProperty()))
+		{
+			return StructProp->Struct;
+		}
+		else
+		{
+			return nullptr;
+		}
+	}
 	else
 	{
 		return Default->GetProperty()->GetOwnerClass();
+	}
+}
+
+void FPropertyChoice::ApplyToBinding(TSharedPtr<FGenericObjectPropertyBinding>& Binding) const
+{
+	if (this->Property)
+	{
+		Binding->PushProperty(this->Property);
+	}
+	else if (this->Function.IsValid())
+	{
+		Binding->PushProperty(this->Function.Get());
+	}
+}
+
+bool FPropertyChoice::IsCastableValue() const
+{
+	if (auto ObjProp = CastField<FObjectProperty>(this->Property))
+	{
+		return true;
+	}
+	else if (this->Function.IsValid())
+	{
+		if (auto ReturnProp = CastField<FObjectProperty>(this->Function->GetReturnProperty())) {
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+	else
+	{
+		return false;
 	}
 }
 
