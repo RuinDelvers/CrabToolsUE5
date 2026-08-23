@@ -39,6 +39,7 @@ void* FGenericObjectPropertyPath::Get(void* Source) const
 		}
 		else
 		{
+			checkf(false, TEXT("Could not find valid property from source %s"), *this->PropertyName.ToString());
 			return nullptr;
 		}
 	}
@@ -186,7 +187,7 @@ FString FGenericValuePropertyBinding::GetDisplayString() const
 
 void FGenericValuePropertyBinding::PushProperty(FProperty* Prop)
 {
-	if (this->ValidProperty(Prop))
+	if (this->ValidValueProperty(Prop))
 	{
 		this->RequiredType = Prop->GetOwnerStruct();
 		this->PropertyName = Prop->GetFName();
@@ -197,6 +198,17 @@ void FGenericValuePropertyBinding::PushProperty(FProperty* Prop)
 		FGenericObjectPropertyBinding::PushProperty(Prop);
 	}
 }
+
+bool FGenericValuePropertyBinding::IsValid() const
+{
+	return !this->PropertyName.IsNone();
+}
+
+bool FGenericValuePropertyBinding::ValidValueProperty(FProperty* Prop) const
+{
+	return Prop && Prop->GetClass() == this->GetValuePropertyClass();
+}
+
 
 void FGenericValuePropertyBinding::PushProperty(UFunction* Fn)
 {
@@ -236,8 +248,6 @@ void FGenericValuePropertyBinding::Pop()
 
 void FGenericFunctionPropertyBinding::Execute(void* Source)
 {
-	check(!this->PropertyName.IsNone());
-
 	UObject* Obj = this->Get<UObject>(Source);
 
 	if (Obj)

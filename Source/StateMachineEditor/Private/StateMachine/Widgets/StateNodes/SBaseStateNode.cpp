@@ -114,7 +114,15 @@ FReply SBaseStateNodeDetails::OnMoveDownClicked()
 
 FText SBaseStateNodeDetails::TooltipText() const
 {
-	return FText::FromString(this->StateNode->GetClass()->GetMetaData("Tooltip"));
+	if (this->StateNode.IsValid())
+	{
+		return FText::FromString(this->StateNode->GetClass()->GetMetaData("Tooltip"));
+	}
+	else
+	{
+		return FText();
+	}
+	
 }
 
 TSharedPtr<SWidget> SBaseStateNodeDetails::ConstructHeader()

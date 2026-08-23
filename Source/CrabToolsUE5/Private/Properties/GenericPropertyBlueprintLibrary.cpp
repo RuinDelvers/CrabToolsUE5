@@ -20,7 +20,7 @@ bool UGenericPropertyBlueprintLibrary::GetBool(const UObject* Source, const FGen
 	return Binding.Get(Source);
 }
 
-bool UGenericPropertyBlueprintLibrary::BranchtBool(const UObject* Source, const FGenericBoolPropertyBinding& Binding)
+bool UGenericPropertyBlueprintLibrary::BranchBool(const UObject* Source, const FGenericBoolPropertyBinding& Binding)
 {
 	return Binding.Get(Source);
 }

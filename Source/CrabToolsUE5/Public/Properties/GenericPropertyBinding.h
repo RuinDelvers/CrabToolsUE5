@@ -95,10 +95,13 @@ public:
 
 	template <class T> T* Get(void* Source) const
 	{
+		check(Source);
 		void* Result = Source;
+
 		for (auto& Part : this->Path)
 		{
 			Result = Part.Get(Result);
+			check(Result);
 		}
 
 		return reinterpret_cast<T*>(Result);
@@ -129,6 +132,8 @@ public:
 	TObjectPtr<UStruct> RequiredType;
 
 public:
+
+	bool IsValid() const;
 
 	virtual bool IsEmpty() const override;
 	virtual void Pop() override;
@@ -161,7 +166,13 @@ protected:
 
 	template <class Return> Return GetHelper(void* Source) const
 	{
-		check(!this->PropertyName.IsNone());
+		#if WITH_EDITOR
+			if (this->PropertyName.IsNone())
+			{
+				ensure(!this->PropertyName.IsNone());
+				return Helpers::DefaultValue<Return>;
+			}
+		#endif
 
 		if (void* Container = FGenericObjectPropertyBinding::Get<void>(Source))
 		{
@@ -197,6 +208,10 @@ protected:
 		PropValue->SetPropertyValue_InContainer(Container, SetValue);
 	}
 
+
+	bool ValidValueProperty(FProperty* Prop) const;
+
+	virtual FFieldClass* GetValuePropertyClass() const { return nullptr; }
 };
 
 USTRUCT(BlueprintType)
@@ -213,6 +228,7 @@ public:
 	void Set(void* Source, bool Value);
 
 	virtual bool ValidProperty(FProperty* CheckProp) const override;
+	virtual FFieldClass* GetValuePropertyClass() const override { return FBoolProperty::StaticClass(); }
 };
 
 USTRUCT(BlueprintType)
@@ -245,6 +261,7 @@ public:
 	void Set(void* Source, int Value);
 
 	virtual bool ValidProperty(FProperty* CheckProp) const override;
+	virtual FFieldClass* GetValuePropertyClass() const override { return FIntProperty::StaticClass(); }
 };
 
 USTRUCT(BlueprintType)
@@ -261,6 +278,7 @@ public:
 	void Set(void* Source, float Value);
 
 	virtual bool ValidProperty(FProperty* CheckProp) const override;
+	virtual FFieldClass* GetValuePropertyClass() const override { return FFloatProperty::StaticClass(); }
 };
 
 
@@ -278,5 +296,6 @@ public:
 	void Set(void* Source, double Value);
 
 	virtual bool ValidProperty(FProperty* CheckProp) const override;
+	virtual FFieldClass* GetValuePropertyClass() const override { return FDoubleProperty::StaticClass(); }
 };
 

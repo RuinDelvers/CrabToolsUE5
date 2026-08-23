@@ -15,7 +15,7 @@ class CRABTOOLSUE5_API USetBooleanNode : public UStateNode
 
 private:
 
-	UPROPERTY(VisibleAnywhere, Category = "Properties", meta = (ShowInnerProperties))
+	UPROPERTY(EditAnywhere, Category = "Properties", meta = (ShowInnerProperties))
 	FGenericBoolPropertyBinding Property;
 
 	UPROPERTY(EditAnywhere, Category = "Properties", meta = (AllowPrivateAccess))

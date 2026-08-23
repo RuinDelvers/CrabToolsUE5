@@ -22,3 +22,11 @@ bool USortableGameplayTagSet::MatchesAny(const FGameplayTag& Tag) const
 
 	return false;
 }
+
+void USortableGameplayTagSet::Apply(const FApplyDelegate& Callback)
+{
+	for (const auto& Tag : this->TagSet)
+	{
+		Callback.Execute(Tag);
+	}
+}

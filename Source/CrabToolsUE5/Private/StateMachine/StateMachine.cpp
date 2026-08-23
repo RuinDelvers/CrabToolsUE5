@@ -108,12 +108,12 @@ void UStateMachine::Initialize_Inner_Implementation() {}
 UStateMachine* UStateNode::GetMachineAs(TSubclassOf<UStateMachine> SClass, bool& bFound) const
 {
 	auto Class = SClass.Get();
-	auto Machine = this->GetMachine();
+	auto GotMachine = this->GetMachine();
 
-	if (Class && Machine) {
+	if (Class && GotMachine) {
 		if (Machine->IsA(Class)) {
 			bFound = true;
-			return Machine;
+			return GotMachine;
 		}
 	}
 
@@ -124,14 +124,14 @@ UStateMachine* UStateNode::GetMachineAs(TSubclassOf<UStateMachine> SClass, bool&
 UStateMachine* UStateNode::GetRootMachineAs(TSubclassOf<UStateMachine> SClass, bool& bFound) const
 {
 	auto Class = SClass.Get();
-	auto Machine = this->GetRootMachine();
+	auto GotMachine = this->GetRootMachine();
 
-	if (Class && Machine)
+	if (Class && GotMachine)
 	{
-		if (Machine->IsA(Class))
+		if (GotMachine->IsA(Class))
 		{
 			bFound = true;
-			return Machine;
+			return GotMachine;
 		}
 	}
 
@@ -685,6 +685,19 @@ FName UStateMachine::GetCurrentStateName() const
 	return this->CurrentStateName;
 }
 
+FName UStateMachine::GetStateName(UState* State) const
+{
+	for (const auto& States : this->Graph)
+	{
+		if (States.Value == State)
+		{
+			return States.Key;
+		}
+	}
+
+	return NAME_None;
+}
+
 UStateNode* UStateMachine::GetCurrentStateAs(TSubclassOf<UStateNode> Class, ESearchResult& Branches)
 {
 	auto Node = this->GetCurrentState();
@@ -988,6 +1001,23 @@ UWorld* UStateMachine::GetWorld() const
 	return nullptr;
 }
 
+FString UStateMachine::GetFullMachinePath() const
+{
+	FString Path;
+
+	if (this->ParentMachine)
+	{
+		Path = ParentMachine->GetFullMachinePath();
+		Path.Append(".");
+	}
+
+	Path.Append(this->GetClass()->GetName());
+	Path.Append(".");
+	Path.Append(this->GetName());
+
+	return Path;
+}
+
 void FTransitionQueue::Queue(FName NewDestination, FName Event, UAbstractCondition* TakenTransition, UObject* Source)
 {
 	this->Destination = NewDestination;
@@ -1055,7 +1085,7 @@ UStateNode::UStateNode()
 
 void UStateNode::Initialize(UStateMachine* POwner)
 {
-	this->Owner = POwner;
+	this->Machine = POwner;
 	this->InitNotifies();
 
 	this->Initialize_Inner();
@@ -1122,7 +1152,7 @@ void UStateNode::Initialize_Inner_Implementation() {}
 
 UStateMachine* UStateNode::GetMachine() const
 {
-	return this->Owner;
+	return this->Machine;
 }
 
 UState* UStateNode::GetState() const
@@ -1130,13 +1160,14 @@ UState* UStateNode::GetState() const
 	return UtilsFunctions::GetOuterAs<UState>(this);
 }
 
-UObject* UStateNode::GetOwner() const {
-	return this->Owner->GetOwner();
+UObject* UStateNode::GetOwner() const
+{
+	return this->Machine->GetOwner();
 }
 
 AActor* UStateNode::GetActorOwner() const
 {
-	return this->Owner->GetActorOwner();
+	return this->Machine->GetActorOwner();
 }
 
 void UStateNode::Event(FName InEvent, UObject* EventSource)
@@ -1156,7 +1187,7 @@ void UStateNode::Event(FName InEvent, UObject* EventSource)
 
 UStateMachine* UStateNode::GetRootMachine() const
 {
-	return this->Owner->GetRootMachine();
+	return this->Machine->GetRootMachine();
 }
 
 void UStateNode::Event_Inner_Implementation(FName InEvent, UObject* EventSource)
@@ -1187,11 +1218,6 @@ void UStateNode::EventWithData_Inner_Implementation(FName InEvent, UObject* Data
 bool UStateNode::DoesReferenceMachine(FName MachineName) const
 {
 	return this->DoesReferenceMachine_Inner(MachineName);
-}
-
-void UStateNode::SetOwner(UStateMachine* Parent)
-{
-	this->Owner = Parent;
 }
 
 bool UStateNode::Active() const
@@ -1373,9 +1399,9 @@ UWorld* UStateNode::GetWorld() const
 	if (!HasAnyFlags(RF_ClassDefaultObject) && !GetOuter()->HasAnyFlags(RF_BeginDestroyed) && !GetOuter()->IsUnreachable())
 	{
 		//Try to get the world from the owning actor if we have one
-		if (this->Owner)
+		if (this->Machine)
 		{
-			return this->Owner->GetActorOwner()->GetWorld();
+			return this->Machine->GetActorOwner()->GetWorld();
 		}
 	}
 
@@ -1404,6 +1430,30 @@ void UStateNode::EmitEventWithData(FName InEvent, UObject* Data)
 	}
 }
 
+FString UStateNode::GetNodePath() const
+{
+	FString Path = this->GetMachine()->GetFullMachinePath();
+	Path.Append(".");
+	Path.Append(this->Machine->GetStateName(this->GetState()).ToString());
+
+	TArray<FString> Outers;
+	const UObject* Outer = this;
+
+	/*
+	while (Outer != this->GetState())
+	{
+		Outers.Add(Outer->GetName());
+	}
+	
+	for (int i = Outers.Num() - 1; i >= 0; --i)
+	{
+		Path.Append(".");
+		Path.Append(Outers[i]);
+	}
+	*/
+
+	return Path;
+}
 
 #if WITH_EDITOR
 

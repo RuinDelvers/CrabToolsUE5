@@ -28,5 +28,5 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Property",
 		meta = (DefaultToSelf = "Source", HidePin = "Source", ExpandBoolAsExecs="ReturnValue"))
-	static bool BranchtBool(const UObject* Source, const FGenericBoolPropertyBinding& Binding);
+	static bool BranchBool(const UObject* Source, const FGenericBoolPropertyBinding& Binding);
 };

@@ -34,18 +34,18 @@ void USequenceSetNode::LoadInterface()
 	{
 		case ESequenceSource::INTERFACE:
 		{
-			auto Machine = this->GetMachine();
-			if (Machine->Implements<UCutsceneStateMachine>())
+			auto GotMachine = this->GetMachine();
+			if (GotMachine->Implements<UCutsceneStateMachine>())
 			{
-				this->LoadSoftPtr(ICutsceneStateMachine::Execute_GetMachineSequence(Machine));
+				this->LoadSoftPtr(ICutsceneStateMachine::Execute_GetMachineSequence(GotMachine));
 			}
 		}
 		case ESequenceSource::PARENT_INTERFACE:
 		{
-			auto Machine = this->GetMachine()->GetParentMachine();
-			if (Machine && Machine->Implements<UCutsceneStateMachine>())
+			auto GotMachine = this->GetMachine()->GetParentMachine();
+			if (GotMachine && GotMachine->Implements<UCutsceneStateMachine>())
 			{
-				this->LoadSoftPtr(ICutsceneStateMachine::Execute_GetMachineSequence(Machine));
+				this->LoadSoftPtr(ICutsceneStateMachine::Execute_GetMachineSequence(GotMachine));
 			}
 		}
 	}
@@ -54,15 +54,15 @@ void USequenceSetNode::LoadInterface()
 ESequenceStatePlayPhase USequenceSetNode::GetPlayPhase() const
 {
 	ESequenceStatePlayPhase Phase = ESequenceStatePlayPhase::UNSPECIFIED;
-	auto Machine = this->GetMachine();
+	auto GotMachine = this->GetMachine();
 
-	if (Machine->Implements<UCutsceneStateMachine>())
+	if (GotMachine->Implements<UCutsceneStateMachine>())
 	{
-		Phase = ICutsceneStateMachine::Execute_GetPlayPhase(Machine);
+		Phase = ICutsceneStateMachine::Execute_GetPlayPhase(GotMachine);
 	}
 	else
 	{
-		if (auto Parent = Machine->GetParentMachine())
+		if (auto Parent = GotMachine->GetParentMachine())
 		{
 			if (Parent->Implements<UCutsceneStateMachine>())
 			{

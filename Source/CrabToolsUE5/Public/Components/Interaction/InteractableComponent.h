@@ -106,6 +106,10 @@ public:
 
 	virtual TArray<UContextMenuEntry*> GatherEntries_Implementation(AActor* Requester = nullptr) override;
 
+	
+	UFUNCTION(BlueprintCallable, CallInEditor, Category = "Interaction")
+	void ProjectInteractionsToNavigation();
+
 protected:
 
 	virtual void BeginPlay() override;

@@ -156,6 +156,24 @@ void UMouseOverComponent::SetTraceComplex(bool bTraceComplex)
 	this->Params.bTraceComplex = bTraceComplex;
 }
 
+void UMouseOverComponent::AddBlocker(UObject* Blocker)
+{
+	if (IsValid(Blocker))
+	{
+		this->TickBlockers.Add(Blocker);
+		this->UpdateTickingState();
+	}
+}
+
+void UMouseOverComponent::RemoveBlocker(UObject* Blocker)
+{
+	if (Blocker)
+	{
+		this->TickBlockers.Remove(Blocker);
+		this->UpdateTickingState();
+	}
+}
+
 const FHitResult& UMouseOverComponent::GetCurrentCheckResult() const
 {
 	if (this->bDoMultiTrace)
@@ -225,9 +243,11 @@ void UMouseOverComponent::SetIsMousingUI(bool bNewMousing)
 
 void UMouseOverComponent::UpdateTickingState()
 {
-	// ShouldTick && (Ticking -> Mousing)
-	bool bTick = 
+	this->ComputeTickBlockers();
+
+	bool bTick =
 		this->bShouldTick
+		&& this->TickBlockers.IsEmpty()
 		&& (!this->bIsMousingUI || this->bTickWhenMousingUI);
 	
 	UActorComponent::SetComponentTickEnabled(bTick);
@@ -237,6 +257,21 @@ void UMouseOverComponent::UpdateTickingState()
 		this->ReplaceActors(nullptr);
 		this->UpdateMousePointActors();
 	}
+}
+
+void UMouseOverComponent::ComputeTickBlockers()
+{
+	TSet<TWeakObjectPtr<UObject>> Blockers;
+
+	for (auto& Ptr : this->TickBlockers)
+	{
+		if (Ptr.IsValid())
+		{
+			Blockers.Add(Ptr);
+		}
+	}
+
+	this->TickBlockers = Blockers;
 }
 
 

@@ -130,6 +130,23 @@ void ADoorActor::UpdatePosition(float alpha)
 	}
 }
 
+void ADoorActor::ApplyAction(EDoorActorActions Action)
+{
+	switch (Action)
+	{
+		case EDoorActorActions::OPEN:
+			this->OpenDoor();
+			break;
+		case EDoorActorActions::CLOSE:
+			this->CloseDoor();
+			break;
+		default:
+		{
+
+		}
+	}
+}
+
 void ADoorActor::FinishMovement()
 {
 	this->OnFinishMovementEvent.Broadcast();

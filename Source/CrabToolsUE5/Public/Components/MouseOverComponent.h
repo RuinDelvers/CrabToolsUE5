@@ -116,6 +116,8 @@ class CRABTOOLSUE5_API UMouseOverComponent : public UActorComponent
 
 	FCollisionQueryParams Params;
 
+	TSet<TWeakObjectPtr<UObject>> TickBlockers;
+
 	#if WITH_EDITORONLY_DATA
 		UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Trace", meta = (AllowPrivateAccess))
 		bool bDrawDebugLine = false;
@@ -233,6 +235,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Trace")
 	void SetTraceComplex(bool bTraceComplex);
 
+	UFUNCTION(BlueprintCallable, Category = "Trace")
+	void AddBlocker(UObject* Blocker);
+
+	UFUNCTION(BlueprintCallable, Category = "Trace")
+	void RemoveBlocker(UObject* Blocker);
+
 protected:
 
 	UFUNCTION(BlueprintNativeEvent, Category = "Trace")
@@ -268,4 +276,5 @@ private:
 
 	UFUNCTION()
 	void OnControllerChanged(APawn* Pawn, AController* OldController, AController* NewController);
+	void ComputeTickBlockers();
 };

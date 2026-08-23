@@ -2,6 +2,7 @@
 
 #include "Utils/Enums.h"
 #include "UObject/ObjectPtr.h"
+#include "Logging/MessageLog.h"
 #include "StateMachine/EventListener.h"
 #include "StateMachine/IStateMachineLike.h"
 #include "Containers/List.h"
@@ -260,10 +261,8 @@ class CRABTOOLSUE5_API UStateNode : public UObject, public IStateNodeLike
 {
 	GENERATED_BODY()
 
-	//friend class UStateMachine;
-
 	UPROPERTY(BlueprintReadOnly, Transient, DuplicateTransient, meta=(AllowPrivateAccess))
-	TObjectPtr<UStateMachine> Owner;
+	TObjectPtr<UStateMachine> Machine;
 
 	EStateNodeState CurrentState = EStateNodeState::INACTIVE;
 
@@ -293,29 +292,36 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "StateMachine")
 	void Initialize(UStateMachine* POwner);
 
-	UFUNCTION(BlueprintCallable, Category = "StateMachine")
-	void SetOwner(UStateMachine* Parent);
-
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category="StateMachine")
 	bool Active() const;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "StateMachine")
-	UObject* GetOwner() const;
+	FORCEINLINE UObject* GetOwner() const;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "StateMachine")
-	AActor* GetActorOwner() const;
+	FORCEINLINE AActor* GetActorOwner() const;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "StateMachine")
-	UStateMachine* GetMachine() const;
+	FORCEINLINE UStateMachine* GetMachine() const;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "StateMachine")
-	UStateMachine* GetRootMachine() const;
+	FORCEINLINE UStateMachine* GetRootMachine() const;
 
 	UFUNCTION(BlueprintCallable, Category = "StateMachine", meta = (DeterminesOutputType = "SClass"))
 	UStateMachine* GetMachineAs(TSubclassOf<UStateMachine> SClass, bool& bFound) const;
 
 	UFUNCTION(BlueprintCallable, Category = "StateMachine", meta = (DeterminesOutputType = "SClass"))
 	UStateMachine* GetRootMachineAs(TSubclassOf<UStateMachine> SClass, bool& bFound) const;
+
+	template <class T> T* GetMachineAs() const
+	{
+		return Cast<T>(this->Machine);
+	}
+
+	template <class T> T* GetRootMachineAs() const
+	{
+		return Cast<T>(this->GetRootMachine());
+	}
 
 	UFUNCTION(BlueprintCallable, BlueprintInternalUseOnly, Category = "StateMachine",
 		meta = (HideSelfPin=true))
@@ -400,7 +406,33 @@ public:
 	void PostTransition();
 	virtual void PostTransition_Implementation() {}
 
+	/* Returns the full machine path to this node. Primarily for debugging. */
+	UFUNCTION(BlueprintCallable, Category="StateMachine")
+	FString GetNodePath() const;
+
 protected:
+
+	template <class T> T* GetOwner() const
+	{
+		#if WITH_EDITOR
+			T* Value = Cast<T>(this->GetOwner());
+
+				if (!Value)
+				{
+					FMessageLog Log("StateMachine::GetOwner");
+					FString Message = FString::Printf(
+						TEXT("%s Attempted to get owner as type %s, but owner was type %s"),
+						*this->GetNodePath(),
+						*T::StaticClass()->GetName(),
+						*this->GetOwner()->GetClass()->GetName());
+					Log.Error(FText::FromString(Message));
+				}
+
+				return Value;
+		#else
+			return CastChecked<T>(this->GetOwner());
+		#endif
+	}
 
 	/* Override this with your verification code. */
 	virtual bool Verify_Inner(FNodeVerificationContext& Context) const { return true; }
@@ -732,7 +764,7 @@ public:
 	void SetActive(bool bNewActive);
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "StateMachine")
-	AActor* GetActorOwner() const;
+	FORCEINLINE AActor* GetActorOwner() const;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "StateMachine")
 	UObject* GetOwner() const;
@@ -782,6 +814,10 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "StateMachine")
 	FName GetCurrentStateName() const;
+
+	/* Returns the name of the state for the given state object. Inefficient, so use sparingly. */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "StateMachine")
+	FName GetStateName(UState* State) const;
 
 	UFUNCTION(BlueprintCallable, Category = "StateMachine")
 	UStateMachine* GetParentMachine() const { return this->ParentMachine; }
@@ -868,6 +904,8 @@ public:
 	virtual UWorld* GetWorld() const override;
 
 	void AddEventEmitter(UEventEmitter* Emitter) { this->EventEmitters.Add(Emitter); }
+
+	FString GetFullMachinePath() const;
 
 protected:
 

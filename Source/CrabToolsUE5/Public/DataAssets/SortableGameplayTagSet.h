@@ -12,6 +12,8 @@ class USortableGameplayTagSet : public UDataAsset
 
 public:
 
+	DECLARE_DYNAMIC_DELEGATE_OneParam(FApplyDelegate, FGameplayTag, Tag);
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="TagSet")
 	TSet<FGameplayTag> TagSet;
 
@@ -25,4 +27,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Sorting")
 	bool Contains(const FGameplayTag& Tag) const { return this->TagSet.Contains(Tag); }
+
+	UFUNCTION(BlueprintCallable, Category="Sorting")
+	void Apply(const FApplyDelegate& Callback);
 };

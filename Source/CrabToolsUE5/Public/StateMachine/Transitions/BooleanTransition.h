@@ -12,7 +12,7 @@ class CRABTOOLSUE5_API UBooleanTransitionCondition : public UTransitionCondition
 {
 	GENERATED_BODY()
 
-	UPROPERTY(VisibleAnywhere, Category = "Properties", meta = (ShowInnerProperties))
+	UPROPERTY(EditAnywhere, Category = "Properties", meta = (ShowInnerProperties))
 	FGenericBoolPropertyBinding Property;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Properties", meta = (AllowPrivateAccess))
@@ -33,7 +33,7 @@ class CRABTOOLSUE5_API UBooleanTransitionDataCondition : public UTransitionDataC
 {
 	GENERATED_BODY()
 
-	UPROPERTY(VisibleAnywhere, Category = "Properties", meta = (ShowInnerProperties))
+	UPROPERTY(EditAnywhere, Category = "Properties", meta = (ShowInnerProperties))
 	FGenericBoolPropertyBinding Property;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Properties", meta = (AllowPrivateAccess))

@@ -3,6 +3,7 @@
 #include "PropertyHandle.h"
 #include "DetailWidgetRow.h"
 #include "DetailLayoutBuilder.h"
+#include "IPropertyUtilities.h"
 #include "PropertyCustomization/GenericPropertyBinding/SGenericPropertyBindingCustomizer.h"
 #include "Properties/GenericPropertyBinding.h"
 
@@ -14,8 +15,6 @@ TSharedRef<IPropertyTypeCustomization> FGenericPropertyBindingCustomization::Mak
 
 void FGenericPropertyBindingCustomization::CustomizeHeader(TSharedRef<IPropertyHandle> StructPropertyHandle, FDetailWidgetRow& HeaderRow, IPropertyTypeCustomizationUtils& StructCustomizationUtils)
 {
-	this->CachedPropertyHandle = StructPropertyHandle;
-
 	HeaderRow.NameContent()
 		[
 			StructPropertyHandle->CreatePropertyNameWidget()

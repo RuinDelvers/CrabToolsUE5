@@ -47,4 +47,7 @@ private:
 
 	//EVisibility GetClearVisibility() const;
 	FReply ClearValue();
+
+	TSharedPtr<SWidget> ConstructEditableWidget();
+	TSharedPtr<SWidget> ConstructConstWidget();
 };

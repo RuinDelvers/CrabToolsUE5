@@ -7,7 +7,15 @@
 #include "DoorActor.generated.h"
 
 UENUM(BlueprintType)
-enum class EDoorState: uint8
+enum class EDoorActorActions : uint8
+{
+	NONE  UMETA(DisplayName = "None"),
+	OPEN  UMETA(DisplayName = "Open"),
+	CLOSE UMETA(DisplayName = "Close"),
+};
+
+UENUM(BlueprintType)
+enum class EDoorState : uint8
 {
 	OPEN    UMETA(DisplayName = "Open"),
 	OPENING UMETA(DisplayName = "Opening"),
@@ -104,6 +112,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "DoorActor")
 	void ToggleDoor();
+
+	UFUNCTION(BlueprintCallable, Category = "DoorActor")
+	void ApplyAction(EDoorActorActions Action);
 
 protected:
 

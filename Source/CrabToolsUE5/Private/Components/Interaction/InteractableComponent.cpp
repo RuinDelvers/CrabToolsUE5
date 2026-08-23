@@ -2,6 +2,7 @@
 #include "Components/Interaction/InteractionSystem.h"
 #include "StateMachine/EventListener.h"
 #include "Utils/PathFindingUtils.h"
+#include "NavigationSystem.h"
 
 void UInteractableComponent::BeginPlay()
 {
@@ -181,6 +182,8 @@ TArray<UContextMenuEntry*> UInteractableComponent::GatherEntries_Implementation(
 	return Entries;
 }
 
+
+
 void UInteractableComponent::MoveToInteract(FName Interaction, AActor* Interactor, UObject* Data)
 {
 	auto AIData = UAIInteractionData::MakeInteractionData(Interactor, Interaction, this, Data);
@@ -210,6 +213,41 @@ TArray<FString> UInteractableComponent::GetActorInteractions(UClass* Class)
 	}
 
 	return OwnerInteractions;
+}
+
+void UInteractableComponent::ProjectInteractionsToNavigation()
+{
+	if (auto World = this->GetWorld())
+	{
+		if (auto NavSys = FNavigationSystem::GetCurrent<UNavigationSystemV1>(World))
+		{
+			FVector SearchExtent(10, 10, 50);
+
+			TArray<USceneComponent*> Children;
+			this->GetChildrenComponents(false, Children);
+
+			for (auto& Child : Children)
+			{
+				FNavLocation Projected;
+
+				bool bSuccess = NavSys->ProjectPointToNavigation(Child->GetComponentLocation(), Projected, SearchExtent, nullptr, nullptr);
+
+				if (bSuccess)
+				{
+					FVector Translated = Projected;
+					Translated += FVector(0, 0, Child->Bounds.SphereRadius);
+					Child->SetWorldLocation(Translated);
+				}
+				else
+				{
+					UE_LOG(LogTemp, Warning, TEXT("Failed to project interaction collision %s to navigation"),
+						*Child->GetName());
+				}
+			}
+		}
+	}
+
+	this->Modify();
 }
 
 #if WITH_EDITOR

@@ -15,57 +15,12 @@ SGenericPropertyCustomizer::SGenericPropertyCustomizer()
 void SGenericPropertyCustomizer::Construct(const FArguments& InArgs, TSharedPtr<IPropertyHandle> InitProp)
 {
 	this->PropertyHandle = InitProp;
-	auto PinType = this->GetPinTypeForProp();
-	const UEdGraphSchema_K2* Schema = GetDefault<UEdGraphSchema_K2>();
 
 	ChildSlot
 	[
-		SNew(SHorizontalBox)
-		+ SHorizontalBox::Slot()[
-			SAssignNew(ComboButton, SComboButton)
-				.HasDownArrow(true)
-				.ContentPadding(1)
-				.OnGetMenuContent(this, &SGenericPropertyCustomizer::OnGetMenuContent)
-				.ToolTipText(this, &SGenericPropertyCustomizer::GetPathText)
-				.ButtonContent()
-			[
-				SNew(SHorizontalBox)
-				+ SHorizontalBox::Slot()
-					.VAlign(VAlign_Center)
-					.HAlign(HAlign_Center)
-				[
-					SAssignNew(ComboButtonText, STextBlock)
-						.Text(this->GetDisplayText())
-				]
-				+ SHorizontalBox::Slot()
-					.AutoWidth()
-					.VAlign(VAlign_Center)
-					.Padding(1.0f, 0.0f)
-				[
-					SNew(SImage)
-						.ColorAndOpacity(Schema->GetPinTypeColor(PinType))
-						.Image(FBlueprintEditorUtils::GetIconFromPin(PinType, true))
-				]
-				
-			]
-		]
-		+ SHorizontalBox::Slot()
-			.AutoWidth()
-			.VAlign(VAlign_Fill)
-			.Padding(0.0f, 0.0f)
-		[
-			SNew(SButton)
-				.ToolTipText(LOCTEXT("ClearButtonDescription", "Clear Binding"))
-				.VAlign(VAlign_Center)
-				.ContentPadding(FMargin(0, 0))
-				//.Visibility(this, &SGenericPropertyCustomizer::GetClearVisibility)
-				.OnClicked(this, &SGenericPropertyCustomizer::ClearValue)
-				.Content()
-				[
-					SNew(SImage)
-						.Image(FAppStyle().GetBrush("PropertyWindow.Button_Clear"))
-				]
-		]
+		InitProp->IsEditConst() 
+			? this->ConstructConstWidget().ToSharedRef()
+			: this->ConstructEditableWidget().ToSharedRef()
 	];
 
 	InitProp->SetOnPropertyValueChanged(FSimpleDelegate::CreateSP(this, &SGenericPropertyCustomizer::OnPropertyValueChanged));
@@ -130,10 +85,69 @@ FReply SGenericPropertyCustomizer::ClearValue()
 				return true;
 			});
 	}
-	//PropertyHandle->SetValueFromFormattedString("()");
+
 	this->ComboButtonText->SetText(this->GetDisplayText());
 
 	return FReply::Handled();
+}
+
+TSharedPtr<SWidget> SGenericPropertyCustomizer::ConstructEditableWidget()
+{
+	auto PinType = this->GetPinTypeForProp();
+	const UEdGraphSchema_K2* Schema = GetDefault<UEdGraphSchema_K2>();
+
+	return SNew(SHorizontalBox)
+		+ SHorizontalBox::Slot()
+		[
+			SAssignNew(ComboButton, SComboButton)
+				.HasDownArrow(true)
+				.ContentPadding(1)
+				.OnGetMenuContent(this, &SGenericPropertyCustomizer::OnGetMenuContent)
+				.ToolTipText(this, &SGenericPropertyCustomizer::GetPathText)
+				.ButtonContent()
+				[
+					SNew(SHorizontalBox)
+						+ SHorizontalBox::Slot()
+						.VAlign(VAlign_Center)
+						.HAlign(HAlign_Center)
+						[
+							SAssignNew(ComboButtonText, STextBlock)
+								.Text(this->GetDisplayText())
+						]
+						+ SHorizontalBox::Slot()
+						.AutoWidth()
+						.VAlign(VAlign_Center)
+						.Padding(1.0f, 0.0f)
+						[
+							SNew(SImage)
+								.ColorAndOpacity(Schema->GetPinTypeColor(PinType))
+								.Image(FBlueprintEditorUtils::GetIconFromPin(PinType, true))
+						]
+
+				]
+		]
+		+ SHorizontalBox::Slot()
+			.AutoWidth()
+			.VAlign(VAlign_Fill)
+			.Padding(0.0f, 0.0f)
+		[
+			SNew(SButton)
+				.ToolTipText(LOCTEXT("ClearButtonDescription", "Clear Binding"))
+				.VAlign(VAlign_Center)
+				.ContentPadding(FMargin(0, 0))
+				.OnClicked(this, &SGenericPropertyCustomizer::ClearValue)
+				.Content()
+				[
+					SNew(SImage)
+						.Image(FAppStyle().GetBrush("PropertyWindow.Button_Clear"))
+				]
+		];
+}
+
+TSharedPtr<SWidget> SGenericPropertyCustomizer::ConstructConstWidget()
+{
+	return SNew(STextBlock)
+		.Text(this, &SGenericPropertyCustomizer::GetPathText);
 }
 
 FText SGenericPropertyCustomizer::GetPathText() const
@@ -162,11 +176,5 @@ FText SGenericPropertyCustomizer::GetDisplayText() const
 	return Result;
 }
 
-/*
-EVisibility SGenericPropertyCustomizer::GetClearVisibility() const
-{
-	this->PropertyHandle->
-}
-*/
 
 #undef LOCTEXT_NAMESPACE

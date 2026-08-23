@@ -62,7 +62,6 @@ void UArrayNode::EnterWithData_Inner_Implementation(UObject* Data)
 	{
 		if (Node)
 		{
-			//UE_LOG(LogTemp, Warning, TEXT("Array entering: %s with state"), *Node->GetClass()->GetName());
 			Node->EnterWithData(Data);
 		}
 	}
