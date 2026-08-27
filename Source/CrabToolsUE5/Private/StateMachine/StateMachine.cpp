@@ -539,7 +539,8 @@ TArray<FString> UStateMachine::ConditionOptions() const {
 	for (TFieldIterator<UFunction> FIT(this->GetClass(), EFieldIteratorFlags::IncludeSuper); FIT; ++FIT) {
 		UFunction* f = *FIT;
 		
-		if (f->IsSignatureCompatibleWith(base)) {
+		if (f->IsSignatureCompatibleWith(base))
+		{
 			Names.Add(f->GetName());
 		}		
 	}
@@ -556,7 +557,8 @@ TArray<FString> UStateMachine::ConditionDataOptions() const {
 	for (TFieldIterator<UFunction> FIT(this->GetClass(), EFieldIteratorFlags::IncludeSuper); FIT; ++FIT) {
 		UFunction* f = *FIT;		
 		
-		if (f->IsSignatureCompatibleWith(base)) {
+		if (f->IsSignatureCompatibleWith(base))
+		{
 			Names.Add(f->GetName());
 		}
 	}
@@ -1706,7 +1708,10 @@ void UState::AddTransition(FName EventName, FTransitionDataSet Data)
 
 void UState::AddTransition(const TMap<FName, FTransitionDataSet>& Data)
 {
-	this->Transitions.Append(Data);
+	for (auto const& Pair : Data)
+	{
+		this->AddTransition(Pair.Key, Pair.Value);
+	}
 }
 
 void UState::Initialize(UStateMachine* POwner)

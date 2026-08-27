@@ -42,6 +42,40 @@ void UDialogueStateComponent::SendDialogue(UDialogueDataStruct* DialogueData)
 	}
 }
 
+void UDialogueStateComponent::ApplyToParticipants(const FForEachParticipant& Callback) const
+{
+	for (const auto& Participant : this->Participants)
+	{
+		Callback.Execute(Participant);
+	}
+}
+
+bool UDialogueStateComponent::ForAnyParticipant(const FCheckForEachParticipant& Callback) const
+{
+	for (const auto& Participant : Participants)
+	{
+		if (Callback.Execute(Participant))
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool UDialogueStateComponent::ForAllParticipant(const FCheckForEachParticipant& Callback) const
+{
+	for (const auto& Participant : Participants)
+	{
+		if (!Callback.Execute(Participant))
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+
 void UDialogueStateComponent::FinishDialogue()
 {
 	TArray<TObjectPtr<UDialogueStateComponent>> OldParts = this->Participants.Array();

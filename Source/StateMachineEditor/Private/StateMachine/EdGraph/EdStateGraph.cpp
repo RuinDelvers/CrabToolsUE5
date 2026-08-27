@@ -655,7 +655,6 @@ FStateMachineArchetypeData UEdStateGraph::CompileStateMachine(FNodeVerificationC
 
 		for (auto Transition : this->GetExitTransitions(State))
 		{
-			//auto Destination = Transition->GetEndNode()->GetStateName();
 			auto TData = Transition->GetTransitionData(Context);
 
 			for (auto& Values : TData)
@@ -667,7 +666,6 @@ FStateMachineArchetypeData UEdStateGraph::CompileStateMachine(FNodeVerificationC
 		Data.AddStateData(State->GetStateName(), BuiltState);
 	}
 
-	//Data.GetArchetype()->StartState = this->GetStartStateName();
 	Data.StartState = this->GetStartStateName();
 	Data.GetArchetype()->AppendDefaultEvents(this->ActiveDefaultEvents);
 

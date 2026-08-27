@@ -78,6 +78,12 @@ public:
 		SLATE_EVENT(SGenericPropertyField::FSelected, PropertyChosen)
 	SLATE_END_ARGS();
 
+private:
+
+	static bool CheckValidFunction(UFunction* Fn);
+
+public:
+
 	void Construct(
 		const FArguments& InArgs,
 		TSharedPtr<IPropertyHandle> PropHandle,

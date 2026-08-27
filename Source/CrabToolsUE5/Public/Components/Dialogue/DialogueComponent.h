@@ -208,6 +208,9 @@ public:
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FListenForMonologue, UMonologueData*, Data);
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FListenForDialogue);
 
+	DECLARE_DYNAMIC_DELEGATE_OneParam(FForEachParticipant, UDialogueStateComponent*, Component);
+	DECLARE_DYNAMIC_DELEGATE_RetVal_OneParam(bool, FCheckForEachParticipant, UDialogueStateComponent*, Component);
+
 	UPROPERTY(BlueprintReadOnly, Category = "Dialogue")
 	TSet<TObjectPtr<UDialogueStateComponent>> Participants;
 
@@ -257,6 +260,15 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Dialogue")
 	void NullDialogue() const;
+
+	UFUNCTION(BlueprintCallable, Category="Dialogue")
+	void ApplyToParticipants(const FForEachParticipant& Callback) const;
+
+	UFUNCTION(BlueprintCallable, Category = "Dialogue")
+	bool ForAnyParticipant(const FCheckForEachParticipant& Callback) const;
+
+	UFUNCTION(BlueprintCallable, Category = "Dialogue")
+	bool ForAllParticipant(const FCheckForEachParticipant& Callback) const;
 
 	virtual void OnComponentDestroyed(bool bDestroyHierarchy) override;
 

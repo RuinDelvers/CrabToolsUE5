@@ -18,10 +18,16 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Properties", meta = (ShowInnerProperties))
 	FGenericBoolPropertyBinding Property;
 
-	UPROPERTY(EditAnywhere, Category = "Properties", meta = (AllowPrivateAccess))
+	UPROPERTY(EditAnywhere, Category = "Properties")
+	bool bApplyOnEnter = true;
+
+	UPROPERTY(EditAnywhere, Category = "Properties", meta=(EditCondition="bApplyOnEnter", EditConditionHides))
 	bool bOnEnter = true;
 
-	UPROPERTY(EditAnywhere, Category = "Properties", meta = (AllowPrivateAccess))
+	UPROPERTY(EditAnywhere, Category = "Properties")
+	bool bApplyOnExit = false;
+
+	UPROPERTY(EditAnywhere, Category = "Properties", meta = (EditCondition = "bApplyOnExit", EditConditionHides))
 	bool bOnExit = false;
 
 public:

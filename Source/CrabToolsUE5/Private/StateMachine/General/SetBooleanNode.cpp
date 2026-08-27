@@ -8,7 +8,7 @@ USetBooleanNode::USetBooleanNode()
 
 void USetBooleanNode::Exit_Inner_Implementation()
 {
-	if (this->bOnExit != this->bOnEnter)
+	if (this->bApplyOnExit)
 	{
 		this->Property.Set(this, this->bOnExit);
 	}
@@ -17,5 +17,8 @@ void USetBooleanNode::Exit_Inner_Implementation()
 
 void USetBooleanNode::Enter_Inner_Implementation()
 {
-	this->Property.Set(this, this->bOnEnter);
+	if (this->bApplyOnEnter)
+	{
+		this->Property.Set(this, this->bOnEnter);
+	}
 }

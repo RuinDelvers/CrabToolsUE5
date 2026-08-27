@@ -154,6 +154,28 @@ FReply SGenericPropertySelector::PopPath()
 }
 
 
+bool SGenericPropertySelectorPage::CheckValidFunction(UFunction* Fn)
+{
+	int InputCount = 0;
+
+	for (TFieldIterator<FProperty> It(Fn); It; ++It)
+	{
+		FProperty* Prop = *It;
+
+		// Check if it is a parameter
+		if (Prop->HasAnyPropertyFlags(CPF_Parm))
+		{
+			// Exclude Return values and Out/Reference parameters (which show as Outputs in BP)
+			if (!Prop->HasAnyPropertyFlags(CPF_ReturnParm))
+			{
+				InputCount++;
+			}
+		}
+	}
+
+	return InputCount == 0;
+}
+
 void SGenericPropertySelectorPage::Construct(
 	const FArguments& InArgs,
 	TSharedPtr<IPropertyHandle> PropHandle,
@@ -193,14 +215,18 @@ void SGenericPropertySelectorPage::Construct(
 		{
 			auto Fn = *PropIt;
 
-			if (this->ValidFieldForFinalType(PropHandle, Fn->GetReturnProperty()))
+			// Only include functions which take in no parameters
+			if (CheckValidFunction(Fn))
 			{
-				auto Field = SNew(SGenericPropertyField, PropHandle, FPropertyChoice(nullptr, Fn))
-					.OnSelect(InArgs._PropertyChosen)
-					.Selectable(true);
-				auto Slot = Container->AddSlot();
-				Slot.AutoHeight();
-				Slot.AttachWidget(Field);
+				if (this->ValidFieldForFinalType(PropHandle, Fn->GetReturnProperty()))
+				{
+					auto Field = SNew(SGenericPropertyField, PropHandle, FPropertyChoice(nullptr, Fn))
+						.OnSelect(InArgs._PropertyChosen)
+						.Selectable(true);
+					auto Slot = Container->AddSlot();
+					Slot.AutoHeight();
+					Slot.AttachWidget(Field);
+				}
 			}
 		}
 	}
