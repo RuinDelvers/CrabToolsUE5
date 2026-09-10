@@ -22,20 +22,27 @@ void URotateToAbility::Tick_Inner_Implementation(float DeltaTime)
 {
 	FVector ToTarget = this->TargetPoint - this->GetOwner()->GetActorLocation();
 
-	bool Complete = false;
-
-	auto DeltaYaw = UUtilsLibrary::RotateAngleToDelta(
-		this->GetOwner()->GetActorRotation().Yaw,
-		ToTarget.Rotation().Yaw,
-		this->RotateSpeed*DeltaTime,
-		Complete);
-
-	FQuat Rot(FRotator(0, DeltaYaw, 0));
-
-	this->GetOwner()->AddActorLocalRotation(Rot);
-
-	if (Complete)
+	if (ToTarget.IsNearlyZero())
 	{
 		this->Finish();
+	}
+	else
+	{
+		bool Complete = false;
+
+		auto DeltaYaw = UUtilsLibrary::RotateAngleToDelta(
+			this->GetOwner()->GetActorRotation().Yaw,
+			ToTarget.Rotation().Yaw,
+			this->RotateSpeed * DeltaTime,
+			Complete);
+
+		FQuat Rot(FRotator(0, DeltaYaw, 0));
+
+		this->GetOwner()->AddActorLocalRotation(Rot);
+
+		if (Complete)
+		{
+			this->Finish();
+		}
 	}
 }
