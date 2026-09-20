@@ -26,6 +26,14 @@ void AInstancedStaticMeshActor::RespawnInstances()
 }
 
 #if WITH_EDITOR
+
+void AInstancedStaticMeshActor::PostEditChangeProperty(FPropertyChangedEvent& Event)
+{
+	Super::PostEditChangeProperty(Event);
+
+	this->RespawnInstances();
+}
+
 void AInstancedStaticMeshActor::SetInstances(TArray<AStaticMeshActor*> MeshActors)
 {
 	if (MeshActors.Num() == 0) { return; }

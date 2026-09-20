@@ -32,6 +32,8 @@ public:
 	void RespawnInstances();
 
 	#if WITH_EDITOR
+		void PostEditChangeProperty(FPropertyChangedEvent& Event) override;
+
 		UFUNCTION(BlueprintCallable, Category = "InstancedStaticMeshActor")
 		void SetInstances(TArray<AStaticMeshActor*> MeshActors);
 
