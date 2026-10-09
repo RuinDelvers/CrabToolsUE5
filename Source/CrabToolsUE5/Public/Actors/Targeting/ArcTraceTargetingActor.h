@@ -14,11 +14,22 @@ class AArcTraceTargetingActor : public ABaseTraceTargetingActor
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Targeting|ArcTrace",
 		meta = (AllowPrivateAccess))
-	float HeightAdjust = 100;
+	float HeightAdjust = 0;
 
+	/* The resolution to check for collisions/intersections. This is the number of line traces performed.*/
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Targeting|ArcTrace",
 		meta = (AllowPrivateAccess))
 	int SampleSize = 10;
+
+	/* The gravity used to compute the spline structure. See FArcPointCurve for details. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Targeting|ArcTrace",
+		meta = (AllowPrivateAccess))
+	float Gravity = -980;
+
+	/* The gravity used to compute the spline structure. See FArcPointCurve for details. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Targeting|ArcTrace",
+		meta = (AllowPrivateAccess))
+	float Time = 1.0;
 
 public:
 

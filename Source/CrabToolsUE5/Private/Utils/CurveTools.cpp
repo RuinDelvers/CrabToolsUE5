@@ -46,6 +46,12 @@ FVector FArcPointCurve::ComputeVelocityVector(const FVector& Start, const FVecto
 	return (End - Start - FVector(0, 0, Gravity) * Time * Time / 2) / Time;
 }
 
+FVector FArcPointCurve::MidPoint() const
+{
+	float CritPoint = -Velocity.Z / Gravity;
+	return Sample(CritPoint);
+}
+
 FArcPointCurve::FArcPointCurve(FVector InitStart, FVector InitEnd, float InitGravity, float InitTime)
 : Start(InitStart),
 	End(InitEnd),
@@ -65,8 +71,13 @@ FVector FArcPointCurve::Step(float DeltaTime)
 	}
 	else
 	{
-		return Start + Velocity * CurrentTime + FVector(0, 0, Gravity) * CurrentTime * CurrentTime / 2;
+		return Sample(CurrentTime);
 	}
+}
+
+FVector FArcPointCurve::Sample(float SampleTime) const
+{
+	return FVector(0, 0, this->Gravity) * SampleTime * SampleTime / 2 + this->Velocity * SampleTime + Start;
 }
 
 bool FArcPointCurve::IsFinished() const

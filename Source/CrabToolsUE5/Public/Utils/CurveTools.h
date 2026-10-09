@@ -95,7 +95,10 @@ public:
 	FArcPointCurve(FVector InitStart, FVector InitEnd, float InitGravity, float InitTime);
 
 	FVector Step(float DeltaTime);
+	FVector Sample(float SampleTime) const;
 	bool IsFinished() const;
+
+	FVector MidPoint() const;
 };
 
 UCLASS()

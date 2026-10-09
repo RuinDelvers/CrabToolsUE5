@@ -1,5 +1,6 @@
 #include "Actors/Targeting/ArcTraceTargetingActor.h"
 #include "Components/SplineComponent.h"
+#include "Utils/CurveTools.h"
 
 AArcTraceTargetingActor::AArcTraceTargetingActor()
 {
@@ -29,12 +30,15 @@ void AArcTraceTargetingActor::HandleLineOfSight_Implementation(FTargetingData& O
 
 void AArcTraceTargetingActor::SetSplineEndPoint(FVector Target)
 {
+	FArcPointCurve Curve(this->GetActorLocation(), Target, this->Gravity, this->Time);
 	auto Base = this->GetActorLocation();
 
 	// Choose a halfway point between.
-	auto Midpoint = (Target - Base) / 2 + Base;
+	//auto Midpoint = (Target - Base) / 2 + Base;
 	// Adjust the arc to be above both points.
-	Midpoint.Z = FMath::Max(Base.Z, Target.Z) + this->HeightAdjust;
+	//Midpoint.Z = FMath::Max(Base.Z, Target.Z) + this->HeightAdjust;
+	auto Midpoint = Curve.MidPoint();
+	Midpoint.Z += HeightAdjust;
 
 	this->PathSpline->SetSplineWorldPoints({ Base, Midpoint, Target });
 	this->PathSpline->SetTangentAtSplinePoint(0, (Midpoint - Base).GetSafeNormal(),

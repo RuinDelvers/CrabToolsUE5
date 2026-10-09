@@ -15,6 +15,10 @@ private:
 	UPROPERTY()
 	TObjectPtr<URPGProperty> Property;
 
+	/* This text is what is used when there is no property being watched. */
+	UPROPERTY(EditAnywhere, Category="Text")
+	FText NullText;
+
 public:
 
 	UFUNCTION(BlueprintCallable, Category="RPG|Properties")

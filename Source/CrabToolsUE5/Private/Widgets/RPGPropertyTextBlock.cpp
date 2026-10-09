@@ -15,6 +15,10 @@ void URPGPropertyTextBlock::SetProperty(URPGProperty* Prop)
 		this->Property->OnPropertyChanged.AddDynamic(this, &URPGPropertyTextBlock::OnPropertyChanged);
 		this->OnPropertyChanged(Prop);
 	}
+	else
+	{
+		this->SetText(this->NullText);
+	}
 }
 
 void URPGPropertyTextBlock::OnPropertyChanged(URPGProperty* Prop)

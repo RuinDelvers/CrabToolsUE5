@@ -92,6 +92,7 @@ void ABaseTargetingActor::AddValidationListener_Implementation(const FValidateTa
 void ABaseTargetingActor::SetEnabled_Implementation(bool bNewEnabled)
 {
 	this->bEnabled = bEnabled;
+	this->SetActorEnableCollision(bNewEnabled);
 	this->OnEnabledUpdated.Broadcast(this);
 }
 
