@@ -5,6 +5,7 @@
 #include "PropertyCustomization/EventSlot/EventSlotCustomization.h"
 #include "PropertyCustomization/GenericPropertyBinding/GenericPropertyBindingCustomization.h"
 #include "Styles/StyleRoot.h"
+#include "Misc/EngineVersionComparison.h"
 
 #define LOCTEXT_NAMESPACE "FCrabToolsUE5EditorModule"
 
@@ -21,7 +22,11 @@ void FCrabToolsUE5EditorModule::StartupModule()
 		this,
 		&FCrabToolsUE5EditorModule::OnSelectionChanged);
 
-	FCoreDelegates::GetOnPostEngineInit().AddRaw(this, &FCrabToolsUE5EditorModule::OnPostEngineInit);	
+	#if UE_VERSION_OLDER_THAN(5, 8, 0)
+		FCoreDelegates::OnPostEngineInit.AddRaw(this, &FCrabToolsUE5EditorModule::OnPostEngineInit);
+	#else
+		FCoreDelegates::GetOnPostEngineInit().AddRaw(this, &FCrabToolsUE5EditorModule::OnPostEngineInit);
+	#endif
 	StyleRoot::InitializeStyles();
 }
 
