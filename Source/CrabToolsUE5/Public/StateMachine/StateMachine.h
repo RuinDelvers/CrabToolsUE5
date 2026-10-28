@@ -295,6 +295,9 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category="StateMachine")
 	bool Active() const;
 
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "StateMachine", meta=(DeterminesOutputType="CastType"))
+	FORCEINLINE UObject* GetOwnerAs(TSubclassOf<UObject> CastType) const;
+
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "StateMachine")
 	FORCEINLINE UObject* GetOwner() const;
 

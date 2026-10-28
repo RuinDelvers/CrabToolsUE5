@@ -1,6 +1,7 @@
 #include "Utils/UtilsLibrary.h"
 #include "Utils/Enums.h"
 #include "Engine/InputDelegateBinding.h"
+#include "GameplayTagsManager.h"
 
 float UUtilsLibrary::RotateAngleTo(float Base, float Goal, float Delta)
 {
@@ -149,4 +150,19 @@ bool UUtilsLibrary::IsWithinCone(FVector Location, FVector Base, FVector Endpoin
 	{
 		return false;
 	}
+}
+
+FGameplayTagContainer UUtilsLibrary::GetChildTags(FGameplayTag Root, bool bSort)
+{
+	TArray<FGameplayTag> Container = UGameplayTagsManager::Get().RequestGameplayTagChildren(Root).GetGameplayTagArray();
+
+	if (bSort)
+	{
+		Container.Sort([](const FGameplayTag& A, const FGameplayTag& B)
+			{
+				return A.ToString() < B.ToString();
+			});
+	}
+
+	return FGameplayTagContainer::CreateFromArray(Container);
 }

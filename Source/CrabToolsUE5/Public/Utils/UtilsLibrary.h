@@ -4,6 +4,7 @@
 #include "Engine/BlueprintGeneratedClass.h"
 #include "Engine/SimpleConstructionScript.h"
 #include "Engine/SCS_Node.h"
+#include "GameplayTagContainer.h"
 #include "UtilsLibrary.generated.h"
 
 /**
@@ -61,6 +62,9 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Input")
 	static bool IsWithinCone(FVector Location, FVector Base, FVector Endpoint, float Radius, float Exponent=1.0);
+
+	UFUNCTION(BlueprintCallable, Category = "Utility")
+	static FGameplayTagContainer GetChildTags(FGameplayTag Root, bool bSort = false);
 };
 
 namespace UtilsFunctions

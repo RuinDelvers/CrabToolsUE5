@@ -1235,6 +1235,20 @@ bool UStateNode::Active() const
 	}
 }
 
+UObject* UStateNode::GetOwnerAs(TSubclassOf<UObject> CastType) const
+{
+	auto Owner = this->GetOwner();
+
+	if (Owner->IsA(CastType))
+	{
+		return Owner;
+	}
+	else
+	{
+		return nullptr;
+	}
+}
+
 void UStateNode::SetActive(bool bNewActive)
 {
 	bool bOldActive = this->Active();
