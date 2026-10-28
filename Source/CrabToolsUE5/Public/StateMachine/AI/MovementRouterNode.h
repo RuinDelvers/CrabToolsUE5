@@ -1,6 +1,7 @@
 #pragma once
 
 #include "StateMachine/AI/BaseNode.h"
+#include "AI/MovementRequest.h"
 #include "MovementRouterNode.generated.h"
 
 UENUM(meta = (Bitflags, UseEnumValuesAsMaskValuesInEditor = "true"))

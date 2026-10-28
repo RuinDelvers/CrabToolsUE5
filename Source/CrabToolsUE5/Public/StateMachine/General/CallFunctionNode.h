@@ -3,7 +3,6 @@
 #include "StateMachine/StateMachine.h"
 #include "CallFunctionNode.generated.h"
 
-class UFunctionSource;
 class UCallFunctionNode;
 
 /**
@@ -27,8 +26,8 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Functions")
 	bool bCallOnExit = false;
 
-	UPROPERTY(EditAnywhere, Instanced, Category="Functions")
-	TArray<TObjectPtr<UFunctionSource>> Functions;
+	//UPROPERTY(EditAnywhere, Instanced, Category="Functions")
+	//TArray<TObjectPtr<UFunctionSource>> Functions;
 
 protected:
 
@@ -41,6 +40,7 @@ private:
 	void HandleBinding(UObject* Obj, const TSet<FName>& FnNames);
 };
 
+/*
 
 UCLASS(Abstract, EditInlineNew, Within = "CallFunctionNode")
 class UFunctionSource : public UObject
@@ -126,3 +126,4 @@ protected:
 
 	virtual UObject* GetSource(const UCallFunctionNode* Node) const { return Node->GetRootMachine(); }
 };
+*/

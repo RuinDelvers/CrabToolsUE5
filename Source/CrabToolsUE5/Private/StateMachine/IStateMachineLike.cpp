@@ -74,15 +74,17 @@ TScriptInterface<UInterface> UCompositeObjectData::FindDataImplementing(TSubclas
 
 	if (IsValid(Data))
 	{
-		if (Data->GetClass()->ImplementsInterface(Type))
+		bool bDoesImplement = Data->GetClass()->ImplementsInterface(Type.Get());
+
+		if (bDoesImplement)
 		{
-			FoundData = Data;
+			FoundData.SetObject(Data);
 		}
 		else if (auto PipedData = Cast<UCompositeObjectData>(Data))
 		{
 			if (auto LookUpData = PipedData->Interfaces.Find(Type))
 			{
-				FoundData = LookUpData->Objects[0];
+				FoundData.SetObject(LookUpData->Objects[0]);
 			}
 		}
 	}
@@ -96,7 +98,9 @@ void UCompositeObjectData::FindAllDataImplementing(TSubclassOf<UInterface> Type,
 	{
 		if (Data->GetClass()->ImplementsInterface(Type))
 		{
-			ReturnValue.Add(TScriptInterface<UInterface>(Data));
+			TScriptInterface<UInterface> Value;
+			Value.SetObject(Data);
+			ReturnValue.Add(Value);
 		}
 		else if (auto PipedData = Cast<UCompositeObjectData>(Data))
 		{
@@ -104,7 +108,10 @@ void UCompositeObjectData::FindAllDataImplementing(TSubclassOf<UInterface> Type,
 			{
 				for (const auto& Obj : LookUpData->Objects)
 				{
-					ReturnValue.Add(TScriptInterface<UInterface>(Obj));
+					TScriptInterface<UInterface> Value;
+					Value.SetObject(Obj);
+
+					ReturnValue.Add(Value);
 				}
 			}
 		}

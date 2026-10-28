@@ -87,20 +87,6 @@ void FGenericObjectPropertyBinding::PushProperty(UFunction* Fn)
 	}
 }
 
-void FGenericObjectPropertyBinding::WriteToProperty(TSharedPtr<IPropertyHandle> Property) const
-{
-	if (auto StructProp = CastFieldChecked<FStructProperty>(Property->GetProperty()))
-	{
-		FString FormattedString;
-		StructProp->Struct->ExportText(FormattedString, this, nullptr, nullptr, PPF_Copy, nullptr);
-		Property->SetValueFromFormattedString(FormattedString);
-	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("Attempted to write generic property data to invalid property: %s"), *Property->GetProperty()->GetName());
-	}
-}
-
 UStruct* FGenericObjectPropertyBinding::ResultType() const
 {
 	if (Path.Num() == 0)

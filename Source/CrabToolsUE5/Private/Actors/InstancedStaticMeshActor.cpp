@@ -112,4 +112,11 @@ void AInstancedStaticMeshActor::BreakOutInstances()
 	this->Destroy();
 }
 
+void AInstancedStaticMeshActor::AddNewPoint()
+{
+	FTransform Value = this->InstanceTransforms.Last();
+	this->InstanceTransforms.Add(Value);
+	this->RespawnInstances();
+}
+
 #endif

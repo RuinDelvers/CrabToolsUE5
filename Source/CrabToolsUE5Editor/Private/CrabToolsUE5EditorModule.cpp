@@ -21,7 +21,7 @@ void FCrabToolsUE5EditorModule::StartupModule()
 		this,
 		&FCrabToolsUE5EditorModule::OnSelectionChanged);
 
-	FCoreDelegates::OnPostEngineInit.AddRaw(this, &FCrabToolsUE5EditorModule::OnPostEngineInit);
+	FCoreDelegates::GetOnPostEngineInit().AddRaw(this, &FCrabToolsUE5EditorModule::OnPostEngineInit);	
 	StyleRoot::InitializeStyles();
 }
 

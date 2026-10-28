@@ -107,7 +107,7 @@ void SGenericPropertyField::OnMouseEnter(const FGeometry& Geometry, const FPoint
 {
 	if (this->bSelectable.Get())
 	{
-		this->HighlightBorder->SetBorderBackgroundColor(FLinearColor(1, 1, 1, 0.8));
+		this->HighlightBorder->SetBorderBackgroundColor(FLinearColor(1, 1, 1, 0.8f));
 	}
 }
 

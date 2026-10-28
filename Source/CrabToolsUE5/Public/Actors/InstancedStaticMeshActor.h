@@ -16,12 +16,12 @@ private:
 	TObjectPtr<UInstancedStaticMeshComponent> InstanceManager;
 
 public:
-	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Category="InstancedStaticMeshActor",
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="InstancedStaticMeshActor",
 		meta=(MakeEditWidget))
 	TArray<FTransform> InstanceTransforms;
 
 
-	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Category = "InstancedStaticMeshActor")
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "InstancedStaticMeshActor")
 	bool bUseWorldTransforms = false;
 public:
 
@@ -39,5 +39,9 @@ public:
 
 		UFUNCTION(BlueprintCallable, CallInEditor, Category = "InstancedStaticMeshActor")
 		void BreakOutInstances();
+
+		/* This will add a new point that is duplicated as the last point in the instance array. */
+		UFUNCTION(BlueprintCallable, CallInEditor, Category = "InstancedStaticMeshActor")
+		void AddNewPoint();
 	#endif
 };

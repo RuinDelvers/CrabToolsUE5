@@ -169,7 +169,7 @@ void ULockOnCamera::SetForceRotation(bool Force) {
 }
 
 void ULockOnCamera::LerpControlRotation() {
-	const float Add = 1.0 / 60;
+	const float Add = 1.0f / 60;
 	if (this->IsLocked() && this->bForcePawnRotation) {
 		if (this->CharacterOwner.IsValid()) {
 			if (this->CharacterOwner->GetCharacterMovement()->bOrientRotationToMovement) {

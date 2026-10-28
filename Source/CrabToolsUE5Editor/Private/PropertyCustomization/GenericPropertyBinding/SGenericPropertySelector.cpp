@@ -140,8 +140,19 @@ FReply SGenericPropertySelector::OnCancelClicked() const
 
 FReply SGenericPropertySelector::OnConfirmClicked() const
 {
-	this->Binding->WriteToProperty(this->PropertyHandle);
-	this->OnClosed.Broadcast();
+	if (auto StructProp = CastFieldChecked<FStructProperty>(PropertyHandle->GetProperty()))
+	{
+		FString FormattedString;
+		StructProp->Struct->ExportText(FormattedString, this, nullptr, nullptr, PPF_Copy, nullptr);
+		this->PropertyHandle->SetValueFromFormattedString(FormattedString);
+
+		this->OnClosed.Broadcast();
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("Attempted to write generic property data to invalid property: %s"), *PropertyHandle->GetProperty()->GetName());
+	}
+	
 	return FReply::Handled();
 }
 

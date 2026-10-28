@@ -88,7 +88,6 @@ public:
 	virtual FString GetDisplayString() const;
 	virtual void PushProperty(FProperty* Prop);
 	virtual void PushProperty(UFunction* Fn);
-	virtual void WriteToProperty(TSharedPtr<IPropertyHandle> Property) const;
 	virtual bool CanFinalize() const;
 	bool IsBound() const { return Path.Num() > 0; }
 	UStruct* ResultType() const;

@@ -173,7 +173,7 @@ public:
 	AActor* GetActorOwner() const;
 
 	UFUNCTION(BlueprintCallable, Category = "StateMachine")
-	UStateMachine* GetMachine() const { return this->OwnerMachine; }
+	UStateMachine* GetMachine() const;
 
 	
 	//FORCEINLINE const TMap<FName, FTransitionData>& GetTransitions() const { return Transitions; }
@@ -295,20 +295,17 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category="StateMachine")
 	bool Active() const;
 
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "StateMachine", meta=(DeterminesOutputType="CastType"))
-	FORCEINLINE UObject* GetOwnerAs(TSubclassOf<UObject> CastType) const;
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "StateMachine")
+	UObject* GetOwner() const;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "StateMachine")
-	FORCEINLINE UObject* GetOwner() const;
+	AActor* GetActorOwner() const;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "StateMachine")
-	FORCEINLINE AActor* GetActorOwner() const;
+	UStateMachine* GetMachine() const;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "StateMachine")
-	FORCEINLINE UStateMachine* GetMachine() const;
-
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "StateMachine")
-	FORCEINLINE UStateMachine* GetRootMachine() const;
+	UStateMachine* GetRootMachine() const;
 
 	UFUNCTION(BlueprintCallable, Category = "StateMachine", meta = (DeterminesOutputType = "SClass"))
 	UStateMachine* GetMachineAs(TSubclassOf<UStateMachine> SClass, bool& bFound) const;
@@ -767,7 +764,7 @@ public:
 	void SetActive(bool bNewActive);
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "StateMachine")
-	FORCEINLINE AActor* GetActorOwner() const;
+	AActor* GetActorOwner() const;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "StateMachine")
 	UObject* GetOwner() const;

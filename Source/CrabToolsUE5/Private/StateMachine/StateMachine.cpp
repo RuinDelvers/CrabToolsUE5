@@ -1235,20 +1235,6 @@ bool UStateNode::Active() const
 	}
 }
 
-UObject* UStateNode::GetOwnerAs(TSubclassOf<UObject> CastType) const
-{
-	auto Owner = this->GetOwner();
-
-	if (Owner->IsA(CastType))
-	{
-		return Owner;
-	}
-	else
-	{
-		return nullptr;
-	}
-}
-
 void UStateNode::SetActive(bool bNewActive)
 {
 	bool bOldActive = this->Active();
@@ -1897,6 +1883,11 @@ UObject* UState::GetOwner() const
 AActor* UState::GetActorOwner() const
 {
 	return this->OwnerMachine->GetActorOwner();
+}
+
+UStateMachine* UState::GetMachine() const
+{
+	return this->OwnerMachine;
 }
 
 bool UState::HasPipedData() const

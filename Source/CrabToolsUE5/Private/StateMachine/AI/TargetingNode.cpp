@@ -76,3 +76,10 @@ UObject* UTargetingNode::GetPipedData_Implementation()
 		default: return nullptr;
 	}
 }
+
+TScriptInterface<UTargetingControllerInterface> UTargetingNode::GetTargeting() const
+{
+	TScriptInterface<UTargetingControllerInterface> Value;
+	Value.SetObject(this->TargetingInterface.Get());
+	return Value;
+}

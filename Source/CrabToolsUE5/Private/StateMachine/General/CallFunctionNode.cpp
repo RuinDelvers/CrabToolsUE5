@@ -2,6 +2,7 @@
 
 void UCallFunctionNode::Initialize_Inner_Implementation()
 {
+	/*
 	for (const auto& Source : this->Functions)
 	{
 		for (auto& Delegate : Source->GetBinding())
@@ -9,10 +10,12 @@ void UCallFunctionNode::Initialize_Inner_Implementation()
 			this->Callback.Add(Delegate);
 		}		
 	}
+	*/
 }
 
 void UCallFunctionNode::HandleBinding(UObject* Obj, const TSet<FName>& FnNames)
 {
+	/*
 	if (IsValid(Obj))
 	{
 		for (const auto& FnName : FnNames)
@@ -26,13 +29,15 @@ void UCallFunctionNode::HandleBinding(UObject* Obj, const TSet<FName>& FnNames)
 			}
 		}
 	}
+	*/
 }
 
 void UCallFunctionNode::Enter_Inner_Implementation()
 {
 	if (this->bCallOnEnter)
 	{
-		this->Callback.ProcessMulticastDelegate<UObject>(nullptr);
+		//this->Callback.ProcessMulticastDelegate<UObject>(nullptr);
+		//this->Callback.ProcessDelegate<UObject>(nullptr);
 	}
 }
 
@@ -40,10 +45,12 @@ void UCallFunctionNode::Exit_Inner_Implementation()
 {
 	if (this->bCallOnExit)
 	{
-		this->Callback.ProcessMulticastDelegate<UObject>(nullptr);
+		//this->Callback.ProcessMulticastDelegate<UObject>(nullptr);
+		//this->Callback.ProcessDelegate<UObject>(nullptr);
 	}
 }
 
+/*
 TArray<FScriptDelegate> UFunctionSource::GetBinding() const
 {
 	TArray<FScriptDelegate> Delegates;
@@ -91,3 +98,4 @@ TArray<FString> UFunctionSource::GetClassFunctions(UClass* Class) const
 	return Names;
 }
 #endif
+*/

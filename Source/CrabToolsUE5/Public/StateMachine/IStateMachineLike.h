@@ -266,7 +266,9 @@ public:
 
     template<class T> static TScriptInterface<T> FindDataImplementing(UObject* Data)
     {
-        return TScriptInterface<T>(FindDataImplementing(T::StaticClass(), Data).GetObjectRef());
+        TScriptInterface<T> Value;
+        Value.SetObject(FindDataImplementing(T::StaticClass(), Data).GetObjectRef());
+        return Value;
     }
 
     UFUNCTION(BlueprintCallable, Category = "StateMachine|Data",
