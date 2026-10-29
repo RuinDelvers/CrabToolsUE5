@@ -152,7 +152,7 @@ void UAnimAbility::FilterPhases()
 
 	for (const auto& FnName : this->CustomPhases)
 	{
-		if (this->FindFunction(FnName))
+		if (FnName.IsNone() || this->FindFunction(FnName))
 		{
 			Keep.Add(FnName);
 		}

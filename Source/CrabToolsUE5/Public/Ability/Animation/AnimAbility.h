@@ -31,7 +31,7 @@ protected:
 		meta = (AllowPrivateAccess, GetOptions = "GetComponentOptions"))
 	FName ComponentName;
 
-	UPROPERTY(Transient)
+	UPROPERTY(BlueprintReadOnly, Transient, Category = Animation);
 	TObjectPtr<USkeletalMeshComponent> Component;
 
 	UPROPERTY(EditAnywhere, Category="Ability", meta=(GetOptions="GetCustomPhases"))

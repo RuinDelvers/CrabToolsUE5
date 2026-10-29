@@ -1167,6 +1167,20 @@ UObject* UStateNode::GetOwner() const
 	return this->Machine->GetOwner();
 }
 
+UObject* UStateNode::GetOwnerAs(TSubclassOf<UObject> Type) const
+{
+	auto Obj = this->GetOwner();
+
+	if (Obj && Obj->IsA(Type.Get()))
+	{
+		return Obj;
+	}
+	else
+	{
+		return nullptr;
+	}
+}
+
 AActor* UStateNode::GetActorOwner() const
 {
 	return this->Machine->GetActorOwner();

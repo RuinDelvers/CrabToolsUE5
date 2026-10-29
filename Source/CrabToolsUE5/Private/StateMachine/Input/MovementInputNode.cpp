@@ -1,11 +1,13 @@
 #include "StateMachine/Input/MovementInputNode.h"
 
-UMovementInputNode::UMovementInputNode() {
-	this->bTrigger = true;
+UMovementInputNode::UMovementInputNode()
+{
+	this->Events = static_cast<int32>(ETriggerEvent::Triggered);
 }
 
 
-void UMovementInputNode::Initialize_Inner_Implementation() {
+void UMovementInputNode::Initialize_Inner_Implementation()
+{
 	Super::Initialize_Inner_Implementation();
 
 	// If the owning actor has a perspective manager, store it for simple use.
@@ -14,22 +16,25 @@ void UMovementInputNode::Initialize_Inner_Implementation() {
 }
 
 
-
-void UMovementInputNode::TriggerCallback_Implementation(const FInputActionValue& Value) {
+void UMovementInputNode::TriggerCallback_Implementation(const FInputActionValue& Value)
+{
 	this->ApplyMovement(Value.Get<FVector2D>());
 }
 
-void UMovementInputNode::ApplyMovement_Implementation(FVector2D InputAxis) {
+void UMovementInputNode::ApplyMovement_Implementation(FVector2D InputAxis)
+{
 	// If our owner isn't a pawn, then we ignore it.
 	auto Pawn = this->GetPawn();
 	if (Pawn == nullptr) { return; }
 
 	FRotator Rotation;
 
-	if (this->Perspective.IsValid()) {
+	if (this->Perspective.IsValid())
+	{
 		Rotation = Perspective->GetPerspective();
 	}
-	else {
+	else
+	{
 		Rotation = Pawn->Controller->GetControlRotation();
 	}
 	const FRotator YawRotation(0, Rotation.Yaw, 0);
@@ -41,6 +46,6 @@ void UMovementInputNode::ApplyMovement_Implementation(FVector2D InputAxis) {
 	const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 
 	// add movement 
-	Pawn->AddMovementInput(ForwardDirection, InputAxis.Y);
-	Pawn->AddMovementInput(RightDirection, InputAxis.X);
+	Pawn->AddMovementInput(ForwardDirection, InputAxis.X);
+	Pawn->AddMovementInput(RightDirection, InputAxis.Y);
 }

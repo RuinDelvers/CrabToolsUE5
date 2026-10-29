@@ -2,6 +2,7 @@
 
 #include <limits>
 #include "Components/RPGSystem/RPGProperty.h"
+#include "Utils/Enums.h"
 #include "FloatAttribute.generated.h"
 
 class UFloatOperator;

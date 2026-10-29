@@ -18,6 +18,24 @@ public:
 	FText Description;
 };
 
+/*
+ * A structure that bundles events with an inlined piece of data to be emitted in events nodes. This exist as a premade
+ * option for existing and future nodes.
+ */
+USTRUCT(BlueprintType)
+struct FEventDataStruct
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, Category="Events")
+	FName EventName;
+
+	UPROPERTY(EditAnywhere, Instanced, Category = "Events")
+	TObjectPtr<UObject> Data;
+
+	UPROPERTY(EditAnywhere, Instanced, Category = "Events")
+	TObjectPtr<UStateMachineDataGenerator> DataGenerator;
+};
 
 /* Structure used to store an event to be used by a node. */
 USTRUCT(BlueprintType)
@@ -191,4 +209,16 @@ public:
 	}
 
 	void Validate();
+};
+
+UCLASS(Abstract, Blueprintable, EditInlineNew, DefaultToInstanced)
+class UStateMachineDataGenerator : public UObject
+{
+	GENERATED_BODY()
+
+public:
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "StateMachine")
+	UObject* GetData(UStateMachine* OwnerMachine) const;
+	virtual UObject* GetData_Implementation(UStateMachine* OwnerMachine) const { return nullptr; }
 };

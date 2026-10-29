@@ -3,24 +3,20 @@
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
 #include "UObject/WeakObjectPtrTemplates.h"
-#include "StateMachine/StateMachine.h"
+#include "StateMachine/Input/BaseInputNode.h"
 #include "Components/PerspectiveManager.h"
 #include "GameFramework/Pawn.h"
-#include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "InputTriggers.h"
 #include "InputNode.generated.h"
 
 /**
  *
  */
 UCLASS(Blueprintable, EditInlineNew, DontCollapseCategories, Category = "StateMachine|Input")
-class CRABTOOLSUE5_API UInputNode : public UStateNode
+class CRABTOOLSUE5_API UInputNode : public UBaseInputNode
 {
 	GENERATED_BODY()
-
-	// Saved reference to the owner if it is a Pawn.
-	TWeakObjectPtr<APawn> PawnOwner;
-	TWeakObjectPtr<UEnhancedInputComponent> Component;
 
 	int Trigger;
 	int Start;
@@ -33,9 +29,13 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
 	bool bAlwaysBound = true;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Input", meta = (AllowPrivateAccess = "true", Bitmask, BitmaskEnum="/Script/EnhancedInput.ETriggerEvent"))
+	int Events = 0;
+
+	
 	UPROPERTY(EditDefaultsOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
 	class UInputAction* Action;
-
+	/*
 	UPROPERTY(EditDefaultsOnly, Category="Input|Events", meta=(AllowPrivateAccess = "true"))
 	bool bTrigger = false;
 
@@ -50,6 +50,8 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category="Input|Events", meta=(AllowPrivateAccess = "true"))
 	bool bCanceled = false;
+
+	*/
 
 	UPROPERTY(BlueprintReadOnly, Category = "Input|Events", meta = (AllowPrivateAccess = "true"))
 	bool bHasStarted = false;
@@ -96,7 +98,7 @@ public:
 	FVector2D GetVec2D();
 
 	UFUNCTION(BlueprintCallable, Category = "StateMachine|Input")
-	APawn* GetPawn() { return this->PawnOwner.Get();  }
+	APawn* GetPawn() const { return this->PawnOwner;  }
 
 private:
 	

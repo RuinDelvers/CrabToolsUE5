@@ -11,7 +11,7 @@
 #include "MovementInputNode.generated.h"
 
 /**
- *
+ * Simple input node that handles standard movement for 3rd person perspectives.
  */
 UCLASS(Blueprintable, EditInlineNew, Category = "StateMachine|Input")
 class CRABTOOLSUE5_API UMovementInputNode : public UInputNode

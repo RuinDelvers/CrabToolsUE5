@@ -1,6 +1,6 @@
 #pragma once
 
-#include "StateMachine/StateMachine.h"
+#include "StateMachine/Input/BaseInputNode.h"
 #include "GameFramework/Pawn.h"
 #include "MultiInputNode.generated.h"
 
@@ -11,14 +11,11 @@
  * in their event graph to be searched for.
  */
 UCLASS(Abstract, Blueprintable, EditInlineNew, DontCollapseCategories, Category = "StateMachine|Input")
-class CRABTOOLSUE5_API UMultiInputNode : public UStateNode
+class CRABTOOLSUE5_API UMultiInputNode : public UBaseInputNode
 {
 	GENERATED_BODY()
 
 protected:
-
-	UPROPERTY(BlueprintReadOnly, Category="Pawn")
-	TObjectPtr<APawn> PawnOwner;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Pawn")
 	bool bIsBound = false;
@@ -33,6 +30,5 @@ public:
 
 protected:
 
-	virtual void Initialize_Inner_Implementation() override;
 	virtual void SetActive_Inner_Implementation(bool bNewActive) override;
 };

@@ -1,13 +1,6 @@
 #include "StateMachine/Input/MultiInputNode.h"
 #include "Engine/InputDelegateBinding.h"
 
-
-void UMultiInputNode::Initialize_Inner_Implementation() {
-	Super::Initialize_Inner_Implementation();
-
-	this->PawnOwner = Cast<APawn>(this->GetMachine()->GetActorOwner());
-}
-
 void UMultiInputNode::BindInput()
 {
 	if (!this->bIsBound)

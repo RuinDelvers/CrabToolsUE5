@@ -301,6 +301,9 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "StateMachine")
 	AActor* GetActorOwner() const;
 
+	UFUNCTION(BlueprintCallable, Category = "StateMachine", meta=(DeterminesOutputType=Type))
+	UObject* GetOwnerAs(TSubclassOf<UObject> Type) const;
+
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "StateMachine")
 	UStateMachine* GetMachine() const;
 

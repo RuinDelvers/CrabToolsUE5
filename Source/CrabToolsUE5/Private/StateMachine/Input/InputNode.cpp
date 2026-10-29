@@ -1,16 +1,14 @@
 #include "StateMachine/Input/InputNode.h"
+#include "EnhancedInputComponent.h"
 
 
 void UInputNode::Initialize_Inner_Implementation() {
 	Super::Initialize_Inner_Implementation();
 
-	this->PawnOwner = Cast<APawn>(this->GetMachine()->GetActorOwner());
-
 	if (!this->Action) { return; }
 
-	if (this->PawnOwner.IsValid()) {
-		this->Component = CastChecked<UEnhancedInputComponent>(this->PawnOwner->InputComponent);		
-
+	if (IsValid(this->PawnOwner))
+	{
 		if (this->bAlwaysBound)
 		{
 			this->BindCallbacks();
@@ -36,9 +34,9 @@ void UInputNode::Exit_Inner_Implementation()
 
 void UInputNode::BindCallbacks()
 {
-	if (this->Component.IsValid())
+	if (this->Component)
 	{
-		if (this->bTrigger)
+		if (this->Events & static_cast<int32>(ETriggerEvent::Triggered))
 		{
 			this->Trigger = this->Component->BindAction(
 				this->Action,
@@ -47,7 +45,7 @@ void UInputNode::BindCallbacks()
 				&UInputNode::TriggerCallback_Internal).GetHandle();
 		}
 
-		if (this->bStart)
+		if (this->Events & static_cast<int32>(ETriggerEvent::Started))
 		{
 			this->Start = this->Component->BindAction(
 				this->Action,
@@ -56,7 +54,7 @@ void UInputNode::BindCallbacks()
 				&UInputNode::StartCallback_Internal).GetHandle();
 		}
 
-		if (this->bOngoing)
+		if (this->Events & static_cast<int32>(ETriggerEvent::Ongoing))
 		{
 			this->Ongoing = this->Component->BindAction(
 				this->Action,
@@ -65,7 +63,7 @@ void UInputNode::BindCallbacks()
 				&UInputNode::TriggerCallback_Internal).GetHandle();
 		}
 
-		if (this->bCanceled)
+		if (this->Events & static_cast<int32>(ETriggerEvent::Canceled))
 		{
 			this->Canceled = this->Component->BindAction(
 				this->Action,
@@ -82,7 +80,7 @@ void UInputNode::BindCallbacks()
 				&UInputNode::FinishedCallback).GetHandle();
 		}
 
-		if (this->bCompleted)
+		if (this->Events & static_cast<int32>(ETriggerEvent::Completed))
 		{
 			this->Completed = this->Component->BindAction(
 				this->Action,
@@ -103,19 +101,19 @@ void UInputNode::BindCallbacks()
 
 void UInputNode::UnbindCallbacks()
 {
-	if (this->Component.IsValid())
+	if (this->Component)
 	{
-		if (this->bTrigger)
+		if (this->Events & static_cast<int32>(ETriggerEvent::Triggered))
 		{
 			this->Component->RemoveActionBindingForHandle(this->Trigger);
 		}
 
-		if (this->bStart)
+		if (this->Events & static_cast<int32>(ETriggerEvent::Started))
 		{
 			this->Component->RemoveActionBindingForHandle(this->Start);
 		}
 
-		if (this->bOngoing)
+		if (this->Events & static_cast<int32>(ETriggerEvent::Ongoing))
 		{
 			this->Component->RemoveActionBindingForHandle(this->Ongoing);
 		}
