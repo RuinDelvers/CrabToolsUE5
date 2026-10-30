@@ -31,7 +31,10 @@ void UPlayerUIComponent::InitWidget(UUserWidget* Widget)
 			Widget->AddToPlayerScreen(this->ViewportZOrder);
 		}
 
-		IPlayerUIInterface::Execute_PostInitialize(Widget);
+		if (Widget->Implements<UPlayerUIInterface>())
+		{
+			IPlayerUIInterface::Execute_PostInitialize(Widget);
+		}
 	#endif
 }
 

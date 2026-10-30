@@ -49,7 +49,7 @@ protected:
 
 	virtual TSubclassOf<URPGSetter> GetSetter_Implementation() const override { return UFloatPropertySetter::StaticClass(); }
 	virtual TSubclassOf<URPGCompare> GetCompare_Implementation() const override { return UFloatPropertyCompare::StaticClass(); }
-	virtual TSubclassOf<URPGProperty> GetBoundsType_Implementation() const override { return UFloatRPGProperty::StaticClass(); }
+	virtual TArray<TSubclassOf<UInterface>> GetBoundsInterface_Implementation() const override { return { UFloatRPGProperty::StaticClass() }; }
 
 	virtual FText GetDisplayText_Implementation() const override;
 	virtual void Initialize_Inner_Implementation() override;

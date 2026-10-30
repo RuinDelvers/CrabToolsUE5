@@ -37,12 +37,24 @@ void URPGOperation::Initialize(URPGComponent* InitComponent)
 
 TArray<FString> URPGResource::GetAttributeOptions() const
 {
+	TArray<FString> Names;
+
 	if (auto Outer = UtilsFunctions::GetOuterAs<URPGComponent>(this))
 	{
-		return Outer->GetRPGPropertyNames(this->GetBoundsType());
+		for (auto& BoundType : this->GetBoundsType())
+		{
+			Names.Append(Outer->GetRPGPropertyNames(BoundType));
+		}
+
+		for (auto& BoundType : this->GetBoundsInterface())
+		{
+			Names.Append(Outer->GetRPGPropertyNamesFromInterface(BoundType));
+		}
 	}
 
-	return {};
+	Names.Sort([](const FString& A, const FString& B) { return A < B; });
+
+	return Names;
 }
 
 #if WITH_EDITOR

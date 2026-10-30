@@ -73,11 +73,10 @@ protected:
 	virtual FText GetDisplayText_Implementation() const override;
 };
 
-UCLASS(NotBlueprintable, DisplayName="Zero")
+UCLASS(NotBlueprintable, DisplayName="Zero (Int)")
 class CRABTOOLSUE5_API UZeroIntAttribute : public UBaseIntAttribute
 {
 	GENERATED_BODY()
-
 
 public:
 

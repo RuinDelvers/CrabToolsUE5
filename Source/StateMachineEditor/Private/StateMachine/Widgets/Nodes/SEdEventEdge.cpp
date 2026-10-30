@@ -50,19 +50,6 @@ void SEdEventEdge::PerformSecondPassLayout(const TMap< UObject*, TSharedRef<SNod
 
 void SEdEventEdge::OnNameTextCommited(const FText& InText, ETextCommit::Type CommitInfo)
 {
-	/*
-	SGraphNode::OnNameTextCommited(InText, CommitInfo);
-
-	UEdEventEdge* MyNode = CastChecked<UEdEventEdge>(GraphNode);
-
-	if (MyNode != nullptr && MyNode->GenericGraphEdge != nullptr)
-	{
-		const FScopedTransaction Transaction(LOCTEXT("GenericGraphEditorRenameEdge", "Generic Graph Editor: Rename Edge"));
-		MyNode->Modify();
-		MyNode->GenericGraphEdge->SetNodeTitle(InText);
-		UpdateGraphNode();
-	}
-	*/
 	UpdateGraphNode();
 }
 

@@ -1,101 +1,25 @@
 #include "StateMachine/General/CallFunctionNode.h"
 
-void UCallFunctionNode::Initialize_Inner_Implementation()
-{
-	/*
-	for (const auto& Source : this->Functions)
-	{
-		for (auto& Delegate : Source->GetBinding())
-		{
-			this->Callback.Add(Delegate);
-		}		
-	}
-	*/
-}
-
-void UCallFunctionNode::HandleBinding(UObject* Obj, const TSet<FName>& FnNames)
-{
-	/*
-	if (IsValid(Obj))
-	{
-		for (const auto& FnName : FnNames)
-		{
-			FScriptDelegate FnCall;
-			FnCall.BindUFunction(Obj, FnName);
-
-			if (FnCall.IsBound())
-			{
-				this->Callback.Add(FnCall);
-			}
-		}
-	}
-	*/
-}
 
 void UCallFunctionNode::Enter_Inner_Implementation()
 {
-	if (this->bCallOnEnter)
+	for (auto& Data : this->Functions)
 	{
-		//this->Callback.ProcessMulticastDelegate<UObject>(nullptr);
-		//this->Callback.ProcessDelegate<UObject>(nullptr);
+		if (Data.bCallOnEnter)
+		{
+			Data.Function.Execute(this);
+		}
 	}
+	
 }
 
 void UCallFunctionNode::Exit_Inner_Implementation()
 {
-	if (this->bCallOnExit)
+	for (auto& Data : this->Functions)
 	{
-		//this->Callback.ProcessMulticastDelegate<UObject>(nullptr);
-		//this->Callback.ProcessDelegate<UObject>(nullptr);
-	}
-}
-
-/*
-TArray<FScriptDelegate> UFunctionSource::GetBinding() const
-{
-	TArray<FScriptDelegate> Delegates;
-
-	for (const auto& FnName : Functions)
-	{
-		UObject* Obj = this->GetSource(CastChecked<UCallFunctionNode>(this->GetOuter()));
-
-		if (this->MatchesObject(Obj))
+		if (Data.bCallOnExit)
 		{
-			FScriptDelegate Delegate;
-			Delegate.BindUFunction(Obj, FnName);
-
-			if (Delegate.IsBound())
-			{
-				Delegates.Add(Delegate);
-			}
+			Data.Function.Execute(this);
 		}
 	}
-
-	return Delegates;
 }
-
-#if WITH_EDITOR
-
-TArray<FString> UFunctionSource::GetFunctionNames() const
-{
-	return this->GetClassFunctions(this->GetFilterClass());
-}
-
-TArray<FString> UFunctionSource::GetClassFunctions(UClass* Class) const
-{
-	TArray<FString> Names;
-
-	for (TFieldIterator<UFunction> FnIt(Class); FnIt; ++FnIt)
-	{
-		if (FnIt->IsSignatureCompatibleWith(this->FindFunction(GET_FUNCTION_NAME_CHECKED(UFunctionSource, SignatureFunction))))
-		{
-			Names.Add(FnIt->GetName());
-		}
-	}
-
-	Names.Sort([](const FString& A, const FString& B) { return A < B; });
-
-	return Names;
-}
-#endif
-*/

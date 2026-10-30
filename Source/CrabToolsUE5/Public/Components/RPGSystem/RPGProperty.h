@@ -119,8 +119,12 @@ protected:
 	TArray<FString> GetAttributeOptions() const;
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, BlueprintPure, Category = "Getter")
-	TSubclassOf<URPGProperty> GetBoundsType() const;
-	virtual TSubclassOf<URPGProperty> GetBoundsType_Implementation() const { return nullptr; }
+	TArray<TSubclassOf<URPGProperty>> GetBoundsType() const;
+	virtual TArray<TSubclassOf<URPGProperty>> GetBoundsType_Implementation() const { return {}; }
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, BlueprintPure, Category = "Getter")
+	TArray<TSubclassOf<UInterface>> GetBoundsInterface() const;
+	virtual TArray<TSubclassOf<UInterface>> GetBoundsInterface_Implementation() const { return {}; }
 };
 
 /*

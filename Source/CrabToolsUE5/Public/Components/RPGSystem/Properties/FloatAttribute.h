@@ -71,7 +71,7 @@ protected:
 	virtual FText GetDisplayText_Implementation() const override;
 };
 
-UCLASS(NotBlueprintable, DisplayName = "Zero")
+UCLASS(NotBlueprintable, DisplayName = "Zero (Float)")
 class CRABTOOLSUE5_API UZeroFloatAttribute : public UBaseFloatAttribute
 {
 	GENERATED_BODY()

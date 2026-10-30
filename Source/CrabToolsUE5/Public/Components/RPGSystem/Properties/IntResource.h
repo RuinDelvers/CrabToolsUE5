@@ -58,7 +58,7 @@ protected:
 
 	virtual TSubclassOf<URPGSetter> GetSetter_Implementation() const override { return UIntegerPropertySetter::StaticClass(); }
 	virtual TSubclassOf<URPGCompare> GetCompare_Implementation() const override { return UIntegerPropertyCompare::StaticClass(); }
-	virtual TSubclassOf<URPGProperty> GetBoundsType_Implementation() const override { return UIntegerRPGProperty::StaticClass(); }
+	virtual TArray<TSubclassOf<UInterface>> GetBoundsInterface_Implementation() const override { return { UIntegerRPGProperty::StaticClass() }; }
 
 private:
 

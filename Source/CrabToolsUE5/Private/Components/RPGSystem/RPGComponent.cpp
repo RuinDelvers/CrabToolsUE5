@@ -105,10 +105,12 @@ TArray<FString> URPGComponent::GetRPGPropertyNames(UClass* Props, bool bRecurse,
 {
 	TArray<FString> Names;
 
+
 	for (TFieldIterator<FObjectProperty> FIT(this->GetClass(), EFieldIteratorFlags::IncludeSuper); FIT; ++FIT)
 	{
 		FObjectProperty* f = *FIT;
 
+		UE_LOG(LogTemp, Warning, TEXT("- Prop: %s"), *f->GetName());
 		if (bIsInterface ? f->PropertyClass->ImplementsInterface(Props) : f->PropertyClass->IsChildOf(Props))
 		{
 			Names.Add(f->GetName());
