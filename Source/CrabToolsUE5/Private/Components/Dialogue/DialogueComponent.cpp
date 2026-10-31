@@ -21,10 +21,35 @@ bool UDialogueStateComponent::HandShake(UDialogueStateComponent* Conversee)
 	return false;
 }
 
+bool UDialogueStateComponent::HandShakeWithActor(AActor* Conversee)
+{
+	if (IsValid(Conversee))
+	{
+		if (auto Comp = Conversee->GetComponentByClass<UDialogueStateComponent>())
+		{
+			this->HandShake(Comp);
+
+			return true;
+		}
+	}
+
+	return false;
+}
+
 void UDialogueStateComponent::OnComponentDestroyed(bool bDestroyHierarchy)
 {
 	Super::OnComponentDestroyed(bDestroyHierarchy);
 	this->FinishDialogue();
+}
+
+void UDialogueStateComponent::BroadcastData(UObject* Data) const
+{
+	this->OnDataReceived.Broadcast(Data);
+
+	for (auto& Participant : this->Participants)
+	{
+		Participant->OnDataReceived.Broadcast(Data);
+	}
 }
 
 void UDialogueStateComponent::SendDialogue(UDialogueDataStruct* DialogueData)
@@ -37,6 +62,7 @@ void UDialogueStateComponent::SendDialogue(UDialogueDataStruct* DialogueData)
 	{
 		if (Participant->OnChoicesSpawned.IsBound())
 		{
+			Participant->CurrentDialogue = DialogueData;
 			Participant->OnChoicesSpawned.Broadcast(DialogueData);
 		}
 	}
@@ -78,6 +104,8 @@ bool UDialogueStateComponent::ForAllParticipant(const FCheckForEachParticipant& 
 
 void UDialogueStateComponent::FinishDialogue()
 {
+	this->ClearCachedData();
+
 	TArray<TObjectPtr<UDialogueStateComponent>> OldParts = this->Participants.Array();
 	this->Participants.Empty();
 
@@ -108,6 +136,7 @@ void UDialogueStateComponent::SendMonologue(UMonologueData* Data)
 
 	for (const auto& Parts : this->Participants)
 	{
+		Parts->CurrentMonologue = Data;
 		Parts->OnMonologueSpawned.Broadcast(Data);
 	}
 }
@@ -116,6 +145,12 @@ void UDialogueStateComponent::ClearCachedData()
 {
 	this->CurrentDialogue = nullptr;
 	this->CurrentMonologue = nullptr;
+
+	for (auto& Participant : this->Participants)
+	{
+		Participant->CurrentMonologue = nullptr;
+		Participant->CurrentDialogue = nullptr;
+	}
 }
 
 void UDialogueStateComponent::NullDialogue() const

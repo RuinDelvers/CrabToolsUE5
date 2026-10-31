@@ -206,6 +206,7 @@ public:
 
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FListenForChoices, UDialogueDataStruct*, Choices);
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FListenForMonologue, UMonologueData*, Data);
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FListenForData, UObject*, Data);
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FListenForDialogue);
 
 	DECLARE_DYNAMIC_DELEGATE_OneParam(FForEachParticipant, UDialogueStateComponent*, Component);
@@ -214,14 +215,21 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = "Dialogue")
 	TSet<TObjectPtr<UDialogueStateComponent>> Participants;
 
+	/* Callback for dialogue choices being broadcasted. */
 	UPROPERTY(BlueprintAssignable, Category = "Dialogue")
 	FListenForChoices OnChoicesSpawned;
 
+	/* Callback for when monologues are being broadcasted. */
 	UPROPERTY(BlueprintAssignable, Category = "Dialogue")
 	FListenForMonologue OnMonologueSpawned;
 
+	/* Callback for when dialogue has been handshaked. */
 	UPROPERTY(BlueprintAssignable, Category = "Dialogue")
 	FListenForDialogue OnDialogueStarted;
+
+	/* Callback for generic data being broadcast to each participant of the dialogue. */
+	UPROPERTY(BlueprintAssignable, Category = "Dialogue")
+	FListenForData OnDataReceived;
 
 	/*
 	 * This event is used for communicating that there's no active
@@ -236,15 +244,27 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Dialogue")
 	FListenForDialogue OnDialogueFinished;
 
-	UPROPERTY()
+	/* ReadOnly property holding the most recently broadcasted monologue.*/
+	UPROPERTY(BlueprintReadOnly, Category="Dialogue")
 	TObjectPtr<UMonologueData> CurrentMonologue;
 
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly, Category = "Dialogue")
 	TObjectPtr<UDialogueDataStruct> CurrentDialogue;
 
 public:
 
+	/*
+	 * This is the entrance to beginning dialogue. This will attempt to create a coupled state between two dialogue state components.
+	 * It fails silently, but on success the OnDialogueStarted will be broadcasted.
+	 * 
+	 * Will return true if success, false otherwise.
+	 */
+	UFUNCTION(BlueprintCallable, Category="Dialogue")
 	bool HandShake(UDialogueStateComponent* Conversee);
+
+	/* Same as handshake, but uses GetComponentByClass to quickly fetch the component to use. */
+	UFUNCTION(BlueprintCallable, Category = "Dialogue")
+	bool HandShakeWithActor(AActor* Conversee);
 
 	UFUNCTION(BlueprintCallable, Category = "Dialogue")
 	void FinishDialogue();
@@ -271,6 +291,9 @@ public:
 	bool ForAllParticipant(const FCheckForEachParticipant& Callback) const;
 
 	virtual void OnComponentDestroyed(bool bDestroyHierarchy) override;
+
+	UFUNCTION(BlueprintCallable, Category = "Dialogue")
+	void BroadcastData(UObject* Data) const;
 
 private:
 
