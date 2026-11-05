@@ -68,7 +68,7 @@ void UAIMoveToInteractNode::EventWithData_Inner_Implementation(FName InEvent, UO
 	else
 	{
 		this->UnbindEvents();
-		this->CurrentData = nullptr;
+		this->ClearInteractionData();
 		Super::EventWithData_Inner_Implementation(InEvent, Data, EventSource);
 	}
 }
@@ -77,7 +77,7 @@ void UAIMoveToInteractNode::OnMoveCompleted_Implementation(FAIRequestID RequestI
 {
 	this->HandleInteraction();
 	this->UnbindEvents();
-	this->CurrentData = nullptr;
+	this->ClearInteractionData();
 
 	Super::OnMoveCompleted_Implementation(RequestID, MoveResult);
 }
@@ -132,6 +132,7 @@ void UAIMoveToInteractNode::InteractWithRequest(UAIInteractionData* Interaction)
 {
 	this->UnbindEvents();
 	this->CurrentData = Interaction;
+	Interaction->Interactable->AddSlottedActor(this->GetActorOwner());
 
 	if (this->HasInteractable())
 	{
@@ -154,6 +155,16 @@ void UAIMoveToInteractNode::InteractWithRequest(UAIInteractionData* Interaction)
 
 void UAIMoveToInteractNode::RouteRequest(UObject* InData)
 {
+}
+
+void UAIMoveToInteractNode::ClearInteractionData()
+{
+	if (this->CurrentData)
+	{
+		this->CurrentData->Interactable->AddSlottedActor(this->GetActorOwner(), false);
+	}
+
+	this->CurrentData = nullptr;
 }
 
 void UAIMoveToInteractNode::BindEvents()

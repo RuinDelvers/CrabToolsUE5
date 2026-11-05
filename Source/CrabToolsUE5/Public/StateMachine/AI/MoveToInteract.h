@@ -54,4 +54,6 @@ private:
 
 	void InteractWithRequest(UAIInteractionData* Interaction);
 	void RouteRequest(UObject* InData);
+
+	void ClearInteractionData();
 };

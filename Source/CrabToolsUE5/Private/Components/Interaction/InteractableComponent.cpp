@@ -42,6 +42,11 @@ void UInteractableComponent::BeginPlay()
 		{
 			PrimComp->OnComponentBeginOverlap.AddDynamic(this, &UInteractableComponent::OnComponentBeginOverlap);
 			PrimComp->OnComponentEndOverlap.AddDynamic(this, &UInteractableComponent::OnComponentEndOverlap);
+
+			if (this->bUseActorSlotting)
+			{
+				PrimComp->SetCollisionEnabled(this->DisabledType);
+			}
 		}
 	}
 }
@@ -95,6 +100,37 @@ void UInteractableComponent::Interact(FName Interaction, UInteractionComponent* 
 void UInteractableComponent::EndInteraction(AActor* Interactor, UObject* Data)
 {
 	this->OnInteractionEnded.Broadcast(Interactor, Data);
+}
+
+void UInteractableComponent::SetInteractionCollisionEnabled(ECollisionEnabled::Type Enabled) const
+{
+	TArray<USceneComponent*> Children;
+	this->GetChildrenComponents(true, Children);
+
+	for (auto& Child : Children)
+	{
+		if (auto PrimComp = Cast<UPrimitiveComponent>(Child))
+		{
+			PrimComp->SetCollisionEnabled(Enabled);
+		}
+	}
+}
+
+void UInteractableComponent::AddSlottedActor(AActor* Actor, bool bAdd)
+{
+	if (this->bUseActorSlotting && IsValid(Actor))
+	{
+		if (bAdd)
+		{
+			this->SlottedActors.Add(Actor);
+			Actor->OnDestroyed.AddDynamic(this, &UInteractableComponent::OnSlottedActorDestroyed);
+		}
+		else
+		{
+			this->SlottedActors.Remove(Actor);
+			Actor->OnDestroyed.RemoveAll(this);
+		}
+	}
 }
 
 void UInteractableComponent::SetInteractionState(FName Interaction, const FInteractableStateData& NewData)
@@ -155,6 +191,11 @@ void UInteractableComponent::OnComponentEndOverlap(UPrimitiveComponent* Overlapp
 	}
 }
 
+void UInteractableComponent::OnSlottedActorDestroyed(AActor* DestroyedActor)
+{
+	this->SlottedActors.Remove(DestroyedActor);
+}
+
 TArray<UContextMenuEntry*> UInteractableComponent::GatherEntries_Implementation(AActor* Requester)
 {
 	TArray<UContextMenuEntry*> Entries;
@@ -180,6 +221,24 @@ TArray<UContextMenuEntry*> UInteractableComponent::GatherEntries_Implementation(
 	}
 
 	return Entries;
+}
+
+void UInteractableComponent::GetInteractionDisplayData(FName InteractionKey, FContextMenuDisplayData& Output, bool& Found)
+{
+	if (this->Interactions.Contains(InteractionKey))
+	{
+		Found = true;
+		Output = this->Interactions[InteractionKey].UIData;
+	}
+	else
+	{
+		Found = false;
+	}
+}
+
+void UInteractableComponent::GetDefaultInteractionDisplayData(FContextMenuDisplayData& Output, bool& Found)
+{
+	this->GetInteractionDisplayData(this->DefaultInteraction, Output, Found);
 }
 
 
@@ -295,6 +354,11 @@ TArray<FString> UInteractableComponent::GetInteractionOptions() const
 	{
 		return {};
 	}
+}
+
+void UInteractableComponent::UpdateSlottedActorState()
+{
+	this->SetInteractionCollisionEnabled(this->SlottedActors.IsEmpty() ? this->DisabledType : this->EnabledType);
 }
 
 #endif

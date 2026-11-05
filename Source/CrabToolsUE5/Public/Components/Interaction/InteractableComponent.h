@@ -16,7 +16,7 @@ struct FInteractableStateData
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, Category = "Interaction")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Interaction")
 	bool bIsEnabled = true;
 };
 
@@ -63,6 +63,22 @@ private:
 	UPROPERTY(VisibleAnywhere, Category="Interaction")
 	TSet<TObjectPtr<AActor>> ValidActors;
 
+	/*
+	 * This is tells the interactable to disable set its collision (usually to disabled) when no actor is attempting to
+	 * interact with it.
+	 */
+	UPROPERTY(EditAnywhere, Category = "Collision")
+	bool bUseActorSlotting = false;
+
+	UPROPERTY(EditAnywhere, Category = "Collision")
+	TEnumAsByte<ECollisionEnabled::Type> DisabledType = ECollisionEnabled::NoCollision;
+
+	UPROPERTY(EditAnywhere, Category = "Collision")
+	TEnumAsByte<ECollisionEnabled::Type> EnabledType = ECollisionEnabled::NoCollision;
+
+	UPROPERTY(VisibleAnywhere, Category = "Collision")
+	TSet<TObjectPtr<AActor>> SlottedActors;
+
 public:
 
 	UPROPERTY(BlueprintAssignable, Category="Interaction")
@@ -106,9 +122,20 @@ public:
 
 	virtual TArray<UContextMenuEntry*> GatherEntries_Implementation(AActor* Requester = nullptr) override;
 
+	UFUNCTION(BlueprintCallable, Category = "Interaction", meta=(ExpandBoolAsExecs="Found"))
+	void GetInteractionDisplayData(FName InteractionKey, FContextMenuDisplayData& Output, bool& Found);
+
+	UFUNCTION(BlueprintCallable, Category = "Interaction", meta = (ExpandBoolAsExecs = "Found"))
+	void GetDefaultInteractionDisplayData(FContextMenuDisplayData& Output, bool& Found);
 	
 	UFUNCTION(BlueprintCallable, CallInEditor, Category = "Interaction")
 	void ProjectInteractionsToNavigation();
+
+	UFUNCTION(BlueprintCallable, Category = "Interaction")
+	void SetInteractionCollisionEnabled(ECollisionEnabled::Type Enabled) const;
+
+	UFUNCTION(BlueprintCallable, Category = "Interaction")
+	void AddSlottedActor(AActor* Actor, bool bAdd = true);
 
 protected:
 
@@ -139,6 +166,9 @@ protected:
 		UPrimitiveComponent* OtherComp,
 		int32 OtherBodyIndex);
 
+	UFUNCTION()
+	void OnSlottedActorDestroyed(AActor* DestroyedActor);
+
 private:
 
 #if WITH_EDITOR
@@ -151,6 +181,8 @@ private:
 	TArray<FString> GetInteractionOptions() const;
 
 #endif
+
+	void UpdateSlottedActorState();
 
 	// Simple ufunction to act as an example for the function search method to match to.
 	UFUNCTION()

@@ -70,7 +70,8 @@ public:
 	bool HasInteractable() const { return !this->InteractableObjects.IsEmpty(); }
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Interaction")
-	UInteractableComponent* GetObj(int index) { return index >= 0 && index < this->InteractableObjects.Num() ? this->InteractableObjects[index].Get() : nullptr; }
+	UInteractableComponent* GetInteractableAt(int index) const { return index >= 0 && index < this->InteractableObjects.Num() ? this->InteractableObjects[index].Get() : nullptr; }
+
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Interaction")
 	int IndexOf(UInteractableComponent* Obj);
@@ -82,5 +83,6 @@ public:
 	bool HasObject(UInteractableComponent* Obj, bool& bHasObject);
 	bool HasObject(UInteractableComponent* Obj);
 
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Interaction")
 	UInteractableComponent* GetSelected();
 };
