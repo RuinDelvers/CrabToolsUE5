@@ -303,6 +303,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "StateMachine", meta=(DeterminesOutputType=Type))
 	UObject* GetOwnerAs(TSubclassOf<UObject> Type) const;
+	template <class T> T* GetOwnerAs() const { return CastChecked<T>(this->GetOwner()); }
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "StateMachine")
 	UStateMachine* GetMachine() const;

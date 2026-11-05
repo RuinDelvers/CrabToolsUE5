@@ -16,7 +16,7 @@ enum class EIfElseNodeFlagType
 /**
  * 
  */
-UCLASS(Blueprintable, Category = "StateMachine")
+UCLASS(Blueprintable, Category = "StateMachine|Containers")
 class CRABTOOLSUE5_API UIfElseNode : public UStateNode
 {
 	GENERATED_BODY()

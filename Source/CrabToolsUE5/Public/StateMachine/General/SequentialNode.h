@@ -6,7 +6,7 @@
 /**
  * Node that sequentially moves through node behaviours each time it is visited.
  */
-UCLASS(Blueprintable, Category = "StateMachine")
+UCLASS(Blueprintable, Category = "StateMachine|General")
 class CRABTOOLSUE5_API USequentialNode : public UStateNode
 {
 	GENERATED_BODY()

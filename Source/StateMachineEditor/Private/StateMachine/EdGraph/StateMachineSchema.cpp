@@ -7,6 +7,7 @@
 #include "StateMachine/EdGraph/EdTransition.h"
 #include "StateMachine/EdGraph/StateConnectionDrawingPolicy.h"
 #include "Framework/Commands/GenericCommands.h"
+#include "EdGraphNode_Comment.h"
 
 #define LOCTEXT_NAMESPACE "StateMachineSchema"
 
@@ -221,6 +222,47 @@ void FSMSchemaAction_NewEdge::AddReferencedObjects(FReferenceCollector& Collecto
 	Collector.AddReferencedObject(NodeTemplate);
 }
 
+UEdGraphNode* FSMSchemaAction_NewComment::PerformAction(UEdGraph* ParentGraph, UEdGraphPin* FromPin, const FVector2D Location, bool bSelectNewNode)
+{
+	UEdGraphNode_Comment* ResultNode = nullptr;
+	UEdStateGraph* StateGraph = Cast<UEdStateGraph>(ParentGraph);
+
+	if (NodeTemplate != nullptr)
+	{
+		const FScopedTransaction Transaction(
+			LOCTEXT("StateMachineEditorNewNode", "State Machine Editor: New Node"));
+
+		ParentGraph->Modify();
+		if (FromPin != nullptr)
+			FromPin->Modify();
+
+
+		NodeTemplate->Rename(nullptr, ParentGraph);
+
+		ParentGraph->AddNode(NodeTemplate, true, bSelectNewNode);
+
+		NodeTemplate->CreateNewGuid();
+		NodeTemplate->PostPlacedNewNode();
+		NodeTemplate->AllocateDefaultPins();
+		NodeTemplate->AutowireNewNode(FromPin);
+
+		NodeTemplate->NodePosX = Location.X;
+		NodeTemplate->NodePosY = Location.Y;
+
+		NodeTemplate->SetFlags(RF_Transactional);
+
+		ResultNode = NodeTemplate;
+	}
+
+	return ResultNode;
+}
+
+void FSMSchemaAction_NewComment::AddReferencedObjects(FReferenceCollector& Collector)
+{
+	FEdGraphSchemaAction::AddReferencedObjects(Collector);
+	Collector.AddReferencedObject(NodeTemplate);
+}
+
 #pragma region Schema
 
 UStateMachineSchema::UStateMachineSchema(
@@ -252,11 +294,13 @@ void UStateMachineSchema::GetGraphContextActions(FGraphContextMenuBuilder& Conte
 
 	for (TObjectIterator<UClass> It; It; ++It)
 	{
-		bool c1 = (*It)->IsChildOf(UStateNode::StaticClass());
-		bool c2 = !It->HasAnyClassFlags(CLASS_Abstract);
-		bool c3 = !Visited.Contains(*It);
+		UClass* Class = *It;
+		bool c1 = Class->IsChildOf(UStateNode::StaticClass());
+		bool c2 = !Class->IsChildOf<UAbstractCondition>();
+		bool c3 = !It->HasAnyClassFlags(CLASS_Abstract);
+		bool c4 = !Visited.Contains(*It);
 
-		if ( c1 && c2 && c3)
+		if ( c1 && c2 && c3 && c4)
 		{
 			TSubclassOf<UStateNode> NodeType = *It;
 
@@ -284,6 +328,7 @@ void UStateMachineSchema::GetGraphContextActions(FGraphContextMenuBuilder& Conte
 	this->AddEmptyAction(ContextMenuBuilder);
 	this->AddExtensionAction(ContextMenuBuilder);
 	this->AddAliasAction(ContextMenuBuilder);
+	this->AddCommentAction(ContextMenuBuilder);
 }
 
 void UStateMachineSchema::GetContextMenuActions(UToolMenu* Menu, UGraphNodeContextMenuContext* Context) const
@@ -311,7 +356,7 @@ void UStateMachineSchema::GetContextMenuActions(UToolMenu* Menu, UGraphNodeConte
 
 void UStateMachineSchema::AddEmptyAction(FGraphContextMenuBuilder& ContextMenuBuilder) const
 {
-	const FText Desc = LOCTEXT("NewStateGraphExtensionNodeMenuText", "Create Empty State");
+	const FText Desc = LOCTEXT("NewStateGraphExtensionNodeMenuText", "Create Empty State...");
 	const FText MenuText = FText::FromString("");
 	const FText ToolTip = LOCTEXT("NewStateGraphNodeTooltip", "Add empty state here");
 
@@ -353,6 +398,21 @@ void UStateMachineSchema::AddAliasAction(FGraphContextMenuBuilder& ContextMenuBu
 		new FSMSchemaAction_NewAliasNode(MenuText, Desc, ToolTip, -100));
 
 	auto StateNode = NewObject<UEdAliasNode>(ContextMenuBuilder.OwnerOfTemporaries);
+	ExtendAction->SetNodeTemplate(StateNode);
+
+	ContextMenuBuilder.AddAction(ExtendAction);
+}
+
+void UStateMachineSchema::AddCommentAction(FGraphContextMenuBuilder& ContextMenuBuilder) const
+{
+	const FText Desc = LOCTEXT("NewStateGraphExtensionNodeMenuText", "Create a Commented Section...");
+	const FText MenuText = FText::FromString("");
+	const FText ToolTip = LOCTEXT("NewStateGraphNodeTooltip", "Add comment section here...");
+
+	TSharedPtr<FSMSchemaAction_NewComment> ExtendAction(
+		new FSMSchemaAction_NewComment(MenuText, Desc, ToolTip, -1000));
+
+	auto StateNode = NewObject<UEdGraphNode_Comment>(ContextMenuBuilder.OwnerOfTemporaries);
 	ExtendAction->SetNodeTemplate(StateNode);
 
 	ContextMenuBuilder.AddAction(ExtendAction);

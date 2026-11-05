@@ -8,7 +8,7 @@
  * Node that automatically sends an event at PostTransition. Similar to Conduit Nodes for
  * AnimGraphs.
  */
-UCLASS(Blueprintable, Category = "StateMachine")
+UCLASS(Blueprintable, Category = "StateMachine|Events")
 class CRABTOOLSUE5_API UAutoEventNode : public UStateNode
 {
 	GENERATED_BODY()

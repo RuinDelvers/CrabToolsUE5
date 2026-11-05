@@ -187,6 +187,10 @@ const UStruct* FPropertyChoice::GetSearchStruct(TSharedPtr<IPropertyHandle> Defa
 		{
 			return StructProp->Struct;
 		}
+		else if (auto SoftObjProp = CastField<FSoftObjectProperty>(this->Property))
+		{
+			return SoftObjProp->PropertyClass;
+		}
 		else
 		{
 			return nullptr;

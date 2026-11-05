@@ -8,7 +8,7 @@ class URPGComponent;
 /**
  * Abstract utility node meant to be extended. Holds a reference to this node's ActorOwner's rpg component.
  */
-UCLASS(Abstract, Blueprintable, Category = "StateMachine")
+UCLASS(Abstract, Blueprintable, Category = "StateMachine|RPG")
 class CRABTOOLSUE5_API URPGStateNode : public UStateNode
 {
 	GENERATED_BODY()

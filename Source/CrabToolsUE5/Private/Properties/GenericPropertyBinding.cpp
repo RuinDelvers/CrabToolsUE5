@@ -37,6 +37,12 @@ void* FGenericObjectPropertyPath::Get(void* Source) const
 		{
 			ReturnObject = StructProp->ContainerPtrToValuePtr<void>(Source);
 		}
+		else if (auto SoftObjProp = CastField<FSoftObjectProperty>(Prop))
+		{
+			auto& ObjPtr = SoftObjProp->GetPropertyValue_InContainer(Source);
+
+			return ObjPtr.LoadSynchronous();
+		}
 		else
 		{
 			checkf(false, TEXT("Could not find valid property from source %s"), *this->PropertyName.ToString());
@@ -71,11 +77,30 @@ void FGenericObjectPropertyBinding::PushProperty(FProperty* Prop)
 
 		this->Path.Add(NewPath);
 	}
+	else if (auto SoftObjProp = CastField<FSoftObjectProperty>(Prop))
+	{
+		FGenericObjectPropertyPath NewPath;
+
+		NewPath.PropertyName = Prop->GetFName();
+		NewPath.SearchType = SearchType;
+
+		this->Path.Add(NewPath);
+	}
 }
 
 void FGenericObjectPropertyBinding::PushProperty(UFunction* Fn)
 {
 	if (auto ObjProp = CastField<FObjectProperty>(Fn->GetReturnProperty()))
+	{
+		FGenericObjectPropertyPath NewPath;
+
+		NewPath.PropertyName = Fn->GetFName();
+		NewPath.SearchType = Fn->GetOuterUClass();
+		NewPath.bIsFunction = true;
+
+		this->Path.Add(NewPath);
+	}
+	else if (auto SoftObjProp = CastField<FSoftObjectProperty>(Fn->GetReturnProperty()))
 	{
 		FGenericObjectPropertyPath NewPath;
 
@@ -102,7 +127,8 @@ UStruct* FGenericObjectPropertyBinding::ResultType() const
 bool FGenericObjectPropertyBinding::ValidProperty(FProperty* CheckProp) const
 {
 	return CheckProp->IsA<FObjectProperty>()
-		|| CheckProp->IsA<FStructProperty>();
+		|| CheckProp->IsA<FStructProperty>()
+		|| CheckProp->IsA<FSoftObjectProperty>();
 }
 
 FString FGenericObjectPropertyBinding::GetPathString() const
@@ -118,7 +144,6 @@ FString FGenericObjectPropertyBinding::GetPathString() const
 		for (auto& PathFragment : this->Path)
 		{
 			PathString.Append(".");
-			//PathString.Append(PathFragment.SearchType->GetName() + "::" + PathFragment.PropertyName.ToString());
 			PathString.Append(PathFragment.PropertyName.ToString());
 		}
 
@@ -155,6 +180,7 @@ bool FGenericObjectPropertyBinding::IsEmpty() const
 {
 	return this->Path.IsEmpty();
 }
+
 
 FString FGenericValuePropertyBinding::GetPathString() const
 {
@@ -334,4 +360,7 @@ bool FGenericDoublePropertyBinding::ValidProperty(FProperty* CheckProp) const
 }
 #pragma endregion
 #pragma endregion
+
 #undef LOCTEXT_NAMESPACE
+
+

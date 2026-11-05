@@ -7,7 +7,7 @@
 /**
  * Node that either hides or shows an actor.
  */
-UCLASS(Blueprintable, Category = "StateMachine")
+UCLASS(Blueprintable, Category = "StateMachine|Actor")
 class CRABTOOLSUE5_API UActorVisibilityNode : public UStateNode
 {
 	GENERATED_BODY()

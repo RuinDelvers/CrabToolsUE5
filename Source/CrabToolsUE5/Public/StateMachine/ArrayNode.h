@@ -5,31 +5,10 @@
 
 struct FStateNodeInstanceData;
 
-/*
-UCLASS()
-class CRABTOOLSUE5_API UArrayNodeData : public UObject, public IStateMachineDataInterface
-{
-	GENERATED_BODY()
-
-	UPROPERTY()
-	TArray<TObjectPtr<UObject>> Data;
-
-public:
-
-	virtual UObject* FindDataOfType_Implementation(TSubclassOf<UObject> Type) override;
-	virtual void FindAllDataOfType_Implementation(TSubclassOf<UObject> Type, TArray<UObject*>& ReturnValue) override;
-	virtual TScriptInterface<UInterface> FindDataImplementing_Implementation(TSubclassOf<UInterface> Type) override;
-	virtual void FindAllDataImplementing_Implementation(TSubclassOf<UInterface> Type, TArray<TScriptInterface<UInterface>>& ReturnValue) override;
-
-	void AddData(UObject* AddedData);
-	void AppendData(const TArray<TObjectPtr<UObject>>& Appended);
-};
-*/
-
 /**
  * State Machine Node that is a composite of other nodes.
  */
-UCLASS(Blueprintable, CollapseCategories, HideDropdown, Category = "StateMachine")
+UCLASS(Blueprintable, CollapseCategories, HideDropdown, Category = "StateMachine|Containers")
 class CRABTOOLSUE5_API UArrayNode : public UStateNode
 {
 	GENERATED_BODY()

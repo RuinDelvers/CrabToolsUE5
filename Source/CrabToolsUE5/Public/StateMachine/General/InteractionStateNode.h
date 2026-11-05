@@ -7,7 +7,7 @@
 /**
  * Node that toggles the state for interactions on a specific actor it lives in.
  */
-UCLASS(Blueprintable, Category = "StateMachine")
+UCLASS(Blueprintable, Category = "StateMachine|Interaction")
 class CRABTOOLSUE5_API UInteractionStateNode : public UStateNode
 {
 	GENERATED_BODY()

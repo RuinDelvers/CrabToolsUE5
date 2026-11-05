@@ -9,7 +9,7 @@ class UTransientTask;
 /**
  * State Machine Node that is a composite of other nodes.
  */
-UCLASS(Blueprintable, CollapseCategories, Category = "StateMachine")
+UCLASS(Blueprintable, CollapseCategories, Category = "StateMachine|General")
 class CRABTOOLSUE5_API UTransientNode : public UStateNode
 {
 	GENERATED_BODY()

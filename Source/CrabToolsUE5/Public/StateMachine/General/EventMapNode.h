@@ -6,7 +6,7 @@
 /**
  * Node that maps incoming events to functions to be called on the State Machine.
  */
-UCLASS(Blueprintable, Category = "StateMachine")
+UCLASS(Blueprintable, Category = "StateMachine|Events")
 class CRABTOOLSUE5_API UEventMapNode : public UStateNode
 {
 	GENERATED_BODY()

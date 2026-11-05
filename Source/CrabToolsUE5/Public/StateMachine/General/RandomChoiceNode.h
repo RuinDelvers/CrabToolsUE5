@@ -19,7 +19,7 @@ struct FRandomChoiceNodeData
 /**
  * A node that random chooses its behaviour each time it is entered.
  */
-UCLASS(Blueprintable, Category = "StateMachine")
+UCLASS(Blueprintable, Category = "StateMachine|Containers")
 class CRABTOOLSUE5_API URandomChoiceNode : public UStateNode
 {
 	GENERATED_BODY()

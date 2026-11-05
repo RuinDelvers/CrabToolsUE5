@@ -28,7 +28,7 @@ struct FHierarchyEventValue
 /**
  * State Machine node used that is controlled by a StateMachine.
  */
-UCLASS(Category = "StateMachine")
+UCLASS(Category = "StateMachine|Containers")
 class CRABTOOLSUE5_API UHierarchyNode : public UStateNode
 {
 	GENERATED_BODY()

@@ -3,7 +3,7 @@
 #include "StateMachine/StateMachine.h"
 #include "MultiGateNode.generated.h"
 
-UCLASS(Abstract, EditInlineNew, DefaultToInstanced, Blueprintable, Category = "StateMachine")
+UCLASS(Abstract, EditInlineNew, DefaultToInstanced, Blueprintable, Category = "StateMachine|Containers")
 class CRABTOOLSUE5_API UMultiGateNodeGate : public UObject
 {
 	GENERATED_BODY()
@@ -56,7 +56,7 @@ struct FMultiGateNodeData
  * 
  * These gates still permit Enter and Exit calls from happening regardless of a gate's state.
  */
-UCLASS(BlueprintType, Category = "StateMachine")
+UCLASS(BlueprintType, Category = "StateMachine|Containers")
 class CRABTOOLSUE5_API UMultiGateNode : public UStateNode
 {
 	GENERATED_BODY()

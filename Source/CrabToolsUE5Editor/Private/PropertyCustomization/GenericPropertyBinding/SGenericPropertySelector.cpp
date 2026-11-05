@@ -98,6 +98,7 @@ bool SGenericPropertySelector::CanNavigateBackward() const
 void SGenericPropertySelector::OnPropertyChosen_Inner(FPropertyChoice Property)
 {
 	Property.ApplyToBinding(this->Binding);
+
 	// Create a scope so that the Slot is deconstructed and the widget commited to the tree.
 	{
 		auto NewPage = SNew(SGenericPropertySelectorPage, this->PropertyHandle, Property, Binding)
@@ -143,7 +144,7 @@ FReply SGenericPropertySelector::OnConfirmClicked() const
 	if (auto StructProp = CastFieldChecked<FStructProperty>(PropertyHandle->GetProperty()))
 	{
 		FString FormattedString;
-		StructProp->Struct->ExportText(FormattedString, this, nullptr, nullptr, PPF_Copy, nullptr);
+		StructProp->Struct->ExportText(FormattedString, this->Binding.Get(), nullptr, nullptr, PPF_Copy, nullptr);
 		this->PropertyHandle->SetValueFromFormattedString(FormattedString);
 
 		this->OnClosed.Broadcast();

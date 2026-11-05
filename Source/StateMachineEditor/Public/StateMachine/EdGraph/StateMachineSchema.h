@@ -9,9 +9,10 @@ class UEdAliasNode;
 class UEdStateNode;
 class UEdExtension;
 class UEdTransition;
+class UEdGraphNode_Comment;
 
 USTRUCT()
-struct STATEMACHINEEDITOR_API FSMSchemaAction_NewExtensionNode: public FEdGraphSchemaAction
+struct FSMSchemaAction_NewExtensionNode: public FEdGraphSchemaAction
 {
 	GENERATED_USTRUCT_BODY();
 
@@ -38,7 +39,7 @@ public:
 };
 
 USTRUCT()
-struct STATEMACHINEEDITOR_API FSMSchemaAction_NewAliasNode: public FEdGraphSchemaAction
+struct FSMSchemaAction_NewAliasNode: public FEdGraphSchemaAction
 {
 	GENERATED_USTRUCT_BODY();
 
@@ -65,7 +66,7 @@ public:
 };
 
 USTRUCT()
-struct STATEMACHINEEDITOR_API FSMSchemaAction_NewNode: public FEdGraphSchemaAction
+struct FSMSchemaAction_NewNode: public FEdGraphSchemaAction
 {
 	GENERATED_USTRUCT_BODY();
 
@@ -89,7 +90,7 @@ public:
 };
 
 USTRUCT()
-struct STATEMACHINEEDITOR_API FSMSchemaAction_NewEdge: public FEdGraphSchemaAction
+struct  FSMSchemaAction_NewEdge: public FEdGraphSchemaAction
 {
 	GENERATED_USTRUCT_BODY();
 
@@ -109,6 +110,30 @@ public:
 	//virtual void AddReferencedObjects(FReferenceCollector& Collector) override;
 
 	void SetNodeTemplate(UEdTransition* Template) { this->NodeTemplate = Template; }
+
+	virtual void AddReferencedObjects(FReferenceCollector& Collector) override;
+};
+
+USTRUCT()
+struct  FSMSchemaAction_NewComment : public FEdGraphSchemaAction
+{
+	GENERATED_USTRUCT_BODY();
+
+private:
+
+	TObjectPtr<UEdGraphNode_Comment> NodeTemplate;
+
+public:
+	FSMSchemaAction_NewComment() : NodeTemplate(nullptr) {}
+
+	FSMSchemaAction_NewComment(const FText& InNodeCategory, const FText& InMenuDesc, const FText& InToolTip, const int32 InGrouping)
+		: FEdGraphSchemaAction(InNodeCategory, InMenuDesc, InToolTip, InGrouping), NodeTemplate(nullptr)
+	{
+	}
+
+	virtual UEdGraphNode* PerformAction(class UEdGraph* ParentGraph, UEdGraphPin* FromPin, const FVector2D Location, bool bSelectNewNode = true) override;
+
+	void SetNodeTemplate(UEdGraphNode_Comment* Template) { this->NodeTemplate = Template; }
 
 	virtual void AddReferencedObjects(FReferenceCollector& Collector) override;
 };
@@ -174,4 +199,5 @@ private:
 	void AddExtensionAction(FGraphContextMenuBuilder& ContextMenuBuilder) const;
 	void AddAliasAction(FGraphContextMenuBuilder& ContextMenuBuilder) const;
 	void AddEmptyAction(FGraphContextMenuBuilder& ContextMenuBuilder) const;
+	void AddCommentAction(FGraphContextMenuBuilder& ContextMenuBuilder) const;
 };

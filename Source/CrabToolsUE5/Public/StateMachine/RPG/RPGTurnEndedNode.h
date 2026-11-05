@@ -9,7 +9,7 @@ class URPGComponent;
  * Node that listens to the turn end event for the owner's RPG component, and emits an event when
  * that happens.
  */
-UCLASS(Blueprintable, Category = "StateMachine")
+UCLASS(Blueprintable, Category = "StateMachine|RPG")
 class CRABTOOLSUE5_API URPGTurnEndedNode : public URPGStateNode
 {
 	GENERATED_BODY()

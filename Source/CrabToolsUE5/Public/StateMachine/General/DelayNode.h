@@ -6,7 +6,7 @@
 /**
  * This node delays the entry for its child node.
  */
-UCLASS(Blueprintable, CollapseCategories, Category = "StateMachine")
+UCLASS(Blueprintable, CollapseCategories, Category = "StateMachine|General")
 class CRABTOOLSUE5_API UDelayNode : public UNodeWithChild
 {
 	GENERATED_BODY()

@@ -11,7 +11,7 @@ class URPGSetter;
 /**
  * State Machine Node that is a composite of other nodes.
  */
-UCLASS(Blueprintable, CollapseCategories, Category = "StateMachine",
+UCLASS(Blueprintable, CollapseCategories, Category = "StateMachine|RPG",
 	DisplayName="SetRPGProperty")
 class CRABTOOLSUE5_API USetRPGPropertyNode : public UStateNode
 {
