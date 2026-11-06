@@ -50,12 +50,12 @@ TSharedPtr<IDetailsView> SBaseStateNodeDetails::GetInspector()
 
 		FDetailsViewArgs DetailsViewArgs;
 		DetailsViewArgs.NameAreaSettings = FDetailsViewArgs::HideNameArea;
-		DetailsViewArgs.bUpdatesFromSelection = false;
+		DetailsViewArgs.bUpdatesFromSelection = true;
 		DetailsViewArgs.bLockable = false;
 		DetailsViewArgs.bShowPropertyMatrixButton = false;
 		DetailsViewArgs.NotifyHook = this;
 
-		DetailsViewArgs.ViewIdentifier = "Machine Details";
+		DetailsViewArgs.ViewIdentifier = "BaseStateNodeDetails";
 		DetailsViewArgs.bAllowSearch = false;
 		DetailsViewArgs.bAllowFavoriteSystem = false;
 		DetailsViewArgs.bShowOptions = false;

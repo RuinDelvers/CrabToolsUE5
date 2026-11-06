@@ -10,10 +10,11 @@
 class UStateMachineBlueprint;
 class UEdBaseStateNode;
 
-class STATEMACHINEEDITOR_API SGraphView : public SCompoundWidget, public FGCObject
+class SGraphView : public SCompoundWidget, public FGCObject
 {
 
 private:
+
 	TSharedPtr<FUICommandList> GraphEditorCommands;
 	TWeakObjectPtr<UStateMachineBlueprint> BlueprintRef;
 	TArray<TWeakObjectPtr<UEdGraphNode>> SelectedNodes;

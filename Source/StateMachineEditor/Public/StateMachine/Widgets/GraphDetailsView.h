@@ -52,6 +52,8 @@ public:
 
 	/* Whether or not this node represents a state machine & the main graph. */
 	virtual bool RepresentsMainGraph() const { return false; }
+
+	TWeakPtr<STreeView<ItemPtr>> GetTableOwner() const { return this->TableOwner; }
 };
 
 class FHeaderItem : public FGraphDetailsViewItem
@@ -142,7 +144,7 @@ private:
 	void OnNodeDeleted();
 	bool IsReadOnly() const;
 
-	void Select() override { this->NodeRef->Inspect(); }
+	void Select() override;
 
 	virtual void Delete(bool DeferRefresh = false) override;
 	virtual FString SortKey() const { return this->NodeRef->GetNodeName().ToString(); }
@@ -287,6 +289,7 @@ private:
 
 	void OnStateAdded(UEdStateNode* State);
 	void OnEventAdded(UEdEventObject* Event);
+	void OnNodesSelected(TArray<UEdGraphNode*>& Nodes);
 
 	virtual FReply OnKeyDown(const FGeometry& MyGeometry, const FKeyEvent& KeyEvent) override;
 };

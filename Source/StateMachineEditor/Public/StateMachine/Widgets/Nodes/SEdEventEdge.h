@@ -8,7 +8,11 @@
 class SToolTip;
 class UEdTransition;
 
-class STATEMACHINEEDITOR_API SEdEventEdge : public SGraphNode
+/*
+ * Visual representation of an edge between two states. Since you can only transition from one state to another when
+ * an event is sent, these are called Event edges.
+ */
+class SEdEventEdge : public SGraphNode
 {
 public:
 	SLATE_BEGIN_ARGS(SEdEventEdge){}

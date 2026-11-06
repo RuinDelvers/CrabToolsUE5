@@ -43,7 +43,7 @@ void SMachineDetailsView::Construct(
 
 		FDetailsViewArgs DetailsViewArgs;
 		DetailsViewArgs.NameAreaSettings = FDetailsViewArgs::HideNameArea;
-		DetailsViewArgs.bUpdatesFromSelection = false;
+		DetailsViewArgs.bUpdatesFromSelection = true;
 		DetailsViewArgs.bLockable = false;
 		DetailsViewArgs.bShowPropertyMatrixButton = false;
 		DetailsViewArgs.NotifyHook = this;
@@ -66,6 +66,7 @@ void SMachineDetailsView::Construct(
 		Inspector->SetIsPropertyVisibleDelegate(
 			FIsPropertyVisible::CreateStatic(
 				&StateMachineEditor::Widgets::DetailWidgetPropertyFilter));
+
 	}
 
 	FSlateFontInfo Font = FAppStyle::GetFontStyle("DetailsView.CategoryTextStyle");
@@ -168,6 +169,11 @@ void SMachineDetailsView::InspectObject(UObject* Obj)
 	}
 	else
 	{
+		if (this->InspectedStateNode.IsValid())
+		{
+			this->InspectedStateNode->Events.OnStateNodesUpdated.RemoveAll(this);
+		}
+
 		this->InspectedStateNode = nullptr;
 	}
 }
@@ -185,13 +191,6 @@ FReply SMachineDetailsView::OnAddStateNode()
 
 	TSharedPtr<FStateNodeClassFilter> Filter = MakeShareable(new FStateNodeClassFilter);
 	Options.ClassFilters.Add(Filter.ToSharedRef());
-
-	/*
-	if (Options.ExtraPickerCommonClasses.Num() == 0)
-	{
-		Options.ExtraPickerCommonClasses.Add(UStateNode::StaticClass());
-	}
-	*/
 
 	Filter->DisallowedClassFlags = CLASS_Deprecated | CLASS_NewerVersionExists | CLASS_Hidden | CLASS_HideDropDown | CLASS_Abstract;
 	Filter->AllowedChildrenOfClasses.Add(UStateNode::StaticClass());

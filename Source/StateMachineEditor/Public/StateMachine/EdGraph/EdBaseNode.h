@@ -28,6 +28,7 @@ public:
 		
 		FNameChanged OnNameChanged;		
 		FSimpleEvent OnNodeDeleted;
+		FSimpleEvent OnNodeDeselected;
 		FSimpleEvent OnAttemptRename;
 		FReferenceEvent OnStateNodesUpdated;
 

@@ -412,6 +412,12 @@ bool FStateItem::IsReadOnly() const
 	return true;
 }
 
+void FStateItem::Select()
+{
+	//this->NodeRef->GetStateGraph()->SelectNodeSet({ this->NodeRef.Get()});
+	this->NodeRef->Inspect();
+}
+
 void FStateItem::OnNameTextCommited(const FText& InText, ETextCommit::Type CommitInfo)
 {
 	if (this->NodeRef.IsValid())
@@ -448,16 +454,14 @@ FStateMachineItem::FStateMachineItem(UEdStateGraph* GraphPtr)
 {
 	GraphPtr->Events.OnNameChanged.AddRaw(this, &FStateMachineItem::OnNameChanged);
 	GraphPtr->Events.OnGraphDeleted.AddRaw(this, &FStateMachineItem::OnGraphDeleted);
-	//GraphPtr->Events.OnEventCreated.AddRaw(this, &FStateMachineItem::OnEventCreated, false);
 }
 
 FStateMachineItem::~FStateMachineItem()
 {
 	if (this->GraphRef.IsValid())
 	{
-		//this->GraphRef->Events.OnNameChanged.RemoveAll(this);
+		this->GraphRef->Events.OnNameChanged.RemoveAll(this);
 		this->GraphRef->Events.OnGraphDeleted.RemoveAll(this);
-		//this->GraphRef->Events.OnEventCreated.RemoveAll(this);
 	}
 }
 
@@ -503,16 +507,12 @@ TSharedRef<ITableRow> FStateMachineItem::GetEntryWidget(
 			.Padding(2, 2)
 			[
 				SAssignNew(InlineText, SInlineEditableTextBlock)
-					//.Style(FAppStyle::Get(), "Graph.StateNode.NodeTitleInlineEditableText")
 					.Text(FText::FromName(this->GraphRef->GetFName()))
 					.OnVerifyTextChanged(this, &FStateMachineItem::OnVerifyNameTextChanged)
 					.OnTextCommitted(this, &FStateMachineItem::OnNameTextCommited)
 					.IsSelected(
 						TableRow,
 						&STableRow<ItemPtr>::IsSelectedExclusively)
-					//.IsReadOnly(false)
-					//.IsReadOnly(&FStateMachineItem::IsReadOnly)
-					//.IsReadOnly_Lambda([this]() { return this->IsReadOnly(); })
 					.IsReadOnly_Raw(this, &FStateMachineItem::IsReadOnly)
 			];
 	}
@@ -524,8 +524,7 @@ TSharedRef<ITableRow> FStateMachineItem::GetEntryWidget(
 
 void FStateMachineItem::OnEventCreated(UEdEventObject* EventObject, bool DeferRefresh)
 {
-	/*this->EventRoot->AddChild(
-		MakeShareable(new FEventItem(EventObject)), DeferRefresh);*/
+	
 }
 
 bool FStateMachineItem::IsReadOnly() const
@@ -821,7 +820,7 @@ void SSubGraphDetails::Construct(const FArguments& InArgs, UEdStateGraph* GraphP
 		.ItemHeight(24)
 		.TreeItemsSource(&this->TreeViewList)
 		.OnGenerateRow(this, &SSubGraphDetails::OnGenerateRow, false)
-		.SelectionMode(ESelectionMode::Single)
+		.SelectionMode(ESelectionMode::Multi)
 		.OnSelectionChanged(this, &SSubGraphDetails::OnSelectionChanged)
 		.OnContextMenuOpening(this, &SSubGraphDetails::OnContextMenuOpening)
 		.OnMouseButtonDoubleClick(this, &SSubGraphDetails::OnItemDoubleClicked)
@@ -832,7 +831,7 @@ void SSubGraphDetails::Construct(const FArguments& InArgs, UEdStateGraph* GraphP
 
 	this->StateRoot->SetTableView(this->TreeView);
 	this->EventRoot->SetTableView(this->TreeView);
-
+	
 	ChildSlot
 	[
 		SNew(SScrollBorder, this->TreeView.ToSharedRef())
@@ -852,6 +851,7 @@ void SSubGraphDetails::BindEvents()
 	this->GraphRef->Events.OnStateAdded.AddSP(this, &SSubGraphDetails::OnStateAdded);
 	this->GraphRef->Events.OnEventCreated.AddSP(this, &SSubGraphDetails::OnEventAdded);
 	this->GraphRef->Events.OnGraphDataReverted.AddSP(this, &SSubGraphDetails::OnGraphDataReverted);
+	this->GraphRef->Events.OnNodeSelected.AddSP(this, &SSubGraphDetails::OnNodesSelected);
 }
 
 void SSubGraphDetails::OnGraphDataReverted()
@@ -867,6 +867,13 @@ void SSubGraphDetails::OnStateAdded(UEdStateNode* State)
 void SSubGraphDetails::OnEventAdded(UEdEventObject* Event)
 {
 	this->AddEvent(Event, false);
+}
+
+void SSubGraphDetails::OnNodesSelected(TArray<UEdGraphNode*>& Nodes)
+{
+	// Clear selection when nodes are selected globally.
+	this->TreeView->ClearSelection();
+	this->GraphRef->SelectNodeSet({}, true);
 }
 
 void SSubGraphDetails::AddState(UEdStateNode* Node, bool DeferRefresh)

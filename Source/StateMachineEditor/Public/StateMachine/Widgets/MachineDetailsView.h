@@ -41,6 +41,8 @@ public:
 
 	virtual void AddReferencedObjects(FReferenceCollector& Collector) override;
 
+protected:
+
 private:
 
 	void OnSelectionChanged(TArray<class UEdGraphNode*>& SelectedNodes);

@@ -73,6 +73,7 @@ void UEdStateGraph::NotifyGraphChanged(const FEdGraphEditAction& Action)
 				this->Events.OnStateAdded.Broadcast(CastNode);
 			}			
 		}
+		this->Modify();
 	}
 	else if (Action.Action & EEdGraphActionType::GRAPHACTION_RemoveNode)
 	{
@@ -83,11 +84,12 @@ void UEdStateGraph::NotifyGraphChanged(const FEdGraphEditAction& Action)
 			if (CastNode)
 			{
 				CastNode->Events.OnNodeDeleted.Broadcast();
+				this->GetBlueprintOwner()->Events.OnObjectInspected.Broadcast(nullptr);
 			}
 		}
+		this->Modify();
 	}
-
-	this->Modify();
+	
 }
 
 bool UEdStateGraph::HasStateName(const FText& RequestedName) const

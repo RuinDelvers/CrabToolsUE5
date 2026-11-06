@@ -148,6 +148,7 @@ void UHierarchyNode::GetEmittedEvents(TSet<FName>& Events) const
 
 void UHierarchyNode::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
+	Super::PostEditChangeProperty(PropertyChangedEvent);
 	this->Slot.Validate();
 }
 
