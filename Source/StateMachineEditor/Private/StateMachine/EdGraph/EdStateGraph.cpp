@@ -1,5 +1,5 @@
 #include "StateMachine/EdGraph/EdStateGraph.h"
-
+#include "Kismet2/BlueprintEditorUtils.h"
 #include "StateMachine/EdGraph/EdBaseNode.h"
 #include "StateMachine/EdGraph/EdStartStateNode.h"
 #include "StateMachine/EdGraph/EdAliasNode.h"
@@ -443,6 +443,7 @@ IStateMachineLike* UEdStateGraph::GetSubMachineLike(FName SubMachine) const
 
 void UEdStateGraph::OnModify()
 {
+	//FBlueprintEditorUtils::MarkBlueprintAsStructurallyModified(this->GetBlueprintOwner());
 	this->GetBlueprintOwner()->OnModify();
 }
 

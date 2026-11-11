@@ -9,6 +9,71 @@
 
 #define LOCTEXT_NAMESPACE "EdNode_GenericGraphEdge"
 
+TArray<UEdTransition*> UEdTransition::GetListTransitionNodesToRelink(UEdGraphPin* SourcePin, UEdGraphPin* OldTargetPin, const TArray<UEdGraphNode*>& InSelectedGraphNodes)
+{
+	if (SourcePin->Direction == EGPD_Input && OldTargetPin->Direction == EGPD_Output)
+	{
+		Swap(SourcePin, OldTargetPin);
+	}
+
+	auto SourceState = Cast<UEdBaseStateNode>(SourcePin->GetOwningNode());
+	if (SourceState == nullptr || SourceState->GetInputPin() == nullptr || SourceState->GetOutputPin() == nullptr)
+	{
+		return {};
+	}
+
+	// Collect all transition nodes starting at the source state
+	TArray<UEdTransition*> TransitionNodeCandidates;
+	SourceState->GetTransitionList(TransitionNodeCandidates);
+
+	// Remove the transition nodes from the candidates that are linked to a different target state.
+	for (int i = TransitionNodeCandidates.Num() - 1; i >= 0; i--)
+	{
+		auto CurrentTransition = TransitionNodeCandidates[i];
+
+		// Get the actual target states from the transition nodes
+		UEdGraphNode* TransitionTargetNode = CurrentTransition->GetEndNode();
+		UEdGraphNode* OldTargetNode = OldTargetPin->GetOwningNode();
+
+		// Compare the target states rather than comparing against the transition nodes
+		if (TransitionTargetNode != OldTargetNode)
+		{
+			TransitionNodeCandidates.Remove(CurrentTransition);
+		}
+	}
+
+	// Collect the subset of selected transitions from the list of possible transitions to be relinked
+	TSet<UEdTransition*> SelectedTransitionNodes;
+	for (UEdGraphNode* GraphNode : InSelectedGraphNodes)
+	{
+		UEdTransition* TransitionNode = Cast<UEdTransition>(GraphNode);
+		if (!TransitionNode)
+		{
+			continue;
+		}
+
+		if (TransitionNodeCandidates.Find(TransitionNode) != INDEX_NONE)
+		{
+			SelectedTransitionNodes.Add(TransitionNode);
+		}
+	}
+
+	TArray<UEdTransition*> Result;
+	Result.Reserve(TransitionNodeCandidates.Num());
+	for (UEdTransition* TransitionNode : TransitionNodeCandidates)
+	{
+		// Only relink the selected transitions. If none are selected, relink them all.
+		if (!SelectedTransitionNodes.IsEmpty() && SelectedTransitionNodes.Find(TransitionNode) == nullptr)
+		{
+			continue;
+		}
+
+		Result.Add(TransitionNode);
+	}
+
+	return Result;
+}
+
 UEdTransition::UEdTransition()
 {
 	bCanRenameNode = true;
@@ -54,6 +119,42 @@ void UEdTransition::PinConnectionListChanged(UEdGraphPin* Pin)
 
 		DestroyNode();
 	}
+}
+
+void UEdTransition::RelinkHead(UEdBaseStateNode* NewTargetState)
+{
+	UEdBaseStateNode* TargetStateBeforeRelinking = GetEndNode();
+
+	// Remove the incoming transition from the previous target state
+	TargetStateBeforeRelinking->GetInputPin()->Modify();
+	TargetStateBeforeRelinking->GetInputPin()->BreakLinkTo(GetOutputPin());
+
+	// Add the new incoming transition to the new target state
+	NewTargetState->GetInputPin()->Modify();
+	NewTargetState->GetInputPin()->MakeLinkTo(GetOutputPin());
+
+	// Relink the target state of the transition node
+	Pins[1]->Modify();
+	Pins[1]->BreakLinkTo(TargetStateBeforeRelinking->GetInputPin());
+	Pins[1]->MakeLinkTo(NewTargetState->GetInputPin());
+}
+
+void UEdTransition::RelinkTail(UEdBaseStateNode* NewSourceState)
+{
+	UEdBaseStateNode* SourceStateBeforeRelinking = GetStartNode();
+
+	// Remove the outgoing transition from the previous source state
+	SourceStateBeforeRelinking->GetOutputPin()->Modify();
+	SourceStateBeforeRelinking->GetOutputPin()->BreakLinkTo(GetInputPin());
+
+	// Add the new outgoing transition to the new source state
+	NewSourceState->GetOutputPin()->Modify();
+	NewSourceState->GetOutputPin()->MakeLinkTo(GetInputPin());
+
+	// Relink the source state of the transition node
+	Pins[0]->Modify();
+	Pins[0]->BreakLinkTo(SourceStateBeforeRelinking->GetOutputPin());
+	Pins[0]->MakeLinkTo(NewSourceState->GetOutputPin());
 }
 
 void UEdTransition::PrepareForCopying()

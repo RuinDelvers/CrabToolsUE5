@@ -30,9 +30,4 @@ protected:
 	{
 		return FAppStyle::GetBrush(TEXT("Graph.StateNode.Body"));
 	}
-
-	virtual TSharedRef<FDragDropOperation> SpawnPinDragEvent(
-		const TSharedRef<class SGraphPanel>& InGraphPanel, 
-		const TArray< TSharedRef<SGraphPin> >& InStartingPins) override;
-
 };

@@ -194,6 +194,9 @@ public:
 	virtual int32 GetCurrentVisualizationCacheID() const override;
 	virtual void ForceVisualizationCacheClear() const override;
 
+	virtual bool IsConnectionRelinkingAllowed(UEdGraphPin* InPin) const override;
+	virtual bool TryRelinkConnectionTarget(UEdGraphPin* SourcePin, UEdGraphPin* OldTargetPin, UEdGraphPin* NewTargetPin, const TArray<UEdGraphNode*>& InSelectedGraphNodes) const override;
+	virtual const FPinConnectionResponse CanRelinkConnectionToPin(const UEdGraphPin* OldSourcePin, const UEdGraphPin* TargetPinCandidate) const override;
 private:
 
 	void AddExtensionAction(FGraphContextMenuBuilder& ContextMenuBuilder) const;

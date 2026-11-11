@@ -14,6 +14,11 @@ class UEdTransition;
  */
 class SEdEventEdge : public SGraphNode
 {
+
+public:
+
+	static FSlateColor StaticGetTransitionColor(UEdTransition* TransNode, bool bIsHovered);
+
 public:
 	SLATE_BEGIN_ARGS(SEdEventEdge){}
 	SLATE_END_ARGS()
@@ -31,6 +36,10 @@ public:
 	void OnNameTextCommited(const FText& InText, ETextCommit::Type CommitInfo);
 
 protected:
+
+	virtual void OnMouseEnter(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent) override;
+	virtual void OnMouseLeave(const FPointerEvent& MouseEvent) override;
+
 	FSlateColor GetEdgeColor() const;
 
 	const FSlateBrush* GetEdgeImage() const;

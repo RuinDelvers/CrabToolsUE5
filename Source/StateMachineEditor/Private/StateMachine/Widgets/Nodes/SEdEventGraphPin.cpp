@@ -21,21 +21,3 @@ void SEdEventGraphPin::Construct(const FArguments& InArgs, UEdGraphPin* InPin)
 		.Padding(FMargin(5.0f))
 	);
 }
-
-
-TSharedRef<FDragDropOperation> SEdEventGraphPin::SpawnPinDragEvent(
-	const TSharedRef<class SGraphPanel>& InGraphPanel, 
-	const TArray< TSharedRef<SGraphPin> >& InStartingPins)
-{
-	FStateMachineGraphDragConnection::FDraggedPinTable PinHandles;
-	PinHandles.Reserve(InStartingPins.Num());
-	// since the graph can be refreshed and pins can be reconstructed/replaced 
-	// behind the scenes, the DragDropOperation holds onto FGraphPinHandles 
-	// instead of direct widgets/graph-pins
-	for (const TSharedRef<SGraphPin>& PinWidget : InStartingPins)
-	{
-		PinHandles.Add(PinWidget->GetPinObj());
-	}
-
-	return FStateMachineGraphDragConnection::New(InGraphPanel, PinHandles);
-}

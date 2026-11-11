@@ -8,6 +8,7 @@
 #include "EdBaseNode.generated.h"
 
 class UEdStateGraph;
+class UEdTransition;
 
 /* Base Graph Node for both states and edges. */
 UCLASS(MinimalAPI)
@@ -84,7 +85,7 @@ public:
 	UEdBaseStateNode() {}
 	virtual ~UEdBaseStateNode() {}
 
-
+	void GetTransitionList(TArray<UEdTransition*>& OutTransitions) const;
 
 	virtual void AutowireNewNode(UEdGraphPin* FromPin) override;
 	virtual void AllocateDefaultPins() override;

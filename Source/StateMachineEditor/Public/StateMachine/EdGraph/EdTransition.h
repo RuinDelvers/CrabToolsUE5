@@ -43,6 +43,10 @@ class UEdTransition : public UEdBaseNode, public IStateTransitionLike
 
 public:
 
+	static TArray<UEdTransition*> GetListTransitionNodesToRelink(UEdGraphPin* SourcePin, UEdGraphPin* OldTargetPin, const TArray<UEdGraphNode*>& InSelectedGraphNodes);
+
+public:
+
 	UEdTransition();
 
 	UPROPERTY()
@@ -70,6 +74,19 @@ public:
 	UEdBaseStateNode* GetStartNode() const;
 	UEdBaseStateNode* GetEndNode() const;
 	TMap<FName, FTransitionDataSet> GetTransitionData(FNodeVerificationContext& Context);
+
+	/**
+	 * Relink transition head (where the arrow head is of a state transition) to a new state.
+	 * @param[in] NewTargetState The new transition target.
+	 */
+	void RelinkHead(UEdBaseStateNode* NewTargetState);
+
+	/**
+	 * Relink transition tail (where the arrow base is of a state transition) to a new state.
+	 * @param[in] NewSourceState The new transition source.
+	 */
+	void RelinkTail(UEdBaseStateNode* NewSourceState);
+
 
 	virtual TArray<FString> GetSourceEventOptions() const override { return this->GetEventOptions(); }
 

@@ -208,13 +208,16 @@ void UStateMachineBlueprint::RenameGraph(UEdStateGraph* Graph, FName Name)
 
 bool UStateMachineBlueprint::Modify(bool bAlwaysMarkDirty)
 {
+	// Below causes infinite recursion. 
+	//FBlueprintEditorUtils::MarkBlueprintAsStructurallyModified(this->GetBlueprintOwner());
 	return Super::Modify(bAlwaysMarkDirty);
 }
 
 
 void UStateMachineBlueprint::OnModify()
 {
-	FBlueprintEditorUtils::MarkBlueprintAsModified(this);
+	FBlueprintEditorUtils::MarkBlueprintAsStructurallyModified(this);
+	//FBlueprintEditorUtils::MarkBlueprintAsModified(this);
 }
 
 void UStateMachineBlueprint::SelectGraph(UEdStateGraph* Graph)

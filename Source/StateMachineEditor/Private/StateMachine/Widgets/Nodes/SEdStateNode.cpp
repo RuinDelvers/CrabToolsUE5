@@ -4,6 +4,7 @@
 #include "Widgets/Text/SInlineEditableTextBlock.h"
 #include "StateMachine/EdGraph/EdAliasNode.h"
 #include "StateMachine/EdGraph/EdStateGraph.h"
+#include "SGraphPanel.h"
 
 #define LOCTEXT_NAMESPACE "SEdStateNode"
 
@@ -250,6 +251,32 @@ void SEdStateNode::AddPin(const TSharedRef<SGraphPin>& PinToAdd)
 }
 
 END_SLATE_FUNCTION_BUILD_OPTIMIZATION
+
+void SEdStateNode::OnMouseEnter(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)
+{
+	if (auto TransNode = Cast<UEdStateNode>(GraphNode))
+	{
+		if (UEdGraphPin* Pin = TransNode->GetInputPin())
+		{
+			GetOwnerPanel()->AddPinToHoverSet(Pin);
+		}
+	}
+
+	SGraphNode::OnMouseEnter(MyGeometry, MouseEvent);
+}
+
+void SEdStateNode::OnMouseLeave(const FPointerEvent& MouseEvent)
+{
+	if (auto TransNode = Cast<UEdStateNode>(GraphNode))
+	{
+		if (UEdGraphPin* Pin = TransNode->GetInputPin())
+		{
+			GetOwnerPanel()->RemovePinFromHoverSet(Pin);
+		}
+	}
+
+	SGraphNode::OnMouseLeave(MouseEvent);
+}
 
 void SEdStateNode::GetNodeInfoPopups(FNodeInfoContext* Context, TArray<FGraphInformationPopupInfo>& Popups) const
 {

@@ -5,11 +5,24 @@
 #include "Widgets/SToolTip.h"
 #include "SGraphPanel.h"
 #include "EdGraphSchema_K2.h"
+#include "Kismet2/BlueprintEditorUtils.h"
 #include "StateMachine/EdGraph/EdStateNode.h"
 #include "StateMachine/EdGraph/EdTransition.h"
 #include "StateMachine/EdGraph/StateConnectionDrawingPolicy.h"
 
 #define LOCTEXT_NAMESPACE "SEdEventEdge"
+
+FSlateColor SEdEventEdge::StaticGetTransitionColor(UEdTransition* TransNode, bool bIsHovered)
+{
+	if (bIsHovered)
+	{
+		return FStyleColors::AccentOrange;
+	}
+	else
+	{
+		return FStyleColors::Foreground;
+	}
+}
 
 void SEdEventEdge::Construct(const FArguments& InArgs, UEdTransition* InNode)
 {
@@ -105,6 +118,30 @@ void SEdEventEdge::UpdateGraphNode()
 				
 			]
 		];
+}
+
+void SEdEventEdge::OnMouseEnter(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)
+{
+	auto TransNode = CastChecked<UEdTransition>(GraphNode);
+
+	if (UEdGraphPin* Pin = TransNode->GetInputPin())
+	{
+		GetOwnerPanel()->AddPinToHoverSet(Pin);
+	}
+
+	SGraphNode::OnMouseEnter(MyGeometry, MouseEvent);
+}
+
+void SEdEventEdge::OnMouseLeave(const FPointerEvent& MouseEvent)
+{
+	auto TransNode = CastChecked<UEdTransition>(GraphNode);
+
+	if (UEdGraphPin* Pin = TransNode->GetInputPin())
+	{
+		GetOwnerPanel()->RemovePinFromHoverSet(Pin);
+	}
+
+	SGraphNode::OnMouseLeave(MouseEvent);
 }
 
 void SEdEventEdge::PositionBetweenTwoNodesWithOffset(const FGeometry& StartGeom, const FGeometry& EndGeom, int32 NodeIndex, int32 MaxNodes) const

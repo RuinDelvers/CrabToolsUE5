@@ -6,7 +6,9 @@
 #include "StateMachine/EdGraph/EdStateNode.h"
 #include "StateMachine/EdGraph/EdTransition.h"
 #include "StateMachine/EdGraph/StateConnectionDrawingPolicy.h"
+#include "StateMachine/EdGraph/EdBaseNode.h"
 #include "Framework/Commands/GenericCommands.h"
+#include "Kismet2/BlueprintEditorUtils.h"
 #include "EdGraphNode_Comment.h"
 
 #define LOCTEXT_NAMESPACE "StateMachineSchema"
@@ -510,8 +512,6 @@ const FPinConnectionResponse UStateMachineSchema::CanCreateConnection(const UEdG
 			LOCTEXT("PinError", "Cannot connect to the StartNode as a Destination."));
 	}
 
-	
-
 	return FPinConnectionResponse(
 		CONNECT_RESPONSE_MAKE_WITH_CONVERSION_NODE, 
 		LOCTEXT("PinConnect", "Connect nodes with edge"));
@@ -625,6 +625,106 @@ int32 UStateMachineSchema::GetCurrentVisualizationCacheID() const
 void UStateMachineSchema::ForceVisualizationCacheClear() const
 {
 	++CurrentCacheRefreshID;
+}
+
+bool UStateMachineSchema::IsConnectionRelinkingAllowed(UEdGraphPin* InPin) const
+{
+	if (InPin && InPin->GetOwningNode())
+	{
+		auto StateNode = Cast<UEdBaseStateNode>(InPin->GetOwningNode());
+		auto TransitionNode = Cast<UEdTransition>(InPin->GetOwningNode());
+
+		if (StateNode || TransitionNode)
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool UStateMachineSchema::TryRelinkConnectionTarget(UEdGraphPin* SourcePin, UEdGraphPin* OldTargetPin, UEdGraphPin* NewTargetPin, const TArray<UEdGraphNode*>& InSelectedGraphNodes) const
+{
+	const FPinConnectionResponse Response = CanCreateConnection(SourcePin, NewTargetPin);
+	if (Response.Response == ECanCreateConnectionResponse::CONNECT_RESPONSE_DISALLOW)
+	{
+		return false;
+	}
+
+	bool bRelinkHead = SourcePin->Direction == EGPD_Output;
+	auto OldTargetState = Cast<UEdBaseStateNode>(OldTargetPin->GetOwningNode());
+	auto NewTargetState = Cast<UEdBaseStateNode>(NewTargetPin->GetOwningNode());
+
+	if (OldTargetState == nullptr || OldTargetState->GetInputPin() == nullptr || OldTargetState->GetOutputPin() == nullptr ||
+		NewTargetState == nullptr || NewTargetState->GetInputPin() == nullptr || NewTargetState->GetOutputPin() == nullptr)
+	{
+		return false;
+	}
+
+	// In the case we are relinking the transition starting at the entry state, the SourceState is nullptr. Special case handling.
+	auto EntryState = Cast<UEdStartStateNode>(SourcePin->GetOwningNode());
+	if (EntryState)
+	{
+		// Remove the incoming transition from the previous target state
+		OldTargetPin->Modify();
+		OldTargetPin->LinkedTo.Remove(SourcePin);
+		SourcePin->Modify();
+		SourcePin->LinkedTo.Remove(OldTargetPin);
+
+		// Add the new incoming transition to the new target state
+		TryCreateConnection(SourcePin, NewTargetPin);
+
+		UBlueprint* Blueprint = FBlueprintEditorUtils::FindBlueprintForGraphChecked(EntryState->GetGraph());
+		FBlueprintEditorUtils::MarkBlueprintAsStructurallyModified(Blueprint);
+
+		return true;
+	}
+
+	// Collect all transition nodes starting at the source state, filter them by the transitions and perform the actual relink operation.
+	const TArray<UEdTransition*> TransitionNodes = UEdTransition::GetListTransitionNodesToRelink(SourcePin, OldTargetPin, InSelectedGraphNodes);
+
+	if (bRelinkHead)
+	{
+		for (UEdTransition* TransitionNode : TransitionNodes)
+		{
+			TransitionNode->RelinkHead(NewTargetState);
+		}
+	}
+	else
+	{
+		for (UEdTransition* TransitionNode : TransitionNodes)
+		{
+			TransitionNode->RelinkTail(NewTargetState);
+		}
+	}
+
+	// In case one or more transitions got relinked, inform the blueprint about the changes
+#if WITH_EDITOR
+	if (!TransitionNodes.IsEmpty())
+	{
+		//UBlueprint* Blueprint = FBlueprintEditorUtils::FindBlueprintForGraphChecked(OneRelinkedTransition->GetBoundGraph());
+		UBlueprint* Blueprint = FBlueprintEditorUtils::FindBlueprintForGraphChecked(TransitionNodes[0]->GetStateGraph());
+		FBlueprintEditorUtils::MarkBlueprintAsStructurallyModified(Blueprint);
+
+
+		SourcePin->GetOwningNode()->PinConnectionListChanged(SourcePin);
+		OldTargetPin->GetOwningNode()->PinConnectionListChanged(OldTargetPin);
+		NewTargetPin->GetOwningNode()->PinConnectionListChanged(NewTargetPin);
+	}
+#endif//#if WITH_EDITOR
+
+	return true;
+}
+
+const FPinConnectionResponse UStateMachineSchema::CanRelinkConnectionToPin(const UEdGraphPin* OldSourcePin, const UEdGraphPin* TargetPinCandidate) const
+{
+	FPinConnectionResponse Response = CanCreateConnection(OldSourcePin, TargetPinCandidate);
+	if (Response.Response != CONNECT_RESPONSE_DISALLOW)
+	{
+		Response.Message = FText::FromString("Relink transition");
+	}
+
+	return Response;
 }
 
 #pragma endregion

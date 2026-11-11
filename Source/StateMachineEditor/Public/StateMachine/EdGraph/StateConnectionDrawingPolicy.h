@@ -3,11 +3,19 @@
 #include "CoreMinimal.h"
 #include "ConnectionDrawingPolicy.h"
 
-class STATEMACHINEEDITOR_API FStateMachineConnectionDrawingPolicy : public FConnectionDrawingPolicy
+// This is used since slate eventually stopped support double vectors, and only using floats.
+#if ENGINE_MINOR_VERSION >= 7
+	using SlateVector = FVector2f;
+#else
+	using SlateVector = FVector2D;
+#endif
+
+class FStateMachineConnectionDrawingPolicy : public FConnectionDrawingPolicy
 {
 
 public:
 
+	static constexpr float RelinkHandleHoverRadius = 10.0f;
 	static const float LINE_SEPARATION_FACTOR;
 
 protected:
@@ -27,6 +35,27 @@ public:
 	virtual void DetermineLinkGeometry(FArrangedChildren& ArrangedNodes, TSharedRef<SWidget>& OutputPinWidget, UEdGraphPin* OutputPin, UEdGraphPin* InputPin, FArrangedWidget*& StartWidgetGeometry, FArrangedWidget*& EndWidgetGeometry) override;
 	// End of FConnectionDrawingPolicy interface
 
+
+
 protected:
-	void Internal_DrawLineWithArrow(const FVector2D& StartAnchorPoint, const FVector2D& EndAnchorPoint, const FConnectionParams& Params);
+	void Internal_DrawLineWithArrow(
+		const FVector2D& StartAnchorPoint,
+		const FVector2D& EndAnchorPoint,
+		const FConnectionParams& Params);
+
+	void Internal_DrawSplineHovered(
+		const SlateVector& StartPoint,
+		const SlateVector& EndPoint,
+		const SlateVector& LengthBias,
+		FLinearColor& ArrowHeadColor,
+		const FConnectionParams& Params);
+
+	void Internal_DrawRelinkTransitions(
+		const SlateVector& StartPoint,
+		const SlateVector& EndPoint,
+		const SlateVector& LengthBias,
+		const SlateVector& DeltaPos,
+		const SlateVector& Normal,
+		FLinearColor& ArrowHeadColor,
+		const FConnectionParams& Params);
 };
