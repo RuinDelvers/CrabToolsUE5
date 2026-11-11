@@ -34,5 +34,5 @@ public:
 	virtual void ApplyMovement_Implementation(FVector2D InputAxis);
 
 	UFUNCTION(BlueprintCallable, Category = "StateMachine")
-	UPerspectiveManager* GetPerspective() { return this->Perspective.Get(); }
+	UPerspectiveManager* GetPerspective() const { return this->Perspective.Get(); }
 };
